@@ -8,53 +8,26 @@ on:
 
 jobs:
   build:
-      runs-on ${{ matrix.os[0] }}
-        strategy:
-          matrix:
-              os: [
-                [macos-latest, arm64, bash],
-                [macos-14, x86_64, bash],
-                [ubuntu-latest, x86_64, bash],
-                # [ubuntu-latest, arm64, bash] ## Maybe later
-              ]
+    runs-on: ${{ matrix.os[0] }}
+    strategy:
+      matrix:
+        os: [
+          [macos-latest, arm64, bash],
+          [macos-13, x86_64, bash],
+          [ubuntu-latest, x86_64, bash]
+        ]
+      fail-fast: false
+    defaults:
+     run:
+      shell: ${{ matrix.os[2] }} {0}
 
-            fail-fast: false
-          defaults:
-            run:
-              shell: ${{ matrix.os[2]}} {0}
-
-            steps:
-            - uses: actions/checkout@v4
-
-            - name : Install Dependencies on required OS
-              run: |
-                ./prepare.sh
-
-            - name : Build Daedalus as per Matrix
-              run  : | 
-                ./build_daedalus.sh
-              
-            - name : Prepare Resources
-
-    name: PSP Build
-    runs-on: ubuntu-latest
-    container: pspdev/pspdev:latest
-    
     steps:
     - uses: actions/checkout@v4
-
-    - name: Install dependencies
-      run: |
-        apk add build-base git bash cmake
     
-    - name: Compile project
-      run: |
-        ./build_daedalus.sh PSP
-
-    - name: Get short SHA
-      id: slug
-      run: echo "{name}={sha8::$(echo ${GITHUB_SHA} | cut -c1-8)}" >> $GITHUB_OUTPUT
-
+    - name : Install dependencies on required OS
+      run: | 
+        ./prepare.sh
+        
     - name: Prepare artifacts
       run: |
         tar -zcvf daedalusX64-${{matrix.os[0]}}-${{[matrix.os.1]}}.tar.gz \

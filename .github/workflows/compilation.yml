@@ -28,6 +28,9 @@ jobs:
       run: | 
         ./prepare.sh
 
+    - name : Build Project
+      run: | 
+        ./build_daedalus.sh
     - name: Prepare artifacts
       run: |
         tar -zcvf DaedalusX64-${{matrix.os[0]}}-${{matrix.os[1]}}.tar.gz \

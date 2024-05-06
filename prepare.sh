@@ -48,7 +48,7 @@ echo "3DS Build Prep"
     DEVKITARM='/opt/devkitpro/devkitARM' make install
 
     echo "Build IMGUI-picaGL"
-    git clone
+    git clone https://github.com/masterfeizz/imgui-picagl --depth=1
     cd imgui-picagl
     DEVKITARM='/opt/devkitpro/devkitARM' make 
     DEVKITARM='/opt/devkitpro/devkitARM' make install

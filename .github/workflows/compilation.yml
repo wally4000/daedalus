@@ -72,12 +72,12 @@ jobs:
     container: 'pspdev/pspdev:latest'
     env: 
       BUILD: PSP
-      steps:
-        - uses: actions/checkout@v4
-        - name: PSP Build
-          run:  ./build_daedalus.sh PSP
+    steps:
+      - uses: actions/checkout@v4
+      - name: PSP Build
+        run:  ./build_daedalus.sh PSP
   
-          
+
   build-ctr:
     runs-on: ubuntu-latest
     container: 'devkitpro/devkitarm:latest'

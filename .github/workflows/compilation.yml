@@ -27,10 +27,10 @@ jobs:
     - name : Install dependencies on required OS
       run: | 
         ./prepare.sh
-        
+
     - name: Prepare artifacts
       run: |
-        tar -zcvf daedalusX64-${{matrix.os[0]}}-${{[matrix.os.1]}}.tar.gz \
+        tar -zcvf DaedalusX64-${{matrix.os[0]}}-${{matrix.os[1]}}.tar.gz \
           DaedalusX64/daedalus \
           DaedalusX64/n64.psh \
           DaedalusX64/roms.ini \

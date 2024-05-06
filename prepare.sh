@@ -2,6 +2,15 @@
 
 #This prepares the OS for installation
 
+#Detect 3DS / PSP
+if [ ! -z "$PSPDEV " ] then;
+    BUILD=PSP
+elif [ ! -z " $DEVKITPRO/cmake/3DS.cmake "] # Not going to be failsafe if the Devkitpro docker adds all the other stuff 
+
+    BUILD=CTR
+fi
+
+
 #Handle macOS first
 if [ "$(uname -s)" = "Darwin" ]; then
   ## Check if using brew
@@ -11,7 +20,6 @@ if [ "$(uname -s)" = "Darwin" ]; then
   fi
 
 else
-
     TESTOS=$(cat /etc/os-release | grep -w "ID" | cut -d '=' -f2)
 
     case $TESTOS in
@@ -25,4 +33,28 @@ else
     ;;
     esac
 
+fi
+# Use for CI
+if [[ ! -z $CI ]] && [[ $BUILD == "CTR" ]]; then
+echo "3DS Build Prep"
+    sudo apt-get update 
+    sudo apt-get -y install g++ libyaml-dev libmbedtls-dev
+    
+    echo "Build MakeROM"
+    git clone https://github.com/wally4000/Project_CTR --depth=1
+    cd Project_CTR/
+    make
+    cp makerom/bin/makerom /usr/local/bin
+
+    echo "Build PicaGL"
+    git clone -b revamp https://github.com/masterfeizz/picaGL --depth=1
+    cd picaGL
+    DEVKITARM='/opt/devkitpro/devkitARM' make 
+    DEVKITARM='/opt/devkitpro/devkitARM' make install
+
+    echo "Build IMGUI-picaGL"
+    git clone
+    cd imgui-picagl
+    DEVKITARM='/opt/devkitpro/devkitARM' make 
+    DEVKITARM='/opt/devkitpro/devkitARM' make install
 fi

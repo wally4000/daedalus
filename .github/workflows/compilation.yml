@@ -7,7 +7,35 @@ on:
     types: [run_build]
 
 jobs:
-  build-psp:
+  build:
+      runs-on ${{ matrix.os[0] }}
+        strategy:
+          matrix:
+              os: [
+                [macos-latest, arm64, bash],
+                [macos-14, x86_64, bash],
+                [ubuntu-latest, x86_64, bash],
+                # [ubuntu-latest, arm64, bash] ## Maybe later
+              ]
+
+            fail-fast: false
+          defaults:
+            run:
+              shell: ${{ matrix.os[2]}} {0}
+
+            steps:
+            - uses: actions/checkout@v4
+
+            - name : Install Dependencies on required OS
+              run: |
+                ./prepare.sh
+
+            - name : Build Daedalus as per Matrix
+              run  : | 
+                ./build_daedalus.sh
+              
+            - name : Prepare Resources
+
     name: PSP Build
     runs-on: ubuntu-latest
     container: pspdev/pspdev:latest
@@ -29,71 +57,7 @@ jobs:
 
     - name: Prepare artifacts
       run: |
-        tar -zcvf daedalusX64-PSP.tar.gz \
-          DaedalusX64/Plugins \
-          DaedalusX64/EBOOT.PBP \
-          DaedalusX64/roms.ini \
-          DaedalusX64/readme.txt \
-          DaedalusX64/copying.txt \
-          DaedalusX64/Resources \
-          DaedalusX64/Languages \
-          DaedalusX64/ControllerConfigs \
-
-
-    - name: Upload artifacts
-      if: ${{ success() }}
-      uses: actions/upload-artifact@v4
-      with:
-        name: DaedalusX64-PSP
-        path: daedalusX64-PSP.tar.gz
-
-    - name: Extract tag name
-      if: startsWith(github.ref, 'refs/tags/')
-      id: tag
-      run: echo "{name}={VERSION::${GITHUB_REF/refs\/tags\//}}" >> $GITHUB_OUTPUT
-
-    # - name: Create pre-release
-    #   if: github.ref == 'refs/heads/master'
-    #   uses: softprops/action-gh-release@v1
-    #   with:
-    #     files: daedalusX64-PSP.tar.gz
-    #     prerelease: true
-    #     name: "Development build"
-    #     tag_name: "latest"
-    #   env:
-    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    # - name: Release
-    #   if: startsWith(github.ref, 'refs/tags/')
-    #   uses: softprops/action-gh-release@v1
-    #   with:
-    #     files: daedalusX64-PSP.tar.gz
-    #     tag_name: ${{ steps.tag.outputs.VERSION }}
-    #   env:
-    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    #     name: CI
-
-  build-linux:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Install dependencies
-      run: |
-        sudo apt install build-essential git bash cmake libpng-dev libz-dev libminizip-dev libsdl2-dev libsdl2-ttf-dev libglew-dev
-    
-    - name: Compile project
-      run: |
-        ./build_daedalus.sh
-
-    - name: Get short SHA
-      id: slug
-      run: echo "{name}={sha8::$(echo ${GITHUB_SHA} | cut -c1-8)}" >> $GITHUB_OUTPUT
-
-    - name: Prepare artifacts
-      run: |
-        tar -zcvf daedalusX64-linux.tar.gz \
+        tar -zcvf daedalusX64-${{matrix.os[0]}}-${{[matrix.os.1]}}.tar.gz \
           DaedalusX64/daedalus \
           DaedalusX64/n64.psh \
           DaedalusX64/roms.ini \
@@ -103,172 +67,259 @@ jobs:
           DaedalusX64/Languages \
           DaedalusX64/ControllerConfigs \
 
-
-    - name: Upload artifacts
-      if: ${{ success() }}
-      uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v4
       with:
-        name: daedalusX64-linux
-        path: daedalusX64-linux.tar.gz
+        name: DaedalusX64-${{matrix.os[0]}}-${{matrix.os[1]}}
+        path: DaedalusX64-${{matrix.os[0]}}-${{matrix.os[1]}}.tar.gz
 
-    # - name: Extract tag name
-    #   if: startsWith(github.ref, 'refs/tags/')
-    #   id: tag
-    #   run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
-
-    # - name: Create pre-release
-    #   if: github.ref == 'refs/heads/master'
-    #   uses: softprops/action-gh-release@v1
-    #   with:
-    #     files: daedalusX64-linux.tar.gz
-    #     prerelease: true
-    #     name: "Development build"
-    #     tag_name: "latest"
-    #   env:
-    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    # - name: Release
-    #   if: startsWith(github.ref, 'refs/tags/')
-    #   uses: softprops/action-gh-release@v1
-    #   with:
-    #     files: daedalusX64-linux.tar.gz
-    #     tag_name: ${{ steps.tag.outputs.VERSION }}
-    #   env:
-    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  build-ctr:
-    runs-on: ubuntu-latest
-    container: devkitpro/devkitarm:latest
-    steps:
-      - uses: actions/checkout@v4 
-
-      # Needed to build CIA files
-      - name: build makerom
-        run: |
-            apt-get update && \
-            apt-get -y install g++ libyaml-dev libmbedtls-dev
-            git clone https://github.com/wally4000/Project_CTR --depth=1
-            cd Project_CTR/
-            make
-            cp makerom/bin/makerom /usr/local/bin
-
-      - name: Build PicaGL
-        run: |
-            git clone -b revamp https://github.com/masterfeizz/picaGL --depth=1
-            cd picaGL
-            DEVKITARM='/opt/devkitpro/devkitARM' make 
-            DEVKITARM='/opt/devkitpro/devkitARM' make install
-
-      - name: Build imgui-picagl
-        run: |
-            git clone https://github.com/masterfeizz/imgui-picagl --depth=1
-            cd imgui-picagl
-            DEVKITARM='/opt/devkitpro/devkitARM' make 
-            DEVKITARM='/opt/devkitpro/devkitARM' make install
-
-      - name: Compile project
-        run: | 
-          ./build_daedalus.sh CTR
-
-      - name: Get short SHA
-        id: slug
-        run: echo "{name}={sha8::$(echo ${GITHUB_SHA} | cut -c1-8)}" >> $GITHUB_OUTPUT
-
-      - name: Prepare artifacts
-        run: |
-          tar -zcvf daedalusX64-CTR.tar.gz DaedalusX64\
-
-      - name: Upload artifacts
-        if: ${{ success() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: daedalusX64-CTR
-          path: daedalusX64-CTR.tar.gz
-
-  build-macos:
-    runs-on: macOS-latest
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Setup Homebrew # This will install the correct homebrew for architecture selected
-      run: |
-        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-    - name: Install dependencies
-      run: |
-        brew install git bash cmake libpng minizip sdl2 sdl2_ttf glew
-    
-    - name: Compile project
-      run: |
-        ./build_daedalus.sh
-
-    - name: Get short SHA
-      id: slug
-      run: echo "{name}={sha8::$(echo ${GITHUB_SHA} | cut -c1-8)}" >> $GITHUB_OUTPUT
-
-    - name: Prepare artifacts
-      run: |
-          tar -zcvf daedalusX64-macos-x86.tar.gz \
-          DaedalusX64/daedalus \
-          DaedalusX64/n64.psh \
-          DaedalusX64/roms.ini \
-          DaedalusX64/readme.txt \
-          DaedalusX64/copying.txt \
-          DaedalusX64/Resources \
-          DaedalusX64/Languages \
-          DaedalusX64/ControllerConfigs \
-
-
-    - name: Upload artifacts
-      if: ${{ success() }}
-      uses: actions/upload-artifact@v4
+    - name: Create pre-release
+      if: ${{ github.ref == 'refs/heads/master' }}
+      uses: softprops/action-gh-release@v2
+      with: 
+        files: DaedalusX64-${{matrix.os[0]}}-${{matrix.os[1]}}.tar.gz
+        prerelease: true
+        tag_name: latest"
+      env: 
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Release
+      if: ${{ github.ref_type == 'tag' }}
+      uses: softprops/action-gh-release@v2
       with:
-        name: DaedalusX64-macos
-        path: daedalusX64-macos-x86.tar.gz
+        files: DaedalusX64-${{matrix.os[0]}}-${{matrix.os[1]}}.tar.gz
+        tag_name: latest"
+      env: 
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    # - name: Extract tag name
-    #   if: startsWith(github.ref, 'refs/tags/')
-    #   id: tag
-    #   run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+  #   - name: Upload artifacts
+  #     if: ${{ success() }}
+  #     uses: actions/upload-artifact@v4
+  #     with:
+  #       name: DaedalusX64-PSP
+  #       path: daedalusX64-PSP.tar.gz
 
-    # - name: Create pre-release
-    #   if: github.ref == 'refs/heads/master'
-    #   uses: softprops/action-gh-release@v1
-    #   with:
-    #     files: daedalusX64-macos-x86.tar.gz
-    #     prerelease: true
-    #     name: "Development build"
-    #     tag_name: "latest"
-    #   env:
-    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #   - name: Extract tag name
+  #     if: startsWith(github.ref, 'refs/tags/')
+  #     id: tag
+  #     run: echo "{name}={VERSION::${GITHUB_REF/refs\/tags\//}}" >> $GITHUB_OUTPUT
 
-    # - name: Release
-    #   if: startsWith(github.ref, 'refs/tags/')
-    #   uses: softprops/action-gh-release@v1
-    #   with:
-    #     files: daedalusX64-macos-x86.tar.gz
-    #     tag_name: ${{ steps.tag.outputs.VERSION }}
-    #   env:
-    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #   # - name: Create pre-release
+  #   #   if: github.ref == 'refs/heads/master'
+  #   #   uses: softprops/action-gh-release@v1
+  #   #   with:
+  #   #     files: daedalusX64-PSP.tar.gz
+  #   #     prerelease: true
+  #   #     name: "Development build"
+  #   #     tag_name: "latest"
+  #   #   env:
+  #   #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  build-windows:
-    runs-on: windows-latest
-    env:
-      VCPKG_DEFAULT_TRIPLET: x64-windows
-    steps:
-      - uses: actions/checkout@v4
+  #   # - name: Release
+  #   #   if: startsWith(github.ref, 'refs/tags/')
+  #   #   uses: softprops/action-gh-release@v1
+  #   #   with:
+  #   #     files: daedalusX64-PSP.tar.gz
+  #   #     tag_name: ${{ steps.tag.outputs.VERSION }}
+  #   #   env:
+  #   #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: lukka/get-cmake@latest
+  #   #     name: CI
 
-      - name: Setup a new (or from cache) vcpkg
-        uses: lukka/run-vcpkg@v11
-        with:
-          vcpkgGitCommitId: aa628ceb5f15f0c30d4d481f14fa5b2be2b4a658
-          runVcpkgInstall: true
+  # build-linux:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - uses: actions/checkout@v4
 
-      - name: Run CMake config
-        run: |
-          cmake -S . -B build "-DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake" "-DVCPKG_TARGET_TRIPLET=x64-windows"
+  #   - name: Install dependencies
+  #     run: |
+  #       sudo apt install build-essential git bash cmake libpng-dev libz-dev libminizip-dev libsdl2-dev libsdl2-ttf-dev libglew-dev
     
-      - name: Build
-        run: |
-          cmake --build build --config Release
+  #   - name: Compile project
+  #     run: |
+  #       ./build_daedalus.sh
+
+  #   - name: Get short SHA
+  #     id: slug
+  #     run: echo "{name}={sha8::$(echo ${GITHUB_SHA} | cut -c1-8)}" >> $GITHUB_OUTPUT
+
+  #   - name: Prepare artifacts
+  #     run: |
+  #       tar -zcvf daedalusX64-linux.tar.gz \
+  #         DaedalusX64/daedalus \
+  #         DaedalusX64/n64.psh \
+  #         DaedalusX64/roms.ini \
+  #         DaedalusX64/readme.txt \
+  #         DaedalusX64/copying.txt \
+  #         DaedalusX64/Resources \
+  #         DaedalusX64/Languages \
+  #         DaedalusX64/ControllerConfigs \
+
+
+  #   - name: Upload artifacts
+  #     if: ${{ success() }}
+  #     uses: actions/upload-artifact@v4
+  #     with:
+  #       name: daedalusX64-linux
+  #       path: daedalusX64-linux.tar.gz
+
+  #   # - name: Extract tag name
+  #   #   if: startsWith(github.ref, 'refs/tags/')
+  #   #   id: tag
+  #   #   run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+
+  #   # - name: Create pre-release
+  #   #   if: github.ref == 'refs/heads/master'
+  #   #   uses: softprops/action-gh-release@v1
+  #   #   with:
+  #   #     files: daedalusX64-linux.tar.gz
+  #   #     prerelease: true
+  #   #     name: "Development build"
+  #   #     tag_name: "latest"
+  #   #   env:
+  #   #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  #   # - name: Release
+  #   #   if: startsWith(github.ref, 'refs/tags/')
+  #   #   uses: softprops/action-gh-release@v1
+  #   #   with:
+  #   #     files: daedalusX64-linux.tar.gz
+  #   #     tag_name: ${{ steps.tag.outputs.VERSION }}
+  #   #   env:
+  #   #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # build-ctr:
+  #   runs-on: ubuntu-latest
+  #   container: devkitpro/devkitarm:latest
+  #   steps:
+  #     - uses: actions/checkout@v4 
+
+  #     # Needed to build CIA files
+  #     - name: build makerom
+  #       run: |
+  #           apt-get update && \
+  #           apt-get -y install g++ libyaml-dev libmbedtls-dev
+  #           git clone https://github.com/wally4000/Project_CTR --depth=1
+  #           cd Project_CTR/
+  #           make
+  #           cp makerom/bin/makerom /usr/local/bin
+
+  #     - name: Build PicaGL
+  #       run: |
+  #           git clone -b revamp https://github.com/masterfeizz/picaGL --depth=1
+  #           cd picaGL
+  #           DEVKITARM='/opt/devkitpro/devkitARM' make 
+  #           DEVKITARM='/opt/devkitpro/devkitARM' make install
+
+  #     - name: Build imgui-picagl
+  #       run: |
+  #           git clone https://github.com/masterfeizz/imgui-picagl --depth=1
+  #           cd imgui-picagl
+  #           DEVKITARM='/opt/devkitpro/devkitARM' make 
+  #           DEVKITARM='/opt/devkitpro/devkitARM' make install
+
+  #     - name: Compile project
+  #       run: | 
+  #         ./build_daedalus.sh CTR
+
+  #     - name: Get short SHA
+  #       id: slug
+  #       run: echo "{name}={sha8::$(echo ${GITHUB_SHA} | cut -c1-8)}" >> $GITHUB_OUTPUT
+
+  #     - name: Prepare artifacts
+  #       run: |
+  #         tar -zcvf daedalusX64-CTR.tar.gz DaedalusX64\
+
+  #     - name: Upload artifacts
+  #       if: ${{ success() }}
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: daedalusX64-CTR
+  #         path: daedalusX64-CTR.tar.gz
+
+  # build-macos:
+  #   runs-on: macOS-latest
+  #   steps:
+  #   - uses: actions/checkout@v4
+
+  #   - name: Setup Homebrew # This will install the correct homebrew for architecture selected
+  #     run: |
+  #       /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  #   - name: Install dependencies
+  #     run: |
+  #       brew install git bash cmake libpng minizip sdl2 sdl2_ttf glew
+    
+  #   - name: Compile project
+  #     run: |
+  #       ./build_daedalus.sh
+
+  #   - name: Get short SHA
+  #     id: slug
+  #     run: echo "{name}={sha8::$(echo ${GITHUB_SHA} | cut -c1-8)}" >> $GITHUB_OUTPUT
+
+  #   - name: Prepare artifacts
+  #     run: |
+  #         tar -zcvf daedalusX64-macos-x86.tar.gz \
+  #         DaedalusX64/daedalus \
+  #         DaedalusX64/n64.psh \
+  #         DaedalusX64/roms.ini \
+  #         DaedalusX64/readme.txt \
+  #         DaedalusX64/copying.txt \
+  #         DaedalusX64/Resources \
+  #         DaedalusX64/Languages \
+  #         DaedalusX64/ControllerConfigs \
+
+
+  #   - name: Upload artifacts
+  #     if: ${{ success() }}
+  #     uses: actions/upload-artifact@v4
+  #     with:
+  #       name: DaedalusX64-macos
+  #       path: daedalusX64-macos-arm6.tar.gz
+
+  #   # - name: Extract tag name
+  #   #   if: startsWith(github.ref, 'refs/tags/')
+  #   #   id: tag
+  #   #   run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+
+  #   # - name: Create pre-release
+  #   #   if: github.ref == 'refs/heads/master'
+  #   #   uses: softprops/action-gh-release@v1
+  #   #   with:
+  #   #     files: daedalusX64-macos-x86.tar.gz
+  #   #     prerelease: true
+  #   #     name: "Development build"
+  #   #     tag_name: "latest"
+  #   #   env:
+  #   #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  #   # - name: Release
+  #   #   if: startsWith(github.ref, 'refs/tags/')
+  #   #   uses: softprops/action-gh-release@v1
+  #   #   with:
+  #   #     files: daedalusX64-macos-x86.tar.gz
+  #   #     tag_name: ${{ steps.tag.outputs.VERSION }}
+  #   #   env:
+  #   #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # build-windows:
+  #   runs-on: windows-latest
+  #   env:
+  #     VCPKG_DEFAULT_TRIPLET: x64-windows
+  #   steps:
+  #     - uses: actions/checkout@v4
+
+  #     - uses: lukka/get-cmake@latest
+
+  #     - name: Setup a new (or from cache) vcpkg
+  #       uses: lukka/run-vcpkg@v11
+  #       with:
+  #         vcpkgGitCommitId: aa628ceb5f15f0c30d4d481f14fa5b2be2b4a658
+  #         runVcpkgInstall: true
+
+  #     - name: Run CMake config
+  #       run: |
+  #         cmake -S . -B build "-DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake" "-DVCPKG_TARGET_TRIPLET=x64-windows"
+    
+  #     - name: Build
+  #       run: |
+  #         cmake --build build --config Release

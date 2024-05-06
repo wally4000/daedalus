@@ -7,6 +7,7 @@ on:
     types: [run_build]
 
 jobs:
+
   build:
     runs-on: ${{ matrix.os[0] }}
     strategy:
@@ -68,26 +69,36 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-psp:
+    name: PSP Build
     runs-on: ubuntu-latest
-    container: 'pspdev/pspdev:latest'
-    env: 
-      BUILD: PSP
+    container: pspdev/pspdev:latest
+    
     steps:
-      - uses: actions/checkout@v4
-      - name: PSP Build
-        run:  ./build_daedalus.sh PSP
+    - uses: actions/checkout@v4
 
-      - name: Prepare artifacts
-    run: |
-      tar -zcvf daedalusX64-PSP.tar.gz \
-        DaedalusX64/Plugins \
-        DaedalusX64/EBOOT.PBP \
-        DaedalusX64/roms.ini \
-        DaedalusX64/readme.txt \
-        DaedalusX64/copying.txt \
-        DaedalusX64/Resources \
-        DaedalusX64/Languages \
-        DaedalusX64/ControllerConfigs \
+    - name: Install dependencies
+      run: |
+        apk add build-base git bash cmake
+    
+    - name: Compile project
+      run: |
+        ./build_daedalus.sh PSP
+
+    - name: Get short SHA
+      id: slug
+      run: echo "{name}={sha8::$(echo ${GITHUB_SHA} | cut -c1-8)}" >> $GITHUB_OUTPUT
+
+    - name: Prepare artifacts
+      run: |
+        tar -zcvf daedalusX64-PSP.tar.gz \
+          DaedalusX64/Plugins \
+          DaedalusX64/EBOOT.PBP \
+          DaedalusX64/roms.ini \
+          DaedalusX64/readme.txt \
+          DaedalusX64/copying.txt \
+          DaedalusX64/Resources \
+          DaedalusX64/Languages \
+          DaedalusX64/ControllerConfigs \
 
 
     - name: Upload artifacts
@@ -96,61 +107,64 @@ jobs:
       with:
         name: DaedalusX64-PSP
         path: daedalusX64-PSP.tar.gz
-  
 
-   build-ctr:
-     runs-on: ubuntu-latest
-     container: devkitpro/devkitarm:latest
-     steps:
-       - uses: actions/checkout@v4 
+    - name: Extract tag name
+      if: startsWith(github.ref, 'refs/tags/')
+      id: tag
+      run: echo "{name}={VERSION::${GITHUB_REF/refs\/tags\//}}" >> $GITHUB_OUTPUT
 
-       - name: Compile project
-         run: | 
-           ./build_daedalus.sh CTR
+  build-ctr:
+    runs-on: ubuntu-latest
+    container: devkitpro/devkitarm:latest
+    steps:
+      - uses: actions/checkout@v4 
 
-       - name: Prepare artifacts
-         run: |
-           tar -zcvf daedalusX64-CTR.tar.gz DaedalusX64\
+      - name: Compile project
+        run: | 
+          ./build_daedalus.sh CTR
 
-       - name: Upload artifacts
-         if: ${{ success() }}
-         uses: actions/upload-artifact@v4
-         with:
-           name: daedalusX64-CTR
-           path: daedalusX64-CTR.tar.gz
+      - name: Prepare artifacts
+        run: |
+          tar -zcvf daedalusX64-CTR.tar.gz DaedalusX64\
 
-    build-windows:
-        runs-on: windows-latest
-        env:
-          VCPKG_DEFAULT_TRIPLET: x64-windows
-        steps:
-          - uses: actions/checkout@v4
-  
-          - uses: lukka/get-cmake@latest
-  
-          - name: Setup a new (or from cache) vcpkg
-            uses: lukka/run-vcpkg@v11
-            with:
-              vcpkgGitCommitId: aa628ceb5f15f0c30d4d481f14fa5b2be2b4a658
-              runVcpkgInstall: true
-  
-          - name: Run CMake config
-            run: |
-              cmake -S . -B build "-DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake" "-DVCPKG_TARGET_TRIPLET=x64-windows"
-      
-          - name: Build
-            run: |
-              cmake --build build --config Release
+      - name: Upload artifacts
+        if: ${{ success() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: daedalusX64-CTR
+          path: daedalusX64-CTR.tar.gz
 
-          - name: Prepare artifacts
-            run: |
-                tar -zcvf daedalusX64-Win-$(arch).tar.gz DaedalusX64\
-     
-          - name: Upload artifacts
-            if: ${{ success() }}
-            uses: actions/upload-artifact@v4
-            with:
-              name: daedalusX64-WIN
-              path: daedalusX64-WIN-$(arch).tar.gz
+  build-windows:
+      runs-on: windows-latest
+      env:
+        VCPKG_DEFAULT_TRIPLET: x64-windows
+      steps:
+        - uses: actions/checkout@v4
+
+        - uses: lukka/get-cmake@latest
+
+        - name: Setup a new (or from cache) vcpkg
+          uses: lukka/run-vcpkg@v11
+          with:
+            vcpkgGitCommitId: aa628ceb5f15f0c30d4d481f14fa5b2be2b4a658
+            runVcpkgInstall: true
+
+        - name: Run CMake config
+          run: |
+            cmake -S . -B build "-DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake" "-DVCPKG_TARGET_TRIPLET=x64-windows"
     
+        - name: Build
+          run: |
+            cmake --build build --config Release
+
+        - name: Prepare artifacts
+          run: |
+              tar -zcvf daedalusX64-Win-$(arch).tar.gz DaedalusX64\
+    
+        - name: Upload artifacts
+          if: ${{ success() }}
+          uses: actions/upload-artifact@v4
+          with:
+            name: daedalusX64-WIN
+            path: daedalusX64-WIN-$(arch).tar.gz
   

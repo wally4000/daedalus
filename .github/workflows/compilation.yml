@@ -67,28 +67,23 @@ jobs:
       env: 
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  build-containers:
+  build-psp:
     runs-on: ubuntu-latest
-    strategy:
-        matrix:
-          container:
-              - devkitpro/devkitarm:latest
-              - pspdev/pspdev:latest
+    container: 'pspdev/pspdev:latest'
+    env: 
+      BUILD: PSP
     steps:
-    - name : Build CTR Build
-      
-      container: ${{ matrix.container[0] }}
-      env: 
-        BUILD: 'CTR'
-      run: |
-        ./prepare.sh
-        ./build_daedalus.sh CTR
-    - name: Build PSP Build
-      container: ${{ matrix.container[1] }}
-      env:
-          BUILD: 'PSP'
-      run: ./build_daedalus.sh PSP
+        run: |
+        ./build_daedalus.sh PSP
 
-    - name: Prepare Archive
-      run: |
-          tar -zcvf DaedalusX64-$BUILD.tar.gz pspdev
+
+  build-ctr:
+    runs-on: ubuntu-latest
+    container: 'devkitpro/devkitarm:latest'
+    env:
+      BUILD: CTR
+    steps:
+        run: |
+      ./prepare.sh
+      ./build_daedalus.sh CTR
+

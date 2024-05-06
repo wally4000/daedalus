@@ -5,6 +5,7 @@
 
 # DaedalusX64 Team
 
+
 #Handle macOS first
 if [ "$(uname -s)" = "Darwin" ]; then
   ## Check if using brew
@@ -29,7 +30,7 @@ else
 
 fi
 # Use for CI
-if [[ ! -z " $DEVKITPRO/cmake/3DS.cmake" ]]; then
+if [[ ! -z "$DEVKITPRO/cmake/3DS.cmake" ]]; then
 echo "3DS Build Prep"
     sudo apt-get update 
     sudo apt-get -y install g++ libyaml-dev libmbedtls-dev

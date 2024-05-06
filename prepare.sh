@@ -5,15 +5,6 @@
 
 # DaedalusX64 Team
 
-#Detect 3DS / PSP
-if [[ ! -z "$PSPDEV " ]]; then
- export   BUILD=PSP
-elif [[ ! -z " $DEVKITPRO/cmake/3DS.cmake " ]]; then # Not going to be failsafe if the Devkitpro docker adds all the other stuff 
-
- export  BUILD=CTR
-fi
-
-
 #Handle macOS first
 if [ "$(uname -s)" = "Darwin" ]; then
   ## Check if using brew
@@ -38,7 +29,7 @@ else
 
 fi
 # Use for CI
-if [[ $BUILD == "CTR" ]]; then
+if [[ ! -z " $DEVKITPRO/cmake/3DS.cmake" ]]; then
 echo "3DS Build Prep"
     sudo apt-get update 
     sudo apt-get -y install g++ libyaml-dev libmbedtls-dev

@@ -3,9 +3,9 @@
 #This prepares the OS for installation
 
 #Detect 3DS / PSP
-if [ ! -z "$PSPDEV " ] then;
+if [[ ! -z "$PSPDEV " ]]; then
     BUILD=PSP
-elif [ ! -z " $DEVKITPRO/cmake/3DS.cmake "]; then # Not going to be failsafe if the Devkitpro docker adds all the other stuff 
+elif [[ ! -z " $DEVKITPRO/cmake/3DS.cmake " ]]; then # Not going to be failsafe if the Devkitpro docker adds all the other stuff 
 
     BUILD=CTR
 fi

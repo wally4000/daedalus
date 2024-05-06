@@ -72,10 +72,13 @@ jobs:
     container: 'pspdev/pspdev:latest'
     env: 
       BUILD: PSP
-    steps:
-        run: |
-        ./build_daedalus.sh PSP
-
+      steps:
+        - uses: actions/checkout@v4
+        
+        - name: PSP Build
+          run:  ./build_daedalus.sh PSP
+  
+  
 
   build-ctr:
     runs-on: ubuntu-latest
@@ -83,7 +86,10 @@ jobs:
     env:
       BUILD: CTR
     steps:
-        run: |
-      ./prepare.sh
-      ./build_daedalus.sh CTR
+      - uses: actions/checkout@v4
+      - name: Prepare OS
+        run: ./prepare.sh
+
+      - name: CTR Build
+        run:  ./build_daedalus.sh CTR
 

@@ -121,6 +121,7 @@ jobs:
 
       - name: Compile project
         run: | 
+          ./prepare.sh
           ./build_daedalus.sh CTR
 
       - name: Prepare artifacts

@@ -106,7 +106,7 @@ CUIContext::~CUIContext() {
 	SDL_DestroyRenderer(gSdlRenderer);
 	gSdlRenderer = nullptr;
 }
-CUIContext *	CUIContext::Create() { return new IUIContext; }
+std::shared_ptr<CUIContext>	CUIContext::Create() { return std::make_shared<IUIContext>(); }
 
 IUIContext::IUIContext()
 :	mCurrentFont( CDrawText::F_REGULAR )

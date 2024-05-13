@@ -39,7 +39,7 @@ CUIElementBag::~CUIElementBag()
 }
 
 
-void CUIElementBag::Draw( CUIContext * context, s32 min_x, s32 max_x, EAlignType halign, s32 y ) const
+void CUIElementBag::Draw(std::shared_ptr<CUIContext> context, s32 min_x, s32 max_x, EAlignType halign, s32 y ) const
 {
 	const s32 MINTOP = 25; //Only draw text below
 	const s32 MAXBOT = 247;	//Only draw text above
@@ -54,7 +54,7 @@ void CUIElementBag::Draw( CUIContext * context, s32 min_x, s32 max_x, EAlignType
 }
 
 
-void	CUIElementBag::DrawCentredVertically( CUIContext * context, s32 min_x, s32 min_y, s32 max_x, s32 max_y ) const
+void	CUIElementBag::DrawCentredVertically(std::shared_ptr<CUIContext> context, s32 min_x, s32 min_y, s32 max_x, s32 max_y ) const
 {
 	s32 total_height = 0;
 

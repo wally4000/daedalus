@@ -30,12 +30,12 @@ CUISetting::CUISetting( const char * name, const char * description )
 	,	mDescription( description )
 {}
 
-u32	CUISetting::GetHeight( CUIContext * context ) const
+u32	CUISetting::GetHeight(std::shared_ptr<CUIContext> context ) const
 {
 	return context->GetFontHeight() + 2;
 }
 
-void CUISetting::Draw( CUIContext * context, s32 min_x, s32 max_x, EAlignType halign, s32 y, bool selected ) const
+void CUISetting::Draw(std::shared_ptr<CUIContext> context, s32 min_x, s32 max_x, EAlignType halign, s32 y, bool selected ) const
 {
 	bool		read_only = IsReadOnly();
 

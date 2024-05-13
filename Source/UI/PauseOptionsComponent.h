@@ -28,9 +28,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 class CPauseOptionsComponent : public CUIComponent
 {
 	public:
-		CPauseOptionsComponent( CUIContext * p_context );
+		CPauseOptionsComponent( std::shared_ptr<CUIContext> p_context );
 		virtual ~CPauseOptionsComponent();
-		static CPauseOptionsComponent *	Create( CUIContext * p_context, std::function<void()> on_resume, std::function<void()> on_reset );
+		static std::shared_ptr<CPauseOptionsComponent>	Create( std::shared_ptr<CUIContext> p_context, std::function<void()> on_resume, std::function<void()> on_reset );
 };
 
 #endif // SYSPSP_UI_PAUSEOPTIONSCOMPONENT_H_

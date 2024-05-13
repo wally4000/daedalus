@@ -35,8 +35,8 @@ public:
 
 	virtual bool			IsSelectable() const						{ return false; }
 
-	virtual u32				GetHeight( CUIContext * context ) const		{ return mHeight; }
-	virtual void			Draw( CUIContext * context, s32 min_x, s32 max_x, EAlignType halign, s32 y, bool selected ) const {}
+	virtual u32				GetHeight(std::shared_ptr<CUIContext> context ) const		{ return mHeight; }
+	virtual void			Draw(std::shared_ptr<CUIContext> context, s32 min_x, s32 max_x, EAlignType halign, s32 y, bool selected ) const {}
 
 	virtual const char *	GetDescription() const	{ return ""; }
 

@@ -69,7 +69,7 @@ class IPauseScreen : public CPauseScreen, public CUIScreen
 {
 	public:
 
-		IPauseScreen( CUIContext * p_context );
+		IPauseScreen( std::shared_ptr<CUIContext> p_context );
 		~IPauseScreen();
 
 		// CPauseScreen
@@ -102,19 +102,19 @@ class IPauseScreen : public CPauseScreen, public CUIScreen
 
 		EMenuOption					mCurrentOption;
 
-		CUIComponent *				mOptionComponents[ NUM_MENU_OPTIONS ];
+		std::shared_ptr<CUIComponent>	mOptionComponents[ NUM_MENU_OPTIONS ];
 };
 
 
 CPauseScreen::~CPauseScreen() {}
 
-CPauseScreen *	CPauseScreen::Create( CUIContext * p_context )
+std::shared_ptr<CPauseScreen>	CPauseScreen::Create( std::shared_ptr<CUIContext> p_context )
 {
-	return new IPauseScreen( p_context );
+	return std::make_shared<IPauseScreen>( p_context );
 }
 
 
-IPauseScreen::IPauseScreen( CUIContext * p_context )
+IPauseScreen::IPauseScreen( std::shared_ptr<CUIContext> p_context )
 :	CUIScreen( p_context )
 ,	mIsFinished( false )
 ,	mCurrentOption( MO_PAUSE_OPTIONS )
@@ -136,13 +136,7 @@ IPauseScreen::IPauseScreen( CUIContext * p_context )
 	#endif
 }
 
-IPauseScreen::~IPauseScreen()
-{
-	for( u32 i = 0; i < NUM_MENU_OPTIONS; ++i )
-	{
-		delete mOptionComponents[ i ];
-	}
-}
+IPauseScreen::~IPauseScreen() {}
 
 
 EMenuOption		IPauseScreen::GetPreviousValidOption() const

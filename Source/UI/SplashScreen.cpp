@@ -38,7 +38,7 @@ class ISplashScreen : public CSplashScreen, public CUIScreen
 {
 	public:
 
-		ISplashScreen( CUIContext * p_context );
+		ISplashScreen( std::shared_ptr<CUIContext> p_context );
 		~ISplashScreen();
 
 		// CSplashScreen
@@ -59,13 +59,13 @@ class ISplashScreen : public CSplashScreen, public CUIScreen
 CSplashScreen::~CSplashScreen() {}
 
 
-CSplashScreen *	CSplashScreen::Create( CUIContext * p_context )
+std::unique_ptr<CSplashScreen>	CSplashScreen::Create( std::shared_ptr<CUIContext> p_context )
 {
-	return new ISplashScreen( p_context );
+	return std::make_unique<ISplashScreen>( p_context );
 }
 
 
-ISplashScreen::ISplashScreen( CUIContext * p_context )
+ISplashScreen::ISplashScreen( std::shared_ptr<CUIContext> p_context )
 :	CUIScreen( p_context )
 ,	mIsFinished( false )
 ,	mElapsedTime( 0.0f )

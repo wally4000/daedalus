@@ -40,8 +40,8 @@ public:
 
 	virtual	void			OnSelected() = 0;
 
-	virtual u32				GetHeight( CUIContext * context ) const;
-	virtual void			Draw( CUIContext * context, s32 min_x, s32 max_x, EAlignType halign, s32 y, bool selected ) const;
+	virtual u32				GetHeight(std::shared_ptr<CUIContext> context ) const;
+	virtual void			Draw(std::shared_ptr<CUIContext> context, s32 min_x, s32 max_x, EAlignType halign, s32 y, bool selected ) const;
 
 	virtual const char *	GetName() const			{ return mName.c_str(); }
 	virtual const char *	GetDescription() const	{ return mDescription.c_str(); }

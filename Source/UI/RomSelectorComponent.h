@@ -27,10 +27,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 class CRomSelectorComponent : public CUIComponent
 {
 	public:
-		CRomSelectorComponent( CUIContext * p_context );
+		CRomSelectorComponent( std::shared_ptr<CUIContext> p_context );
 		virtual ~CRomSelectorComponent();
 
-		static CRomSelectorComponent *	Create( CUIContext * p_context, std::function<void (const char * )> );
+		static std::shared_ptr<CRomSelectorComponent>	Create( std::shared_ptr<CUIContext> p_context, std::function<void (const char * )> );
 };
 
 #endif // SYSPSP_UI_ROMSELECTORCOMPONENT_H_

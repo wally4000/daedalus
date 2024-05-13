@@ -162,7 +162,7 @@ namespace
 	class CAdjustDeadzoneSetting : public CUISetting
 	{
 	public:
-		CAdjustDeadzoneSetting( CUIContext * p_context, const char * name, const char * description )
+		CAdjustDeadzoneSetting( std::shared_ptr<CUIContext> p_context, const char * name, const char * description )
 			:	CUISetting( name, description )
 			,	mpContext( p_context )
 		{
@@ -170,9 +170,8 @@ namespace
 
 		virtual	void			OnSelected()
 		{
-			CAdjustDeadzoneScreen *	adjust_deadzone( CAdjustDeadzoneScreen::Create( mpContext ) );
+			std::shared_ptr<CAdjustDeadzoneScreen> adjust_deadzone( CAdjustDeadzoneScreen::Create( mpContext ) );
 			adjust_deadzone->Run();
-			delete adjust_deadzone;
 		}
 
 		virtual const char *	GetSettingName() const
@@ -186,13 +185,13 @@ namespace
 		}
 
 	private:
-		CUIContext *			mpContext;
+		std::shared_ptr<CUIContext>			mpContext;
 	};
 
 	class CResetSetting : public CUISetting
 	{
 	public:
-		CResetSetting(  CUIContext * p_context, const char * name, const char * description )
+		CResetSetting(  std::shared_ptr<CUIContext> p_context, const char * name, const char * description )
 			:	CUISetting( name, description )
 			,	mpContext( p_context )
 		{
@@ -233,7 +232,7 @@ namespace
 		}
 
 	private:
-		CUIContext *			mpContext;
+		std::shared_ptr<CUIContext>			mpContext;
 	};
 
 	class CColorSetting : public CUISetting
@@ -294,7 +293,7 @@ class IGlobalSettingsComponent : public CGlobalSettingsComponent
 {
 	public:
 
-		IGlobalSettingsComponent( CUIContext * p_context );
+		IGlobalSettingsComponent( std::shared_ptr<CUIContext> p_context );
 		~IGlobalSettingsComponent();
 
 		// CUIComponent
@@ -306,7 +305,7 @@ class IGlobalSettingsComponent : public CGlobalSettingsComponent
 };
 
 
-CGlobalSettingsComponent::CGlobalSettingsComponent( CUIContext * p_context )
+CGlobalSettingsComponent::CGlobalSettingsComponent( std::shared_ptr<CUIContext> p_context )
 :	CUIComponent( p_context )
 {}
 
@@ -314,12 +313,12 @@ CGlobalSettingsComponent::CGlobalSettingsComponent( CUIContext * p_context )
 CGlobalSettingsComponent::~CGlobalSettingsComponent() {}
 
 
-CGlobalSettingsComponent *	CGlobalSettingsComponent::Create( CUIContext * p_context )
+std::shared_ptr<CGlobalSettingsComponent>	CGlobalSettingsComponent::Create( std::shared_ptr<CUIContext> p_context )
 {
-	return new IGlobalSettingsComponent( p_context );
+	return std::make_shared<IGlobalSettingsComponent>( p_context );
 }
 
-IGlobalSettingsComponent::IGlobalSettingsComponent( CUIContext * p_context )
+IGlobalSettingsComponent::IGlobalSettingsComponent( std::shared_ptr<CUIContext> p_context )
 :	CGlobalSettingsComponent( p_context )
 {
 

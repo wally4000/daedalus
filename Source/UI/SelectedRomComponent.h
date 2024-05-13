@@ -24,15 +24,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "UIComponent.h"
 #include <functional>
 
+
 class RomID;
 
 class CSelectedRomComponent : public CUIComponent
 {
 	public:
-		CSelectedRomComponent( CUIContext * p_context );
+		CSelectedRomComponent( std::shared_ptr<CUIContext> p_context );
 		virtual ~CSelectedRomComponent();
 
-		static CSelectedRomComponent *	Create( CUIContext * p_context, std::function<void()> on_start_emulation );
+		static std::shared_ptr<CSelectedRomComponent>	Create( std::shared_ptr<CUIContext> p_context, std::function<void()> on_start_emulation );
 
 		virtual void					SetRomID( const RomID & rom_id ) = 0;
 };

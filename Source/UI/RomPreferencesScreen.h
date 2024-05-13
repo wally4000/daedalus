@@ -29,7 +29,7 @@ class CRomPreferencesScreen
 	public:
 		virtual ~CRomPreferencesScreen();
 
-		static CRomPreferencesScreen *	Create( CUIContext * p_context, const RomID & rom_id );
+		static CRomPreferencesScreen *	Create( std::shared_ptr<CUIContext> p_context, const RomID & rom_id );
 
 		virtual void				Run() = 0;
 };

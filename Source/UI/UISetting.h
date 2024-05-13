@@ -40,8 +40,8 @@ public:
 	virtual bool			IsReadOnly() const		{ return false; }
 	//virtual bool			IsSelectable() const	{ return !IsReadOnly(); }		// We actually want to be able to read the descriptions of various settings, so don't do this.
 
-	virtual u32				GetHeight( CUIContext * context ) const;
-	virtual void			Draw( CUIContext * context, s32 min_x, s32 max_x, EAlignType halign, s32 y, bool selected ) const;
+	virtual u32				GetHeight(std::shared_ptr<CUIContext> context ) const;
+	virtual void			Draw(std::shared_ptr<CUIContext> context, s32 min_x, s32 max_x, EAlignType halign, s32 y, bool selected ) const;
 
 private:
 	const char *			mName;

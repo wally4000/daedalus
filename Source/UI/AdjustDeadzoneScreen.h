@@ -21,14 +21,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef SYSPSP_UI_ADJUSTDEADZONESCREEN_H_
 #define SYSPSP_UI_ADJUSTDEADZONESCREEN_H_
 
+
+#include <memory>
 class CUIContext;
+
 
 class CAdjustDeadzoneScreen
 {
 	public:
 		virtual ~CAdjustDeadzoneScreen();
 
-		static CAdjustDeadzoneScreen *	Create( CUIContext * p_context );
+		static std::shared_ptr<CAdjustDeadzoneScreen> Create( std::shared_ptr<CUIContext> p_context );
 
 		virtual void				Run() = 0;
 };

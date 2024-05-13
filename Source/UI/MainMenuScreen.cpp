@@ -75,7 +75,7 @@ class IMainMenuScreen : public CMainMenuScreen, public CUIScreen
 {
 	public:
 
-		IMainMenuScreen( CUIContext * p_context );
+		IMainMenuScreen( std::shared_ptr<CUIContext> p_context );
 		~IMainMenuScreen();
 
 		// CMainMenuScreen
@@ -109,8 +109,8 @@ class IMainMenuScreen : public CMainMenuScreen, public CUIScreen
 		s32							mCurrentOption;
 		f32							mCurrentDisplayOption;
 
-		CUIComponent *				mOptionComponents[ NUM_MENU_OPTIONS ];
-		CSelectedRomComponent *		mSelectedRomComponent;
+		std::shared_ptr<CUIComponent> 	mOptionComponents[ NUM_MENU_OPTIONS ];
+		std::shared_ptr<CSelectedRomComponent>		mSelectedRomComponent;
 
 		std::string					mRomFilename;
 		RomID						mRomID;
@@ -119,22 +119,18 @@ class IMainMenuScreen : public CMainMenuScreen, public CUIScreen
 
 CMainMenuScreen::~CMainMenuScreen() {}
 
-CMainMenuScreen *	CMainMenuScreen::Create( CUIContext * p_context )
+std::shared_ptr<CMainMenuScreen> CMainMenuScreen::Create( std::shared_ptr<CUIContext> p_context )
 {
-	return new IMainMenuScreen( p_context );
+	return std::make_shared<IMainMenuScreen>( p_context );
 }
 
 
-IMainMenuScreen::IMainMenuScreen( CUIContext * p_context )
+IMainMenuScreen::IMainMenuScreen( std::shared_ptr<CUIContext> p_context )
 :	CUIScreen( p_context )
 ,	mIsFinished( false )
 ,	mCurrentOption( MO_ROMS )
 ,	mCurrentDisplayOption( mCurrentOption )
 {
-	for( u32 i {0}; i < NUM_MENU_OPTIONS; ++i )
-	{
-		mOptionComponents[ i ] = nullptr;
-	}
 
 	mSelectedRomComponent = CSelectedRomComponent::Create( mpContext, [this]() { OnStartEmulation();} );
 
@@ -148,10 +144,6 @@ IMainMenuScreen::IMainMenuScreen( CUIContext * p_context )
 
 IMainMenuScreen::~IMainMenuScreen()
 {
-	for( u32 i = 0; i < NUM_MENU_OPTIONS; ++i )
-	{
-		delete mOptionComponents[ i ];
-	}
 }
 
 EMenuOption	IMainMenuScreen::AsMenuOption( s32 option )
@@ -372,14 +364,11 @@ void DisplayRomsAndChoose(bool show_splash)
 		{
 			auto p_splash = CSplashScreen::Create( p_context );
 			p_splash->Run();
-			delete p_splash;
 		}
 
 		auto p_main_menu = CMainMenuScreen::Create( p_context );
 		p_main_menu->Run();
-		delete p_main_menu;
 	}
 
-	delete p_context;
 }
 

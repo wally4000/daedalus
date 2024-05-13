@@ -23,13 +23,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "UIComponent.h"
 
-class CGlobalSettingsComponent : public CUIComponent
+class  CGlobalSettingsComponent : public CUIComponent
 {
 	public:
-		CGlobalSettingsComponent( CUIContext * p_context );
+		CGlobalSettingsComponent( std::shared_ptr<CUIContext> p_context );
 		virtual ~CGlobalSettingsComponent();
 
-		static CGlobalSettingsComponent *	Create( CUIContext * p_context );
+		static std::shared_ptr<CGlobalSettingsComponent> Create( std::shared_ptr<CUIContext> p_context );
 };
 
 #endif // SYSPSP_UI_GLOBALSETTINGSCOMPONENT_H_

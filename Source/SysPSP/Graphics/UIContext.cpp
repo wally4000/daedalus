@@ -135,7 +135,7 @@ class IUIContext : public CUIContext
 };
 
 CUIContext::~CUIContext() {}
-CUIContext *	CUIContext::Create() { return new IUIContext; }
+std::shared_ptr <CUIContext>::Create() { return std::make_shared<IUIContext()>; }
 
 
 

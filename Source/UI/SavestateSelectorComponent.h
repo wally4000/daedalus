@@ -27,7 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 class CSavestateSelectorComponent : public CUIComponent
 {
 	public:
-		CSavestateSelectorComponent( CUIContext * p_context );
+		CSavestateSelectorComponent( std::shared_ptr<CUIContext> p_context );
 		virtual ~CSavestateSelectorComponent();
 
 		enum EAccessType
@@ -36,7 +36,7 @@ class CSavestateSelectorComponent : public CUIComponent
 			AT_LOADING,
 		};
 
-		static CSavestateSelectorComponent *	Create( CUIContext * p_context, EAccessType access_type, std::function<void (const char *)>, const char *running_rom );
+		static std::shared_ptr<CSavestateSelectorComponent>	Create( std::shared_ptr<CUIContext> p_context, EAccessType access_type, std::function<void (const char *)>, const char *running_rom );
 		void LoadState();
 		void SaveState();
 };

@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "Utility/Timer.h"
 
-CUIScreen::CUIScreen( CUIContext * p_context )
+CUIScreen::CUIScreen( std::shared_ptr<CUIContext> p_context )
 :	mpContext( p_context )
 {}
 

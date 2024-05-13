@@ -86,14 +86,13 @@ void HandleEndOfFrame()
 		CGraphicsContext::Get()->SwitchToLcdDisplay();
 		CGraphicsContext::Get()->ClearAllSurfaces();
 
-		CUIContext *p_context(CUIContext::Create());
+		std::shared_ptr<CUIContext> p_context = CUIContext::Create();
 
 		if (p_context != NULL)
 		{
-			CPauseScreen *pause(CPauseScreen::Create(p_context));
+			std::shared_ptr<CPauseScreen> pause = CPauseScreen::Create(p_context);
 			pause->Run();
-			delete pause;
-			delete p_context;
+
 		}
 
 		// Commit the preferences database before starting to run

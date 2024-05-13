@@ -22,13 +22,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define SYSPSP_UI_PAUSESCREEN_H_
 
 class CUIContext;
-
+#include  <memory> 
 class CPauseScreen
 {
 	public:
 		virtual ~CPauseScreen();
 
-		static CPauseScreen *	Create( CUIContext * p_context );
+		static std::shared_ptr<CPauseScreen>	Create( std::shared_ptr<CUIContext> p_context );
 
 		virtual void				Run() = 0;
 };

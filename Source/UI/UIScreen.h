@@ -31,7 +31,7 @@ class CUIComponent;
 class CUIScreen
 {
 	public:
-		CUIScreen( CUIContext * p_context );
+		CUIScreen( std::shared_ptr<CUIContext> p_context );
 		virtual ~CUIScreen();
 
 		virtual void				Update( float elapsed_time, const v2 & stick, u32 old_buttons, u32 new_buttons ) = 0;
@@ -41,7 +41,7 @@ class CUIScreen
 		void						Run();
 
 	protected:
-		CUIContext *				mpContext;
+		std::shared_ptr<CUIContext>		mpContext;
 
 };
 

@@ -204,7 +204,7 @@ class IRomPreferencesScreen : public CRomPreferencesScreen, public CUIScreen
 {
 	public:
 
-		IRomPreferencesScreen( CUIContext * p_context, const RomID & rom_id );
+		IRomPreferencesScreen( std::shared_ptr<CUIContext> p_context, const RomID & rom_id );
 		~IRomPreferencesScreen();
 
 		// CRomPreferencesScreen
@@ -240,13 +240,13 @@ CRomPreferencesScreen::~CRomPreferencesScreen()
 
 //
 
-CRomPreferencesScreen *	CRomPreferencesScreen::Create( CUIContext * p_context, const RomID & rom_id )
+CRomPreferencesScreen *	CRomPreferencesScreen::Create( std::shared_ptr<CUIContext> p_context, const RomID & rom_id )
 {
 	return new IRomPreferencesScreen( p_context, rom_id );
 }
 
 
-IRomPreferencesScreen::IRomPreferencesScreen( CUIContext * p_context, const RomID & rom_id )
+IRomPreferencesScreen::IRomPreferencesScreen( std::shared_ptr<CUIContext> p_context, const RomID & rom_id )
 :	CUIScreen( p_context )
 ,	mRomID( rom_id )
 ,	mRomName( "?" )

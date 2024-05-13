@@ -44,7 +44,7 @@ class ICheatOptionsScreen : public CCheatOptionsScreen, public CUIScreen
 {
 	public:
 
-		ICheatOptionsScreen( CUIContext * p_context, const RomID & rom_id );
+		ICheatOptionsScreen( std::shared_ptr<CUIContext> p_context, const RomID & rom_id );
 		~ICheatOptionsScreen();
 
 		// CCheatOptionsScreen
@@ -134,13 +134,13 @@ class CCheatNotFound : public CUISetting
 
 CCheatOptionsScreen::~CCheatOptionsScreen() {}
 
-CCheatOptionsScreen *	CCheatOptionsScreen::Create( CUIContext * p_context, const RomID & rom_id )
+CCheatOptionsScreen *	CCheatOptionsScreen::Create( std::shared_ptr<CUIContext> p_context, const RomID & rom_id )
 {
 	return new ICheatOptionsScreen( p_context, rom_id );
 }
 
 
-ICheatOptionsScreen::ICheatOptionsScreen( CUIContext * p_context, const RomID & rom_id )
+ICheatOptionsScreen::ICheatOptionsScreen( std::shared_ptr<CUIContext> p_context, const RomID & rom_id )
 :	CUIScreen( p_context )
 ,	mRomID( rom_id )
 ,	mRomName( "?" )

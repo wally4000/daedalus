@@ -151,7 +151,7 @@ class IRomSelectorComponent : public CRomSelectorComponent
 		using AlphaMap = std::map< ECategory, u32 >;
 	public:
 
-		IRomSelectorComponent( CUIContext * p_context, std::function<void(const char *)> on_rom_selected );
+		IRomSelectorComponent( std::shared_ptr<CUIContext> p_context, std::function<void(const char *)> on_rom_selected );
 		~IRomSelectorComponent();
 
 		// CUIComponent
@@ -168,7 +168,7 @@ class IRomSelectorComponent : public CRomSelectorComponent
 
 				ECategory			GetCurrentCategory() const;
 
-				void				DrawInfoText( CUIContext * p_context, s32 y, const char * field_txt, const char * value_txt );
+				void				DrawInfoText( std::shared_ptr<CUIContext> p_context, s32 y, const char * field_txt, const char * value_txt );
 
 	private:
 		std::function<void( const char *)>	OnRomSelected;
@@ -192,20 +192,20 @@ class IRomSelectorComponent : public CRomSelectorComponent
 };
 
 
-CRomSelectorComponent::CRomSelectorComponent( CUIContext * p_context )
+CRomSelectorComponent::CRomSelectorComponent( std::shared_ptr<CUIContext> p_context )
 :	CUIComponent( p_context )
 {}
 
 CRomSelectorComponent::~CRomSelectorComponent() {}
 
 
-CRomSelectorComponent *	CRomSelectorComponent::Create( CUIContext * p_context, std::function<void(const char *)> on_rom_selected )
+std::shared_ptr<CRomSelectorComponent>	CRomSelectorComponent::Create( std::shared_ptr<CUIContext> p_context, std::function<void(const char *)> on_rom_selected )
 {
-	return new IRomSelectorComponent( p_context, on_rom_selected );
+	return std::make_shared<IRomSelectorComponent>( p_context, on_rom_selected );
 }
 
 
-IRomSelectorComponent::IRomSelectorComponent( CUIContext * p_context, std::function<void(const char *)> on_rom_selected )
+IRomSelectorComponent::IRomSelectorComponent( std::shared_ptr<CUIContext> p_context, std::function<void(const char *)> on_rom_selected )
 :	CRomSelectorComponent( p_context )
 ,	OnRomSelected( on_rom_selected )
 //,	mCurrentSelection( 0 )
@@ -245,7 +245,7 @@ IRomSelectorComponent::~IRomSelectorComponent()
 	for(RomInfoList::iterator it = mRomsList.begin(); it != mRomsList.end(); ++it)
 	{
 		SRomInfo *	p_rominfo( *it );
-
+		
 		delete p_rominfo;
 	}
 	mRomsList.clear();
@@ -330,7 +330,7 @@ ECategory	IRomSelectorComponent::GetCurrentCategory() const
 }
 
 
-void IRomSelectorComponent::DrawInfoText(  CUIContext * p_context, s32 y, const char * field_txt, const char * value_txt  )
+void IRomSelectorComponent::DrawInfoText(  std::shared_ptr<CUIContext> p_context, s32 y, const char * field_txt, const char * value_txt  )
 {
 	c32			colour(	p_context->GetDefaultTextColour() );
 

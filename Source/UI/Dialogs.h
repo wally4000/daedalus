@@ -20,12 +20,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef SYSPSP_UI_DIALOGS_H_
 #define SYSPSP_UI_DIALOGS_H_
 
+#include <memory>
+
 class CUIContext;
 class CDialog
 {
 public:
     virtual ~CDialog();
-	bool Render(CUIContext * p_context, const char * message, bool only_dialog);
+	bool Render(std::shared_ptr<CUIContext> p_context, const char * message, bool only_dialog);
 };
 
 extern CDialog				gShowDialog;

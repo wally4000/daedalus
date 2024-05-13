@@ -43,8 +43,8 @@ public:
 	virtual	void			OnNext()				{}
 	virtual	void			OnPrevious()			{}
 
-	virtual u32				GetHeight( CUIContext * context ) const = 0;
-	virtual void			Draw( CUIContext * context, s32 min_x, s32 max_x, EAlignType halign, s32 y, bool selected ) const = 0;
+	virtual u32				GetHeight(std::shared_ptr<CUIContext> context ) const = 0;
+	virtual void			Draw(std::shared_ptr<CUIContext> context, s32 min_x, s32 max_x, EAlignType halign, s32 y, bool selected ) const = 0;
 
 	virtual const char *	GetDescription() const = 0;
 
@@ -78,8 +78,8 @@ public:
 	u32		GetSelectedIndex()	{ return mSelectedIdx; }
 	CUIElement *	GetSelectedElement() const		{ if( mSelectedIdx < mElements.size() ) return mElements[ mSelectedIdx ]; return NULL; }
 
-	void			Draw( CUIContext * context, s32 min_x, s32 max_x, EAlignType halign, s32 y ) const;
-	void			DrawCentredVertically( CUIContext * context, s32 min_x, s32 min_y, s32 max_x, s32 max_y ) const;
+	void			Draw(std::shared_ptr<CUIContext> context, s32 min_x, s32 max_x, EAlignType halign, s32 y ) const;
+	void			DrawCentredVertically(std::shared_ptr<CUIContext> context, s32 min_x, s32 min_y, s32 max_x, s32 max_y ) const;
 
 private:
 	std::vector< CUIElement * >			mElements;

@@ -40,7 +40,7 @@ class ISelectedRomComponent : public CSelectedRomComponent
 {
 	public:
 
-		ISelectedRomComponent( CUIContext * p_context, std::function<void()> on_start_emulation );
+		ISelectedRomComponent( std::shared_ptr<CUIContext> p_context, std::function<void()> on_start_emulation );
 		~ISelectedRomComponent();
 
 		// CUIComponent
@@ -66,7 +66,7 @@ class ISelectedRomComponent : public CSelectedRomComponent
 
 //
 
-CSelectedRomComponent::CSelectedRomComponent( CUIContext * p_context )
+CSelectedRomComponent::CSelectedRomComponent( std::shared_ptr<CUIContext> p_context )
 :	CUIComponent( p_context )
 {
 }
@@ -81,15 +81,14 @@ CSelectedRomComponent::~CSelectedRomComponent()
 
 //
 
-CSelectedRomComponent *	CSelectedRomComponent::Create( CUIContext * p_context, std::function<void()> on_start_emulation )
+std::shared_ptr<CSelectedRomComponent> 	CSelectedRomComponent::Create( std::shared_ptr<CUIContext> p_context, std::function<void()> on_start_emulation )
 {
-	return new ISelectedRomComponent( p_context, on_start_emulation );
+	return std::make_shared<ISelectedRomComponent>( p_context, on_start_emulation );
 }
 
 
-//
 
-ISelectedRomComponent::ISelectedRomComponent( CUIContext * p_context, std::function<void()> on_start_emulation )
+ISelectedRomComponent::ISelectedRomComponent( std::shared_ptr<CUIContext> p_context, std::function<void()> on_start_emulation )
 :	CSelectedRomComponent( p_context )
 ,	OnStartEmulation( on_start_emulation )
 {

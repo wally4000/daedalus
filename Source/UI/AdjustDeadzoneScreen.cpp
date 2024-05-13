@@ -43,7 +43,7 @@ class IAdjustDeadzoneScreen : public CAdjustDeadzoneScreen, public CUIScreen
 {
 	public:
 
-		IAdjustDeadzoneScreen( CUIContext * p_context );
+		IAdjustDeadzoneScreen( std::shared_ptr<CUIContext> p_context );
 		~IAdjustDeadzoneScreen();
 
 		virtual void				Run();
@@ -70,13 +70,13 @@ CAdjustDeadzoneScreen::~CAdjustDeadzoneScreen() {}
 
 
 
-CAdjustDeadzoneScreen *	CAdjustDeadzoneScreen::Create( CUIContext * p_context )
+std::shared_ptr<CAdjustDeadzoneScreen>	CAdjustDeadzoneScreen::Create( std::shared_ptr<CUIContext> p_context )
 {
-	return new IAdjustDeadzoneScreen( p_context );
+	return std::make_shared<IAdjustDeadzoneScreen>( p_context );
 }
 
 
-IAdjustDeadzoneScreen::IAdjustDeadzoneScreen( CUIContext * p_context )
+IAdjustDeadzoneScreen::IAdjustDeadzoneScreen( std::shared_ptr<CUIContext> p_context )
 :	CUIScreen( p_context )
 ,	mIsFinished( false )
 ,	mPspStick( 0.0f, 0.0f )

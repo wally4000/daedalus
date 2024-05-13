@@ -25,14 +25,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "UIContext.h"
 
 #include "DrawTextUtilities.h"
-
-CUIComponent::CUIComponent( CUIContext * p_context )
+#include <memory>
+CUIComponent::CUIComponent( std::shared_ptr<CUIContext> p_context )
 :	mpContext( p_context )
 {}
 
 CUIComponent::~CUIComponent() {}
 
-CUIComponentScreen::CUIComponentScreen( CUIContext * p_context, CUIComponent * component, const char * title )
+CUIComponentScreen::CUIComponentScreen( std::shared_ptr<CUIContext> p_context, std::shared_ptr<CUIComponent> component, const char * title )
 :	CUIScreen( p_context )
 ,	mComponent( component )
 ,	mTitle( title )
@@ -40,14 +40,14 @@ CUIComponentScreen::CUIComponentScreen( CUIContext * p_context, CUIComponent * c
 }
 
 
-CUIComponentScreen::~CUIComponentScreen()
-{
-	delete mComponent;
-}
+CUIComponentScreen::~CUIComponentScreen() {}
 
-CUIComponentScreen *	CUIComponentScreen::Create( CUIContext * p_context, CUIComponent * component, const char * title )
+
+
+
+std::shared_ptr<CUIComponentScreen>	CUIComponentScreen::Create( std::shared_ptr<CUIContext> p_context, std::shared_ptr<CUIComponent> component, const char * title )
 {
-	return new CUIComponentScreen( p_context, component, title );
+	return std::make_shared<CUIComponentScreen>( p_context, component, title );
 }
 
 

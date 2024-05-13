@@ -42,7 +42,7 @@ class IAdvancedOptionsScreen : public CAdvancedOptionsScreen, public CUIScreen
 {
 	public:
 
-		IAdvancedOptionsScreen( CUIContext * p_context, const RomID & rom_id );
+		IAdvancedOptionsScreen( std::shared_ptr<CUIContext> p_context, const RomID & rom_id );
 		~IAdvancedOptionsScreen();
 
 		// CAdvancedOptionsScreen
@@ -69,13 +69,13 @@ class IAdvancedOptionsScreen : public CAdvancedOptionsScreen, public CUIScreen
 
 CAdvancedOptionsScreen::~CAdvancedOptionsScreen() {}
 
-CAdvancedOptionsScreen *	CAdvancedOptionsScreen::Create( CUIContext * p_context, const RomID & rom_id )
+CAdvancedOptionsScreen *	CAdvancedOptionsScreen::Create( std::shared_ptr<CUIContext> p_context, const RomID & rom_id )
 {
 	return new IAdvancedOptionsScreen( p_context, rom_id );
 }
 
 
-IAdvancedOptionsScreen::IAdvancedOptionsScreen( CUIContext * p_context, const RomID & rom_id )
+IAdvancedOptionsScreen::IAdvancedOptionsScreen( std::shared_ptr<CUIContext> p_context, const RomID & rom_id )
 :	CUIScreen( p_context )
 ,	mRomID( rom_id )
 ,	mRomName( "?" )

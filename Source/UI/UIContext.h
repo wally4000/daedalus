@@ -33,7 +33,7 @@ class CUIContext
 	public://
 		virtual ~CUIContext();
 
-		static CUIContext *			Create();
+		static std::shared_ptr<CUIContext>			Create();
 
 		virtual void				BeginRender() = 0;
 		virtual void				EndRender() = 0;
@@ -85,7 +85,7 @@ class CUIContext
 
 		virtual void				SetFontStyle( EFontStyle font_style ) = 0;
 
-				u32					DrawText( s32 x, s32 y, const char * text, c32 colour )																{ return DrawText( x, y, text, strlen( text ), colour ); }
+				u32					DrawText( s32 x, s32 y, const std::string text, c32 colour )																{ return DrawText( x, y, text, text.), colour ); }
 				u32					DrawText( s32 x, s32 y, const char * text, c32 colour, c32 drop_colour )											{ return DrawText( x, y, text, strlen( text ), colour, drop_colour ); }
 				u32					DrawTextScale( s32 x, s32 y, float scale, const char * text, c32 colour )											{ return DrawTextScale( x, y, scale,text, strlen( text ), colour ); }
 				u32					DrawTextScale( s32 x, s32 y, float scale, const char * text, c32 colour, c32 drop_colour )							{ return DrawTextScale( x, y, scale,text, strlen( text ), colour, drop_colour ); }

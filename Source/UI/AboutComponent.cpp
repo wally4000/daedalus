@@ -40,7 +40,7 @@ class IAboutComponent : public CAboutComponent
 {
 	public:
 
-		IAboutComponent( CUIContext * p_context );
+		IAboutComponent( std::shared_ptr<CUIContext> p_context );
 		~IAboutComponent();
 
 		// CUIComponent
@@ -52,7 +52,7 @@ class IAboutComponent : public CAboutComponent
 };
 
 
-CAboutComponent::CAboutComponent( CUIContext * p_context )
+CAboutComponent::CAboutComponent( std::shared_ptr<CUIContext> p_context )
 :	CUIComponent( p_context )
  {}
 
@@ -60,12 +60,12 @@ CAboutComponent::CAboutComponent( CUIContext * p_context )
 CAboutComponent::~CAboutComponent() {}
 
 
-CAboutComponent *	CAboutComponent::Create( CUIContext * p_context )
+std::shared_ptr<CAboutComponent> CAboutComponent::Create( std::shared_ptr<CUIContext> p_context )
 {
-	return new IAboutComponent( p_context );
+	return std::make_shared<IAboutComponent>( p_context );
 }
 
-IAboutComponent::IAboutComponent( CUIContext * p_context )
+IAboutComponent::IAboutComponent( std::shared_ptr<CUIContext> p_context )
 :	CAboutComponent( p_context )
 ,	mpTexture( CNativeTexture::CreateFromPng( LOGO_FILENAME, TexFmt_8888 ) )
 {}

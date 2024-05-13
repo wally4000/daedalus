@@ -46,7 +46,7 @@ class ISavestateSelectorComponent : public CSavestateSelectorComponent
 {
 	public:
 
-		ISavestateSelectorComponent( CUIContext * p_context, EAccessType accetype, std::function<void (const char *)> on_slot_selected, const char *running_rom );
+		ISavestateSelectorComponent( std::shared_ptr<CUIContext> p_context, EAccessType accetype, std::function<void (const char *)> on_slot_selected, const char *running_rom );
 		~ISavestateSelectorComponent();
 
 		// CUIScreen
@@ -87,14 +87,14 @@ class ISavestateSelectorComponent : public CSavestateSelectorComponent
 CSavestateSelectorComponent::~CSavestateSelectorComponent() {}
 
 
-CSavestateSelectorComponent::CSavestateSelectorComponent( CUIContext * p_context )
+CSavestateSelectorComponent::CSavestateSelectorComponent( std::shared_ptr<CUIContext> p_context )
 :	CUIComponent( p_context )
 {}
 
 
-CSavestateSelectorComponent *	CSavestateSelectorComponent::Create( CUIContext * p_context, EAccessType accetype, std::function<void(const char *)> on_slot_selected, const char *running_rom )
+std::shared_ptr<CSavestateSelectorComponent>	CSavestateSelectorComponent::Create( std::shared_ptr<CUIContext> p_context, EAccessType accetype, std::function<void(const char *)> on_slot_selected, const char *running_rom )
 {
-	return new ISavestateSelectorComponent( p_context, accetype, on_slot_selected, running_rom );
+	return std::make_shared<ISavestateSelectorComponent>( p_context, accetype, on_slot_selected, running_rom );
 }
 
 namespace
@@ -126,7 +126,7 @@ namespace
 	}
 }
 
-ISavestateSelectorComponent::ISavestateSelectorComponent( CUIContext * p_context, EAccessType accetype, std::function<void(const char *)> on_slot_selected, const char *running_rom )
+ISavestateSelectorComponent::ISavestateSelectorComponent( std::shared_ptr<CUIContext> p_context, EAccessType accetype, std::function<void(const char *)> on_slot_selected, const char *running_rom )
 :	CSavestateSelectorComponent( p_context )
 ,	mAccessType( accetype )
 ,	mOnSlotSelected( on_slot_selected )

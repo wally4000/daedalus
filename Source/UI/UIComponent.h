@@ -22,14 +22,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define SYSPSP_UI_UICOMPONENT_H_
 
 #include "Base/Types.h"
-
+#include <memory> 
 class v2;
 class CUIContext;
 
 class CUIComponent
 {
 	public:
-		CUIComponent( CUIContext * p_context );
+		CUIComponent( std::shared_ptr<CUIContext> p_context );
 		virtual ~CUIComponent();
 
 		virtual void				Update( float elapsed_time, const v2 & stick, u32 old_buttons, u32 new_buttons ) = 0;
@@ -37,7 +37,7 @@ class CUIComponent
 		virtual bool				IsFinished() const			{ return true; }
 
 	protected:
-		CUIContext *				mpContext;
+		std::shared_ptr<CUIContext>				mpContext;
 };
 
 //
@@ -49,11 +49,12 @@ class CUIComponent
 class CUIComponentScreen : public CUIScreen
 {
 	private:
-		CUIComponentScreen( CUIContext * p_context, CUIComponent * component, const char * title );
+		
 	public:
 		virtual ~CUIComponentScreen();
 
-		static CUIComponentScreen *	Create( CUIContext * p_context, CUIComponent * component, const char * title );
+		static std::shared_ptr<CUIComponentScreen>	Create( std::shared_ptr<CUIContext> p_context, std::shared_ptr<CUIComponent> component, const char * title );
+		CUIComponentScreen( std::shared_ptr<CUIContext> p_context, std::shared_ptr<CUIComponent> component, const char * title );
 
 		// CUIScreen
 		virtual void				Update( float elapsed_time, const v2 & stick, u32 old_buttons, u32 new_buttons );
@@ -61,7 +62,7 @@ class CUIComponentScreen : public CUIScreen
 		virtual bool				IsFinished() const;
 
 	private:
-		CUIComponent *				mComponent;
+		std::shared_ptr<CUIComponent> 				mComponent;
 		std::string					mTitle;
 };
 

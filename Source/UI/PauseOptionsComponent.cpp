@@ -54,7 +54,7 @@ class IPauseOptionsComponent : public CPauseOptionsComponent
 {
 	public:
 
-		IPauseOptionsComponent( CUIContext * p_context, std::function<void()> on_resume, std::function<void()> on_reset );
+		IPauseOptionsComponent( std::shared_ptr<CUIContext> p_context, std::function<void()> on_resume, std::function<void()> on_reset );
 		~IPauseOptionsComponent();
 
 		// CUIComponent
@@ -88,7 +88,7 @@ class IPauseOptionsComponent : public CPauseOptionsComponent
 };
 
 
-CPauseOptionsComponent::CPauseOptionsComponent( CUIContext * p_context )
+CPauseOptionsComponent::CPauseOptionsComponent( std::shared_ptr<CUIContext> p_context )
 :	CUIComponent( p_context )
 {}
 
@@ -96,13 +96,13 @@ CPauseOptionsComponent::CPauseOptionsComponent( CUIContext * p_context )
 CPauseOptionsComponent::~CPauseOptionsComponent() {}
 
 
-CPauseOptionsComponent *	CPauseOptionsComponent::Create( CUIContext * p_context, std::function<void()> on_resume, std::function<void()> on_reset )
+std::shared_ptr<CPauseOptionsComponent>	CPauseOptionsComponent::Create( std::shared_ptr<CUIContext> p_context, std::function<void()> on_resume, std::function<void()> on_reset )
 {
-	return new IPauseOptionsComponent( p_context, on_resume, on_reset );
+	return std::make_shared<IPauseOptionsComponent>( p_context, on_resume, on_reset );
 }
 
 
-IPauseOptionsComponent::IPauseOptionsComponent( CUIContext * p_context, std::function<void()> on_resume, std::function<void()> on_reset )
+IPauseOptionsComponent::IPauseOptionsComponent( std::shared_ptr<CUIContext> p_context, std::function<void()> on_resume, std::function<void()> on_reset )
 :	CPauseOptionsComponent( p_context )
 ,	mOnResume( on_resume )
 ,	mOnReset( on_reset )
@@ -226,7 +226,7 @@ void	IPauseOptionsComponent::AdvancedOptions()
 
 void	IPauseOptionsComponent::CheatOptions()
 {
-	CCheatOptionsScreen *	cheat_options( CCheatOptionsScreen::Create( mpContext, g_ROM.mRomID ) );
+	auto	cheat_options = CCheatOptionsScreen::Create( mpContext, g_ROM.mRomID );
 	cheat_options->Run();
 	delete cheat_options;
 }
@@ -237,7 +237,6 @@ void	IPauseOptionsComponent::SaveState()
 	auto component = CSavestateSelectorComponent::Create(mpContext, CSavestateSelectorComponent::AT_SAVING, [this](const char* slot) {OnSaveStateSlotSelected(slot);}, g_ROM.settings.GameName.c_str());
 	auto screen = CUIComponentScreen::Create( mpContext, component, SAVING_TITLE_TEXT );
 	screen->Run();
-	delete screen;
 	mOnResume();
 }
 
@@ -247,7 +246,6 @@ void	IPauseOptionsComponent::LoadState()
 	auto component = CSavestateSelectorComponent::Create (mpContext, CSavestateSelectorComponent::AT_LOADING, [this](const char* slot) { OnLoadStateSlotSelected(slot);}, g_ROM.settings.GameName.c_str());
 	auto screen = CUIComponentScreen::Create( mpContext, component, LOADING_TITLE_TEXT );
 	screen->Run();
-	delete screen;
 	mOnResume();
 }
 

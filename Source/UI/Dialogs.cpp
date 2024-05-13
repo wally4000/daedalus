@@ -30,7 +30,7 @@ CDialog	gShowDialog;
 
 CDialog::~CDialog() {}
 
-bool CDialog::Render( CUIContext * p_context, const char* message, bool only_dialog )
+bool CDialog::Render( std::shared_ptr<CUIContext> p_context, const char* message, bool only_dialog )
 {
 	SceCtrlData pad;
 	//

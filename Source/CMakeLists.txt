@@ -3,10 +3,12 @@
 # Yes right now this is a mess, hoping to simplify things further in future but please deal with it for now :)
 
 set(CMAKE_CXX_STANDARD 20)
-
 # Below is related to Macros within the project, a lot of these could be deprecated and deleted.
 # For now they will remain here so they're visible and can be switched on and off as desired.
-
+if(DEBUG)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fno-omit-frame-pointer")
+set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fsanitize=address")
+endif()
 #TODO: Separate SDL Options
 list(APPEND plat_main )
 
@@ -227,8 +229,10 @@ link_libraries(ZLIB::ZLIB)
 
 	# ---  Build ---- 
 	add_executable(daedalus ${plat_main})
-
-	target_link_libraries(daedalus PRIVATE ${daed_libs} ${default_libraries} ${sys_libraries})
+		if(DEBUG)
+		target_link_options( daedalus BEFORE PUBLIC -fsanitize=undefined PUBLIC -fsanitize=address)
+		endif()
+	target_link_libraries(daedalus  PRIVATE ${daed_libs} ${default_libraries} ${sys_libraries})
 
 	# --- Post Build ---
 	if(PSP)

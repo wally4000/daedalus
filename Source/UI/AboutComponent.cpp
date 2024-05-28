@@ -105,14 +105,14 @@ void	IAboutComponent::Render()
 	std::string	version = DAEDALUS_VERSION_TEXT + DAEDALUS_CONFIG_VERSION;
 
 
-std::string	date = DATE_TEXT + __DATE__;
+	std::string	date = DATE_TEXT + __DATE__;
 	mpContext->DrawTextAlign( LIST_TEXT_LEFT, LIST_TEXT_WIDTH, AT_CENTRE, y, version.data(), DrawTextUtilities::TextWhite ); y += line_height;
 	mpContext->DrawTextAlign( LIST_TEXT_LEFT, LIST_TEXT_WIDTH, AT_CENTRE, y, date.data(), DrawTextUtilities::TextWhite ); y += line_height;
 
 	// Spacer
 	y += line_height;
 
-	for( size_t i = 0; i < ARRAYSIZE( INFO_TEXT ); ++i )
+	for( auto i = 0; i < ARRAYSIZE( INFO_TEXT ); ++i )
 	{
 		const char * str( INFO_TEXT[ i ] );
 

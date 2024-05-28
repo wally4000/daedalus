@@ -112,7 +112,7 @@ void	IAboutComponent::Render()
 	// Spacer
 	y += line_height;
 
-	for( auto i = 0; i < ARRAYSIZE( INFO_TEXT ); ++i )
+	for( auto i = 0; i < std::size( INFO_TEXT ); ++i )
 	{
 		const char * str( INFO_TEXT[ i ] );
 

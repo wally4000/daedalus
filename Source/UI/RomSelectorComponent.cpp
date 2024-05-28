@@ -46,7 +46,7 @@ namespace
 {
 
 #ifdef DAEDALUS_ENABLE_ASSERTS
-	DAEDALUS_STATIC_ASSERT( ARRAYSIZE( gCategoryLetters ) == NUM_CATEGORIES +1 );
+	DAEDALUS_STATIC_ASSERT( std::size( gCategoryLetters ) == NUM_CATEGORIES +1 );
 #endif
 	ECategory		GetCategory( char c )
 	{
@@ -232,7 +232,7 @@ IRomSelectorComponent::IRomSelectorComponent( CUIContext * p_context, CFunctor1<
 ,	mQuitTriggered(false)
 ,	mQuitInit(false)
 {
-	for( u32 i = 0; i < ARRAYSIZE( gRomsDirectories ); ++i )
+	for( u32 i = 0; i < std::size( gRomsDirectories ); ++i )
 	{
 		AddRomDirectory( gRomsDirectories[ i ], mRomsList );
 	}
@@ -286,7 +286,7 @@ void	IRomSelectorComponent::UpdateROMList()
 	mpPreviewTexture = NULL;
 	mPreviewIdx= u32(-1);
 
-	for( u32 i = 0; i < ARRAYSIZE( gRomsDirectories ); ++i )
+	for( u32 i = 0; i < std::size( gRomsDirectories ); ++i )
 	{
 		AddRomDirectory( gRomsDirectories[ i ], mRomsList );
 	}
@@ -535,7 +535,7 @@ void IRomSelectorComponent::Render()
 	if( mRomsList.empty() )
 	{
 		s32 offset( 0 );
-		for( u32 i = 0; i < ARRAYSIZE( gNoRomsText ); ++i )
+		for( u32 i = 0; i < std::size( gNoRomsText ); ++i )
 		{
 			offset += mpContext->DrawTextArea( LIST_TEXT_LEFT, BELOW_MENU_MIN + offset, LIST_TEXT_WIDTH, LIST_TEXT_HEIGHT - offset, gNoRomsText[ i ], DrawTextUtilities::TextWhite, VA_TOP );
 			offset += 4;
@@ -560,7 +560,7 @@ void IRomSelectorComponent::Render()
 	}
 	else
 	{
-		mpContext->DrawTextAlign(0,470,AT_RIGHT,CATEGORY_TEXT_TOP + mpContext->GetFontHeight(),	message[(count >> 8) % ARRAYSIZE( message )], color);
+		mpContext->DrawTextAlign(0,470,AT_RIGHT,CATEGORY_TEXT_TOP + mpContext->GetFontHeight(),	message[(count >> 8) % std::size( message )], color);
 	}
 
 	count++;

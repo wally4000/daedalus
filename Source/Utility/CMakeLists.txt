@@ -2,7 +2,6 @@ add_library(Utility OBJECT
                             CRC.cpp 
                             FastMemcpy.cpp 
                             Hash.cpp 
-                            IniFile.cpp 
                             MemoryHeap.cpp  
                             Profiler.cpp  
                             Stream.cpp 

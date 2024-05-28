@@ -30,7 +30,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Debug/DBGConsole.h"
 #include "Math/Math.h"
 #include "Base/MathUtil.h"
-#include "Utility/IniFile.h"
+#include "Interface/IniFile.h"
 #include "System/IO.h"
 #include "Base/Macros.h"
 #include "Interface/Preferences.h"

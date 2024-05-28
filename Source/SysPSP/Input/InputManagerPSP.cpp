@@ -17,7 +17,7 @@
 #include "Math/Math.h"	// VFPU Math
 #include "Base/MathUtil.h"
 
-#include "Utility/IniFile.h"
+#include "Interface/IniFile.h"
 #include "System/IO.h"
 #include "Base/Macros.h"
 #include "Interface/Preferences.h"

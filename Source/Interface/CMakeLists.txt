@@ -1,4 +1,5 @@
 add_library(Interface OBJECT
+                            IniFile.cpp
                             Preferences.cpp
                             RomDB.cpp
                             SaveState.cpp                

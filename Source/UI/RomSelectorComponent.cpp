@@ -150,7 +150,7 @@ class IRomSelectorComponent : public CRomSelectorComponent
 		using AlphaMap = std::map< ECategory, u32 >;
 	public:
 
-		IRomSelectorComponent( CUIContext * p_context, CFunctor1< const char * > * on_rom_selected );
+		IRomSelectorComponent( CUIContext * p_context, std::function<void(const char*)> on_rom_selected );
 		~IRomSelectorComponent();
 
 		// CUIComponent
@@ -170,7 +170,7 @@ class IRomSelectorComponent : public CRomSelectorComponent
 				void				DrawInfoText( CUIContext * p_context, s32 y, const char * field_txt, const char * value_txt );
 
 	private:
-		CFunctor1< const char * > *	OnRomSelected;
+		std::function<void(const char*)> mOnRomSelected;
 		RomInfoList					mRomsList;
 		AlphaMap					mRomCategoryMap;
 		s32							mCurrentScrollOffset;
@@ -197,14 +197,17 @@ CRomSelectorComponent::CRomSelectorComponent( CUIContext * p_context )
 CRomSelectorComponent::~CRomSelectorComponent() {}
 
 
-CRomSelectorComponent *	CRomSelectorComponent::Create( CUIContext * p_context, CFunctor1< const char * > * on_rom_selected )
+CRomSelectorComponent *	CRomSelectorComponent::Create( CUIContext * p_context, std::function<void(const char*)> on_rom_selected )
 {
 	return new IRomSelectorComponent( p_context, on_rom_selected );
 }
 
-IRomSelectorComponent::IRomSelectorComponent( CUIContext * p_context, CFunctor1< const char * > * on_rom_selected )
+//*************************************************************************************
+//
+//*************************************************************************************
+IRomSelectorComponent::IRomSelectorComponent( CUIContext * p_context, std::function<void(const char*)> on_rom_selected )
 :	CRomSelectorComponent( p_context )
-,	OnRomSelected( on_rom_selected )
+,	mOnRomSelected( on_rom_selected )
 //,	mCurrentSelection( 0 )
 ,	mCurrentScrollOffset( 0 )
 ,	mSelectionAccumulator( 0 )
@@ -246,7 +249,6 @@ IRomSelectorComponent::~IRomSelectorComponent()
 	}
 	mRomsList.clear();
 
-	delete OnRomSelected;
 }
 
 //Refresh ROM list //Corn
@@ -623,9 +625,9 @@ void	IRomSelectorComponent::Update( float elapsed_time, const v2 & stick, u32 ol
 			{
 				mSelectedRom = mRomsList[ mCurrentSelection ]->mFilename.string();
 
-				if(OnRomSelected != NULL)
+				if(mOnRomSelected != NULL)
 				{
-					(*OnRomSelected)( mSelectedRom.c_str() );
+					mOnRomSelected( mSelectedRom.c_str() );
 				}
 			}
 		}

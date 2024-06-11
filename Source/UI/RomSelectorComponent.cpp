@@ -21,8 +21,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <vector>
 #include <map>
 #include <algorithm>
-
+#include <string_view>
+#include <format>
 #include "Base/Types.h"
+
 
 #include "Core/ROM.h"
 #include "Core/RomSettings.h"
@@ -120,7 +122,7 @@ struct SRomInfo
 	}
 };
 
-static ECategory Categorise( const char * name )
+static ECategory Categorise( const std::string_view name )
 {
 	char	c = name[ 0 ];
 	return GetCategory( c );
@@ -265,7 +267,7 @@ void	IRomSelectorComponent::UpdateROMList()
 	mpPreviewTexture = NULL;
 	mPreviewIdx= u32(-1);
 
-	for( auto i = 0; i < ARRAYSIZE( gRomsDirectories ); ++i )
+	for( auto i = 0; i < std::size( gRomsDirectories ); ++i )
 	{
 		AddRomDirectory( gRomsDirectories[ i ], mRomsList );
 	}
@@ -287,28 +289,23 @@ void	IRomSelectorComponent::UpdateROMList()
 
 void	IRomSelectorComponent::AddRomDirectory(const char * p_roms_dir, RomInfoList & roms)
 {
-	std::string			full_path;
+	std::filesystem::path	full_path;
 
-	IO::FindHandleT		find_handle;
-	IO::FindDataT		find_data;
-	if(IO::FindFileOpen( p_roms_dir, &find_handle, find_data ))
+	for (const auto& dir_entry : std::filesystem::directory_iterator(p_roms_dir))
 	{
-		do
+		if (dir_entry.is_regular_file()) 
 		{
-			const char * rom_filename( find_data.Name );
-			if(IsRomfilename( rom_filename ))
+			const auto& path =dir_entry.path();
+			const std::string rom_filename = path.filename().string();
+
+
+			if(IsRomfilename( rom_filename.c_str()))
 			{
-				full_path = p_roms_dir;
-				full_path += rom_filename;
-
+				full_path = path.string();
 				auto p_rom_info = new SRomInfo( full_path.c_str() );
-
 				roms.push_back( p_rom_info );
 			}
 		}
-		while(IO::FindFileNext( find_handle, find_data ));
-
-		IO::FindFileClose( find_handle );
 	}
 }
 
@@ -476,9 +473,9 @@ void IRomSelectorComponent::RenderCategoryList()
 			colour = c32( 180, 180, 180 );
 		}
 
-		char str[ 16 ];
-		snprintf( str, sizeof(str), "%c ", GetCategoryLetter( category ) );
-		x += mpContext->DrawText( x, y, str, colour );
+		std::string str = std::format("{} ", GetCategoryLetter(category));
+		// snprintf( str, sizeof(str), "%c ", GetCategoryLetter( category ) );
+		x += mpContext->DrawText( x, y, str.c_str(), colour );
 	}
 }
 
@@ -639,9 +636,8 @@ void	IRomSelectorComponent::Update( float elapsed_time, const v2 & stick, u32 ol
 			}
 		}
 	}
-	//
+
 	//	Apply the selection accumulator
-	//
 	f32	current_vel = mSelectionAccumulator;
 	while(mSelectionAccumulator >= 1.0f)
 	{

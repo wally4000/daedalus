@@ -198,7 +198,6 @@ namespace
 }
 
 
-//
 
 class IRomPreferencesScreen : public CRomPreferencesScreen, public CUIScreen
 {
@@ -231,14 +230,11 @@ class IRomPreferencesScreen : public CRomPreferencesScreen, public CUIScreen
 };
 
 
-//
 
 CRomPreferencesScreen::~CRomPreferencesScreen()
 {
 }
 
-
-//
 
 CRomPreferencesScreen *	CRomPreferencesScreen::Create( CUIContext * p_context, const RomID & rom_id )
 {
@@ -277,12 +273,8 @@ IRomPreferencesScreen::IRomPreferencesScreen( CUIContext * p_context, const RomI
 }
 
 
-//
-
 IRomPreferencesScreen::~IRomPreferencesScreen() {}
 
-
-//
 
 void	IRomPreferencesScreen::Update( float elapsed_time, const v2 & stick, u32 old_buttons, u32 new_buttons )
 {
@@ -358,15 +350,11 @@ void	IRomPreferencesScreen::Render()
 }
 
 
-//
-
 void	IRomPreferencesScreen::Run()
 {
 	CUIScreen::Run();
 }
 
-
-//
 
 void	IRomPreferencesScreen::OnConfirm()
 {
@@ -378,9 +366,6 @@ void	IRomPreferencesScreen::OnConfirm()
 
 	mIsFinished = true;
 }
-
-
-//
 
 void	IRomPreferencesScreen::OnCancel()
 {

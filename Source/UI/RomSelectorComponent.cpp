@@ -128,7 +128,7 @@ static ECategory Categorise( const std::string_view name )
 	return GetCategory( c );
 }
 
-static bool SortByGameName( const SRomInfo * a, const SRomInfo * b )
+static bool SortByGameName( const std::unique_ptr<SRomInfo> &a, const std::unique_ptr<SRomInfo> & b )
 {
 	// Sort by the category first, then on the actual string.
 	ECategory	cat_a = Categorise( a->mSettings.GameName.c_str() );
@@ -139,7 +139,7 @@ static bool SortByGameName( const SRomInfo * a, const SRomInfo * b )
 		return cat_a < cat_b;
 	}
 
-	return ( strcmp( a->mSettings.GameName.c_str(), b->mSettings.GameName.c_str() ) < 0 );
+	return ( a->mSettings.GameName.c_str() < b->mSettings.GameName.c_str() );
 }
 
 //Lifting this out makes it remmember last choosen ROM
@@ -148,7 +148,7 @@ static u32 mCurrentSelection = 0;
 
 class IRomSelectorComponent : public CRomSelectorComponent
 {
-		using RomInfoList = std::vector<SRomInfo*>;
+		using RomInfoList = std::vector<std::unique_ptr<SRomInfo>>;
 		using AlphaMap = std::map< ECategory, u32 >;
 	public:
 
@@ -241,25 +241,12 @@ IRomSelectorComponent::IRomSelectorComponent( CUIContext * p_context, std::funct
 
 IRomSelectorComponent::~IRomSelectorComponent()
 {
-	for(RomInfoList::iterator it = mRomsList.begin(); it != mRomsList.end(); ++it)
-	{
-		auto p_rominfo = *it;
-
-		delete p_rominfo;
-	}
 	mRomsList.clear();
-
 }
 
 //Refresh ROM list //Corn
 void	IRomSelectorComponent::UpdateROMList()
 {
-	for(RomInfoList::iterator it = mRomsList.begin(); it != mRomsList.end(); ++it)
-	{
-		auto p_rominfo = *it;
-
-		delete p_rominfo;
-	}
 	mRomsList.clear();
 
 	mCurrentScrollOffset = 0;
@@ -302,8 +289,8 @@ void	IRomSelectorComponent::AddRomDirectory(const char * p_roms_dir, RomInfoList
 			if(IsRomfilename( rom_filename.c_str()))
 			{
 				full_path = path.string();
-				auto p_rom_info = new SRomInfo( full_path.c_str() );
-				roms.push_back( p_rom_info );
+				std::unique_ptr<SRomInfo> p_rom_info = std::make_unique<SRomInfo>( full_path.c_str() );
+				roms.push_back( std::move(p_rom_info) );
 			}
 		}
 	}
@@ -364,7 +351,7 @@ void IRomSelectorComponent::RenderPreview()
 
 	if( mCurrentSelection < mRomsList.size() )
 	{
-		auto	p_rominfo = mRomsList[ mCurrentSelection ];
+		auto	p_rominfo = mRomsList[ mCurrentSelection ].get();
 
 		const char *	cic_name = ROM_GetCicName( p_rominfo->mCicType );
 		const char *	country = ROM_GetCountryNameFromID( p_rominfo->mRomID.CountryID );

@@ -25,12 +25,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "HLEAudio/AudioBuffer.h"
 #include "System/Thread.h"
 
-#ifdef DAEDALUS_PSP
-#include "SysPSP/Utility/CacheUtil.h"
-#include <pspkernel.h>
-#include <pspsdk.h>
-#endif
-
 CAudioBuffer::CAudioBuffer(u32 buffer_size)
     : mBufferBegin(new Sample[buffer_size]),
       mBufferEnd(mBufferBegin + buffer_size), mReadPtr(mBufferBegin),

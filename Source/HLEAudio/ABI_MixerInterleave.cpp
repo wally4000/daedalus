@@ -12,7 +12,7 @@
 extern bool isMKABI;
 extern bool isZeldaABI;
 
-void ADDMIXER(AudioHLECommand command) {
+void ADDMIXER(const AudioHLECommand& command) {
 #ifdef DEBUG_AUDIO
   DBGConsole_Msg(0, "ADDMIXER");
 #endif
@@ -31,7 +31,7 @@ void ADDMIXER(AudioHLECommand command) {
   }
 }
 
-void HILOGAIN(AudioHLECommand command) {
+void HILOGAIN(const AudioHLECommand& command) {
 #ifdef DEBUG_AUDIO
   DBGConsole_Msg(0, "HILOAGAIN");
 #endif
@@ -50,7 +50,7 @@ void HILOGAIN(AudioHLECommand command) {
   }
 }
 
-void INTERLEAVE(AudioHLECommand command) {
+void INTERLEAVE(const AudioHLECommand& command) {
 #ifdef DEBUG_AUDIO
   DBGConsole_Msg(0, "INTERLEAVE");
 #endif
@@ -60,7 +60,7 @@ void INTERLEAVE(AudioHLECommand command) {
   gAudioHLEState.Interleave(inL, inR);
 }
 
-void DEINTERLEAVE2(AudioHLECommand command) {
+void DEINTERLEAVE2(const AudioHLECommand& command) {
 #ifdef DEBUG_AUDIO
   DBGConsole_Msg(0, "DEINTERLEAVE2");
 #endif
@@ -71,7 +71,7 @@ void DEINTERLEAVE2(AudioHLECommand command) {
   gAudioHLEState.Deinterleave(out, in, count);
 }
 
-void INTERLEAVE2(AudioHLECommand command) {
+void INTERLEAVE2(const AudioHLECommand& command) {
 
 #ifdef DEBUG_AUDIO
   DBGConsole_Msg(0, "INTERLEAVE2");
@@ -88,7 +88,7 @@ void INTERLEAVE2(AudioHLECommand command) {
   }
 }
 
-void INTERLEAVE3(AudioHLECommand command) {
+void INTERLEAVE3(const AudioHLECommand& command) {
 #ifdef DEBUG_AUDIO
   DBGConsole_Msg(0, "INTERLEAVE3");
 #endif
@@ -99,7 +99,7 @@ void INTERLEAVE3(AudioHLECommand command) {
   gAudioHLEState.Interleave(0x4f0, 0x9d0, 0xb40, 0x170);
 }
 
-void MIXER(AudioHLECommand command) {
+void MIXER(const AudioHLECommand& command) {
 #ifdef DEBUG_AUDIO
   DBGConsole_Msg(0, "MIXER");
 #endif
@@ -110,7 +110,7 @@ void MIXER(AudioHLECommand command) {
   gAudioHLEState.Mixer(dmemout, dmemin, gain);
 }
 
-void MIXER2(AudioHLECommand command) {
+void MIXER2(const AudioHLECommand& command) {
 #ifdef DEBUG_AUDIO
   DBGConsole_Msg(0, "MIXER2");
 #endif
@@ -128,7 +128,7 @@ void MIXER2(AudioHLECommand command) {
       count); // NB - did mult gain by 2 above, then shifted by 16 inside mixer.
 }
 
-void MIXER3(AudioHLECommand command) {
+void MIXER3(const AudioHLECommand& command) {
 #ifdef DEBUG_AUDIO
   DBGConsole_Msg(0, "MIXER3");
 #endif

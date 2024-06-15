@@ -14,7 +14,7 @@ extern bool isZeldaABI;
 
 inline s32 FixedPointMul16(s32 a, s32 b) { return s32((a * b) >> 16); }
 
-void RESAMPLE(AudioHLECommand command) {
+void RESAMPLE(const AudioHLECommand& command) {
 #ifdef DEBUG_AUDIO
   DBGConsole_Msg(0, "RESAMPLE");
 #endif
@@ -25,7 +25,7 @@ void RESAMPLE(AudioHLECommand command) {
   gAudioHLEState.Resample(flags, pitch, address);
 }
 
-void RESAMPLE2(AudioHLECommand command) {
+void RESAMPLE2(const AudioHLECommand& command) {
 #ifdef DEBUG_AUDIO
   DBGConsole_Msg(0, "RESAMPLE2");
 #endif
@@ -36,7 +36,7 @@ void RESAMPLE2(AudioHLECommand command) {
   gAudioHLEState.Resample(flags, pitch, address);
 }
 
-void RESAMPLE3(AudioHLECommand command) {
+void RESAMPLE3(const AudioHLECommand& command) {
 #ifdef DEBUG_AUDIO
   DBGConsole_Msg(0, "RESAMPLE3");
 #endif

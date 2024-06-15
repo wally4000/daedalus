@@ -17,7 +17,7 @@ static u16 env[8];
 
 inline u16 Sample_Mask(u32 x) { return (u16)(x & 0xffff); }
 
-void ENVSETUP1(AudioHLECommand command) {
+void ENVSETUP1(const AudioHLECommand& command) {
   // fprintf (dfile, "ENVSETUP1: cmd0 = %08X, cmd1 = %08X\n", command.cmd0,
   // command.cmd1);
   gEnv_t3 = command.cmd0 & 0xFFFF;
@@ -30,7 +30,7 @@ void ENVSETUP1(AudioHLECommand command) {
   // / env[5] = %X\n", gEnv_t3, gEnv_s5, gEnv_s6, env[4], env[5]);
 }
 
-void ENVSETUP2(AudioHLECommand command) {
+void ENVSETUP2(const AudioHLECommand& command) {
   // fprintf (dfile, "ENVSETUP2: cmd0 = %08X, cmd1 = %08X\n", command.cmd0,
   // command.cmd1);
   u32 tmp1 = (command.cmd1 >> 0x10);
@@ -44,9 +44,9 @@ void ENVSETUP2(AudioHLECommand command) {
   // %X\n", env[0], env[1], env[2], env[3]);
 }
 
-void ENVSETUP3(AudioHLECommand command) {}
+void ENVSETUP3(const AudioHLECommand& command) {}
 
-void ENVMIXER(AudioHLECommand command) {
+void ENVMIXER(const AudioHLECommand& command) {
   // static int envmixcnt = 0;
   u8 flags(command.Abi1EnvMixer.Flags);
   u32 address(
@@ -56,11 +56,11 @@ void ENVMIXER(AudioHLECommand command) {
   gAudioHLEState.EnvMixer(flags, address);
 }
 
-void ENVMIXER_GE(AudioHLECommand command) {
+void ENVMIXER_GE(const AudioHLECommand& command) {
   // Not implemented
 }
 
-void ENVMIXER2(AudioHLECommand command) {
+void ENVMIXER2(const AudioHLECommand& command) {
   // fprintf (dfile, "ENVMIXER: cmd0 = %08X, cmd1 = %08X\n", command.cmd0,
   // command.cmd1);
   s16 vec9, vec10;
@@ -91,7 +91,6 @@ void ENVMIXER2(AudioHLECommand command) {
     gEnv_t3 *= 2;
     adder = 0x10;
   } else {
-    command.cmd0 = 0;
     adder = 0x8;
     gEnv_t3 = 0;
   }
@@ -157,7 +156,7 @@ void ENVMIXER2(AudioHLECommand command) {
   }
 }
 
-void ENVMIXER3(AudioHLECommand command) {
+void ENVMIXER3(const AudioHLECommand& command) {
   u8 flags = (u8)((command.cmd0 >> 16) & 0xff);
   u32 addy = (command.cmd1 & 0xFFFFFF);
 
@@ -308,7 +307,7 @@ void ENVMIXER3(AudioHLECommand command) {
                                 //*(u32 *)(buff + 24) = 0x13371337; // 22-23
 }
 
-void SETVOL(AudioHLECommand command) {
+void SETVOL(const AudioHLECommand& command) {
   // Might be better to unpack these depending on the flags...
   u8 flags = (u8)((command.cmd0 >> 16) & 0xff);
   s16 vol = (s16)(command.cmd0 & 0xffff);
@@ -339,7 +338,7 @@ void SETVOL(AudioHLECommand command) {
   }
 }
 
-void SETVOL3(AudioHLECommand command) {
+void SETVOL3(const AudioHLECommand& command) {
   u8 Flags = (u8)(command.cmd0 >> 0x10);
   if (Flags & 0x4) {                                     // 288
     if (Flags & 0x2) {                                   // 290

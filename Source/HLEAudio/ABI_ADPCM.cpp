@@ -12,7 +12,7 @@
 extern bool isMKABI;
 extern bool isZeldaABI;
 
-void ADPCM(AudioHLECommand command) {
+void ADPCM(const AudioHLECommand& command) {
   u8 flags = command.Abi1ADPCM.Flags;
   // u16	gain( command.Abi1ADPCM.Gain );		// Not used?
   u32 address = command.Abi1ADPCM.Address; // + gAudioHLEState.Segments[(command.cmd1>>24)&0xf];
@@ -158,7 +158,7 @@ void ADPCM2_Loop(std::array<s32, 8> (&a), std::array<int, 8> &i1, const s16 *b1,
     out[j] = r; // XXXX endian issues
   }
 }
-void ADPCM2(AudioHLECommand command) {
+void ADPCM2(const AudioHLECommand& command) {
 
   // Verified to be 100% Accurate...
   u8 Flags = (u8)((command.cmd0 >> 16) & 0xff);
@@ -222,7 +222,7 @@ void ADPCM2(AudioHLECommand command) {
   memmove(&rdram[Address], out, 32);
 }
 
-void ADPCM3(AudioHLECommand command) {
+void ADPCM3(const AudioHLECommand& command) {
   u8 Flags = (u8)(command.cmd1 >> 0x1c) & 0xff;
   // u16 Gain=(u16)(command.cmd0&0xffff);
   u32 Address =
@@ -461,14 +461,14 @@ void ADPCM3(AudioHLECommand command) {
   memmove(&rdram[Address], out, 32);
 }
 
-void LOADADPCM(AudioHLECommand command) {
+void LOADADPCM(const AudioHLECommand& command) {
   u32 address = command.Abi1LoadADPCM .Address; // + gAudioHLEState.Segments[(command.cmd1>>24)&0xf];
   u16 count = command.Abi1LoadADPCM.Count;
 
   gAudioHLEState.LoadADPCM(address, count);
 }
 
-void LOADADPCM2(AudioHLECommand command) {
+void LOADADPCM2(const AudioHLECommand& command) {
   // Loads an ADPCM table - Works 100% Now 03-13-01
   u32 address = command.Abi2LoadADPCM.Address; // + gAudioHLEState.Segments[(command.cmd1>>24)&0xf];
   u16 count = command.Abi2LoadADPCM.Count;
@@ -476,7 +476,7 @@ void LOADADPCM2(AudioHLECommand command) {
   gAudioHLEState.LoadADPCM(address, count);
 }
 
-void LOADADPCM3(AudioHLECommand command) {
+void LOADADPCM3(const AudioHLECommand& command) {
   u32 address = command.Abi3LoadADPCM.Address; // + gAudioHLEState.Segments[(command.cmd1>>24)&0xf];
   u16 count = command.Abi3LoadADPCM.Count;
 

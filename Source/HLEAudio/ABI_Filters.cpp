@@ -13,7 +13,7 @@
 extern bool isMKABI;
 extern bool isZeldaABI;
 
-void FILTER2(AudioHLECommand command) {
+void FILTER2(const AudioHLECommand& command) {
 #ifdef DEBUG_AUDIO
   DBGConsole_Msg(0, "FILTER2");
 #endif
@@ -148,7 +148,7 @@ void FILTER2(AudioHLECommand command) {
   memmove(gAudioHLEState.Buffer + (command.cmd0 & 0xffff), outbuff, cnt);
 }
 
-void POLEF(AudioHLECommand command)
+void POLEF(const AudioHLECommand& command)
 
 {
 #ifdef DEBUG_AUDIO

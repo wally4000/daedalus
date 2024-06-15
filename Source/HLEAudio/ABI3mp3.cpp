@@ -46,7 +46,7 @@ struct CMP3Decode {
 
   void MP3AB0();
   void InnerLoop();
-  void Decode(AudioHLECommand command);
+  void Decode(const AudioHLECommand& command);
 };
 
 // static const u16 DeWindowLUT[0x420] = {
@@ -663,7 +663,7 @@ void CMP3Decode::InnerLoop() {
   }
 }
 
-void CMP3Decode::Decode(AudioHLECommand command) {
+void CMP3Decode::Decode(const AudioHLECommand& command) {
   // Initialization Code
   u32 readPtr;  // s5
   u32 writePtr; // s6
@@ -712,7 +712,7 @@ CMP3Decode gMP3Decode;
 
 } // namespace
 
-void MP3(AudioHLECommand command) {
+void MP3(const AudioHLECommand& command) {
 #ifdef DEBUG_AUDIO
   DBGConsole_Msg(0, "MP3 ");
 #endif

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core/RomSettings.h"
+#include "RomFile/RomFileSettings.h"
 
 namespace UI
 {

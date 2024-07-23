@@ -1,5 +1,7 @@
 add_library(Graphics OBJECT
                     ColourValue.cpp 
+                    JPEGTask.cpp
+                    HvqmTask.cpp
                     PngUtil.cpp 
                     TextureTransform.cpp
             )

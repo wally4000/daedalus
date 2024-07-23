@@ -23,6 +23,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define UTILITY_ROMFILECACHE_H_
 
 #include "Base/Types.h"
+#include <vector>
+
 
 class ROMFile;
 struct SChunkInfo;
@@ -38,7 +40,6 @@ class ROMFileCache
 		void				Close();
 
 		bool				GetChunk( u32 rom_offset, u8 ** p_p_chunk_base, u32 * p_chunk_offset, u32 * p_chunk_size );
-
 	private:
 		void				PurgeChunk( CacheIdx cache_idx );
 
@@ -47,15 +48,15 @@ class ROMFileCache
 	private:
 		std::shared_ptr<ROMFile> 		mpROMFile;
 
-		u8 *				mpStorage;			// Underlying storage. This is carved up between different chunks
-		SChunkInfo *		mpChunkInfo;		// Info about which region a chunk is allocated to
+		std::vector<u8>				mpStorage;			// Underlying storage. This is carved up between different chunks
+		std::vector<SChunkInfo>		mpChunkInfo;		// Info about which region a chunk is allocated to
 
 		u32					mChunkMapEntries;	// i.e. Number of chunks in the rom
-		CacheIdx *			mpChunkMap;			// Map allowing quick lookups from address -> chunkidx
+		std::vector<CacheIdx>	mpChunkMap;			// Map allowing quick lookups from address -> chunkidx
 
 		u32					mMRUIdx;			// Most recently used index
-
-		static const CacheIdx	INVALID_IDX = CacheIdx(-1);
+	static const CacheIdx	INVALID_IDX = CacheIdx(-1);
+	
 };
 
 #endif // UTILITY_ROMFILECACHE_H_

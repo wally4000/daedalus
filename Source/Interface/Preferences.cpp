@@ -30,7 +30,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <map>
 
 #include "Utility/IniFile.h"
-#include "Core/FramerateLimiter.h"
+#include "Utility/FrameRateLimiter.h"
 
 #include "Config/ConfigOptions.h"
 #include "Core/ROM.h"

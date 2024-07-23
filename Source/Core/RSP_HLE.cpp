@@ -37,7 +37,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "HLEGraphics/GraphicsPlugin.h"
 #include "Test/BatchTest.h"
 #include "System/IO.h"
-#include "Core/PrintOpCode.h"
+#include "Debug/PrintOpCode.h"
 #include "Utility/Profiler.h"
 
 static const bool	gGraphicsEnabled = true;

@@ -20,13 +20,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "Base/Types.h"
 
-#include "Core/ROMBuffer.h"
+
 #include "Core/ROM.h"
 #include "Core/DMA.h"
 #include "Debug/DBGConsole.h"
 #include "Utility/MathUtil.h"
 #include "Interface/Preferences.h"
 #include "RomFile/RomFile.h"
+#include "RomFile/RomFileBuffer.h"
 #include "RomFile/RomFileCache.h"
 #include "RomFile/RomFileMemory.h"
 #include "Utility/Stream.h"

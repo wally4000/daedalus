@@ -37,12 +37,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <pspsysmem.h>
 
 #include "Config/ConfigOptions.h"
-#include "Core/Cheats.h"
+#include "Interface/Cheats.h"
 #include "Core/CPU.h"
 #include "Core/CPU.h"
 #include "Core/Memory.h"
 #include "Core/PIF.h"
-#include "Core/RomSettings.h"
+#include "RomFile/RomFileSettings.h"
 #include "Core/Save.h"
 #include "Debug/DBGConsole.h"
 #include "Debug/DebugLog.h"

@@ -24,13 +24,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <stdio.h>
 #include <cstring>
 
-#include "Core/Cheats.h"
+#include "Interface/Cheats.h"
 #include "Core/CPU.h"
 #include "Core/PIF.h"		// CController
 #include "Core/R4300.h"
-#include "Core/ROMBuffer.h"
+#include "RomFile/RomFileBuffer.h"
 #include "Core/ROMImage.h"
-#include "Core/RomSettings.h"
+#include "RomFile/RomFileSettings.h"
 #include "Config/ConfigOptions.h"
 #include "Debug/DBGConsole.h"
 #include "Debug/DebugLog.h"
@@ -42,7 +42,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "HLEAudio/AudioPlugin.h"
 #include "HLEGraphics/GraphicsPlugin.h"
 #include "Utility/CRC.h"
-#include "Core/FramerateLimiter.h"
+#include "Utility/FrameRateLimiter.h"
 #include "System/IO.h"
 #include "Base/Macros.h"
 #include "Interface/Preferences.h"

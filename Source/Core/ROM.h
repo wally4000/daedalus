@@ -82,7 +82,7 @@ class RomID
 		u8		CountryID;
 };
 
-#include "RomSettings.h"
+#include "RomFile/RomFileSettings.h"
 
 struct SRomPreferences;
 

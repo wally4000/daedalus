@@ -9,12 +9,12 @@
 
 
 #include "Config/ConfigOptions.h"
-#include "Core/Cheats.h"
+#include "Interface/Cheats.h"
 #include "Core/CPU.h"
 #include "Core/CPU.h"
 #include "Core/Memory.h"
 #include "Core/PIF.h"
-#include "Core/RomSettings.h"
+#include "RomFile/RomFileSettings.h"
 #include "Core/Save.h"
 #include "Debug/DBGConsole.h"
 #include "Debug/DebugLog.h"

@@ -1,4 +1,4 @@
-if(UNIX AND NOT APPLE)
+if(DAEDALUS_SDL)
 add_library(Audio_POSIX OBJECT AudioPluginSDL.cpp)
 elseif( APPLE)
 add_library(Audio_POSIX OBJECT AudioPluginOSX.cpp)

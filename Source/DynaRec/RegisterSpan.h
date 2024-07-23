@@ -20,7 +20,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef DYNAREC_REGISTERSPAN_H_
 #define DYNAREC_REGISTERSPAN_H_
 
-#include "Core/N64Reg.h"
+#include "DynaRec/N64Reg.h"
 
 #include <vector>
 

@@ -1,4 +1,5 @@
 add_library(Utility OBJECT
+                            BatchTest.cpp
                             CRC.cpp 
                             FastMemcpy.cpp 
                             Hash.cpp 

@@ -215,7 +215,6 @@ link_libraries(ZLIB::ZLIB)
 		add_subdirectory(OSHLE)
 		add_subdirectory(RomFile)
 		add_subdirectory(System)
-		add_subdirectory(Test)
 		add_subdirectory(Utility)
 		add_subdirectory(UI)
 

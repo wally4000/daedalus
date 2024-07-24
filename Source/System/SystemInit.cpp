@@ -43,7 +43,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #endif
 
 
-#include "Utility/FrameRateLimiter.h"
+#include "Utility/FramerateLimiter.h"
 #include "Debug/Synchroniser.h"
 #include "Base/Macros.h"
 #include "Utility/Profiler.h"

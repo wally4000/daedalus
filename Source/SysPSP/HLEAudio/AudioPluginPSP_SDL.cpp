@@ -9,7 +9,7 @@
 #include "Debug/DBGConsole.h"
 #include "HLEAudio/AudioBuffer.h"
 #include "HLEAudio/HLEAudioInternal.h"
-#include "Utility/FrameRateLimiter.h"
+#include "Utility/FramerateLimiter.h"
 #include "System/Thread.h"
 #include "System/Timing.h"
 

@@ -37,6 +37,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "OSHLE/patch.h"
 #include "Utility/FastMemcpy.h"
 
+#include <bit> 
 // 1 - Ignores IMEM for speed, its not needed for HLE RSP
 // 2 - Forces a linear transfer which assumes a count of 0 and skip of 0
 // 3 - Uses non swizle memcpy since alignment and size constrains are met 
@@ -149,7 +150,7 @@ void DMA_SI_CopyFromDRAM( )
 
 	for(u32 i = 0; i < 16; i++)
 	{
-		dst[i] = BSWAP32(src[i]);
+		dst[i] = std::byteswap(src[i]);
 	}
 
 	Memory_SI_SetRegisterBits(SI_STATUS_REG, SI_STATUS_INTERRUPT);
@@ -173,7 +174,7 @@ void DMA_SI_CopyToDRAM( )
 
 	for(u32 i = 0; i < 16; i++)
 	{
-		dst[i] = BSWAP32(src[i]);
+		dst[i] = std::byteswap(src[i]);
 	}
 
 	Memory_SI_SetRegisterBits(SI_STATUS_REG, SI_STATUS_INTERRUPT);

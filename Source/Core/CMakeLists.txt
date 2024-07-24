@@ -3,7 +3,6 @@ add_library(Core OBJECT
                         CPU.cpp 
                         DMA.cpp 
                         FlashMem.cpp  
-                        FramerateLimiter.cpp 
                         Interpret.cpp 
                         Interrupt.cpp 
                         Memory.cpp 

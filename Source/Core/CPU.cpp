@@ -47,7 +47,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Ultra/ultra_R4300.h"
 #include "System/SystemInit.h"
 #include "System/AtomicPrimitives.h"
-#include "Utility/FrameRateLimiter.h"
+#include "Utility/FramerateLimiter.h"
 #include "Utility/Hash.h"
 #include "Base/Macros.h"
 #include "Debug/PrintOpCode.h"

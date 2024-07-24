@@ -19,6 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "HLEGraphics/TMEM.h"
 #include "Debug/DBGConsole.h"
 #include "System/Endian.h"
+#include <bit> 
 
 #ifdef DAEDALUS_ACCURATE_TMEM
 
@@ -39,8 +40,8 @@ void CopyLineQwords(void * dst, const void * src, u32 qwords)
 
 	while(qwords--)
 	{
-		dst32[0] = BSWAP32(src32[0]);
-		dst32[1] = BSWAP32(src32[1]);
+		dst32[0] = std::byteswap(src32[0]);
+		dst32[1] = std::byteswap(src32[1]);
 		dst32 += 2;
 		src32 += 2;
 	}
@@ -65,8 +66,8 @@ void CopyLineQwordsSwap(void * dst, const void * src, u32 qwords)
 
 	while(qwords--)
 	{
-		dst32[1]  = BSWAP32(src32[0]);
-		dst32[0]  = BSWAP32(src32[1]);
+		dst32[1]  = std::byteswap(src32[0]);
+		dst32[0]  = std::byteswap(src32[1]);
 		dst32 += 2;
 		src32 += 2;
 	}
@@ -93,10 +94,10 @@ void CopyLineQwordsSwap32(void * dst, const void * src, u32 qwords)
 
 	while(size128--)
 	{
-		dst32[2]  = BSWAP32(src32[0]);
-		dst32[3]  = BSWAP32(src32[1]);
-		dst32[0]  = BSWAP32(src32[2]);
-		dst32[1]  = BSWAP32(src32[3]);
+		dst32[2]  = std::byteswap(src32[0]);
+		dst32[3]  = std::byteswap(src32[1]);
+		dst32[0]  = std::byteswap(src32[2]);
+		dst32[1]  = std::byteswap(src32[3]);
 		dst32 += 4;
 		src32 += 4;
 	}
@@ -105,8 +106,8 @@ void CopyLineQwordsSwap32(void * dst, const void * src, u32 qwords)
 	qwords&=0x1;
 	while(qwords--)
 	{
-		*(u32*)((uintptr_t)dst32++ ^ 0x8) = BSWAP32(src32[0]);
-		*(u32*)((uintptr_t)dst32++ ^ 0x8) = BSWAP32(src32[1]);
+		*(u32*)((uintptr_t)dst32++ ^ 0x8) = std::byteswap(src32[0]);
+		*(u32*)((uintptr_t)dst32++ ^ 0x8) = std::byteswap(src32[1]);
 		src32+=2;
 	}
 #else
@@ -136,7 +137,7 @@ void CopyLine(void * dst, const void * src, u32 bytes)
 	{
 		while (size32--)
 		{
-			*dst32++ = BSWAP32(src32[0]);
+			*dst32++ = std::byteswap(src32[0]);
 			src32++;
 		}
 	}
@@ -157,7 +158,7 @@ void CopyLine(void * dst, const void * src, u32 bytes)
 			dst_tmp = src_tmp << lshift;
 			src_tmp = *src32++;
 			dst_tmp|= src_tmp >> rshift;
-			*dst32++ = BSWAP32(dst_tmp);
+			*dst32++ = std::byteswap(dst_tmp);
 		}
 		src32 -= offset;
 	}
@@ -209,8 +210,8 @@ void CopyLineSwap(void * dst, const void * src, u32 bytes)
 
 		while (size64--)
 		{
-			dst32[0] = BSWAP32(src32[1]);
-			dst32[1] = BSWAP32(src32[0]);
+			dst32[0] = std::byteswap(src32[1]);
+			dst32[1] = std::byteswap(src32[0]);
 			dst32 += 2;
 			src32 += 2;
 		}
@@ -245,10 +246,10 @@ void CopyLineSwap32(void * dst, const void * src, u32 bytes)
 
 		while (size128--)
 		{
-			dst32[0] = BSWAP32(src32[2]);
-			dst32[1] = BSWAP32(src32[3]);
-			dst32[2] = BSWAP32(src32[0]);
-			dst32[3] = BSWAP32(src32[1]);
+			dst32[0] = std::byteswap(src32[2]);
+			dst32[1] = std::byteswap(src32[3]);
+			dst32[2] = std::byteswap(src32[0]);
+			dst32[3] = std::byteswap(src32[1]);
 			dst32 += 4;
 			src32 += 4;
 		}
@@ -257,8 +258,8 @@ void CopyLineSwap32(void * dst, const void * src, u32 bytes)
 		bytes&=0xF;
 		while(bytes--)
 		{
-			*(u32*)((uintptr_t)dst32++ ^ 0x8) = BSWAP32(src32[0]);
-			*(u32*)((uintptr_t)dst32++ ^ 0x8) = BSWAP32(src32[1]);
+			*(u32*)((uintptr_t)dst32++ ^ 0x8) = std::byteswap(src32[0]);
+			*(u32*)((uintptr_t)dst32++ ^ 0x8) = std::byteswap(src32[1]);
 			src32+=2;
 		}
 	}

@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <stdio.h>
 #include <cstring>
+#include <bit> 
 
 #include "Interface/Cheats.h"
 #include "Core/CPU.h"
@@ -42,7 +43,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "HLEAudio/AudioPlugin.h"
 #include "HLEGraphics/GraphicsPlugin.h"
 #include "Utility/CRC.h"
-#include "Utility/FrameRateLimiter.h"
+#include "Utility/FramerateLimiter.h"
 #include "System/IO.h"
 #include "Base/Macros.h"
 #include "Interface/Preferences.h"
@@ -63,7 +64,7 @@ static void DumpROMInfo( const ROMHeader & header )
 	// The "Header" is actually something to do with the PI_DOM_*_OFS values...
 	DBGConsole_Msg(0, "Header:          0x%02x%02x%02x%02x", header.x1, header.x2, header.x3, header.x4);
 	DBGConsole_Msg(0, "Clockrate:       0x%08x", header.ClockRate);
-	DBGConsole_Msg(0, "BootAddr:        0x%08x", BSWAP32(header.BootAddress));
+	DBGConsole_Msg(0, "BootAddr:        0x%08x", std::byteswap(header.BootAddress));
 	DBGConsole_Msg(0, "Release:         0x%08x", header.Release);
 	DBGConsole_Msg(0, "CRC1:            0x%08x", header.CRC1);
 	DBGConsole_Msg(0, "CRC2:            0x%08x", header.CRC2);
@@ -650,39 +651,3 @@ u32 ROM_GetTvTypeFromID( u8 country_id )
 	return OS_TV_NTSC;
 }
 
-ECicType ROM_GenerateCICType( const u8 * p_rom_base )
-{
-	u32	cic = 0;
-
-	for(u32 i = 0; i < 0xFC0; i++)
-	{
-		cic = cic + (u8) p_rom_base[0x40 + i];
-	}
-
-	switch( cic )
-	{
-	case 0x33a27:	return CIC_6101;	// TWINE
-	case 0x3421e:	return CIC_6101;	// Starfox
-	case 0x34044:	return CIC_6102;	// Mario
-	case 0x357d0:	return CIC_6103;	// Banjo
-	case 0x47a81:	return CIC_6105;	// Zelda
-	case 0x371cc:	return CIC_6106;	// F-Zero
-	case 0x343c9:	return CIC_6106;	// ???
-	default:
-//		DAEDALUS_ERROR("Unknown CIC Code");
-		return CIC_UNKNOWN;
-	}
-}
-
-const char * ROM_GetCicName( ECicType cic_type )
-{
-	switch(cic_type)
-	{
-	case CIC_6101:	return "CIC-6101";
-	case CIC_6102:	return "CIC-6102";
-	case CIC_6103:	return "CIC-6103";
-	case CIC_6105:	return "CIC-6105";
-	case CIC_6106:	return "CIC-6106";
-	default:		return "?";
-	}
-}

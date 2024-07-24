@@ -39,7 +39,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Debug/DBGConsole.h"
 #include "HLEAudio/AudioBuffer.h"
 #include "HLEAudio/HLEAudioInternal.h"
-#include "Utility/FrameRateLimiter.h"
+#include "Utility/FramerateLimiter.h"
 #include "System/Thread.h"
 #include "System/Timing.h"
 

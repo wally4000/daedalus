@@ -23,7 +23,7 @@
 #include "Input/InputManager.h"
 #include "Interface/RomDB.h"
 #include "System/SystemInit.h"
-#include "Test/BatchTest.h"
+#include "Utility/BatchTest.h"
 
 #include "UI/UserInterface.h"
 #include "UI/RomSelector.h"

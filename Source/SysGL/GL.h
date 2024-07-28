@@ -1,7 +1,7 @@
 #ifndef SYSGL_GL_H_
 #define SYSGL_GL_H_
 
-#include <GL/glew.h>
+
 #include <SDL2/SDL_opengl.h>
 #include <SDL2/SDL.h>
 
@@ -10,6 +10,7 @@
 
 extern SDL_Window * gWindow;
 extern SDL_Renderer * gSdlRenderer;
+
 // FIXME: burn all of this with fire.
 
 void sceGuFog(float mn, float mx, u32 col);

@@ -43,22 +43,35 @@ bool shouldQuit = false;
 
 EAudioPluginMode enable_audio = APM_ENABLED_ASYNC;
 
-#ifdef DAEDALUS_LOG
-void log2file(const char *format, ...) {
-	__gnuc_va_list arg;
-	int done;
-	va_start(arg, format);
-	char msg[512];
-	done = vsprintf(msg, format, arg);
-	va_end(arg);
-	snprintf(msg, sizeof(msg),  "%s\n", msg);
-	std::ofstream log("sdmc:/DaedalusX64.log", std::ios::out);
-	if (log.is_open) {
-		log.write(reinterpret_cast<char*>(msg), strlen(msg));
-		log.close();
-	}
+void log2file(const std::filesystem::path& baseDir, const char* format, ...) {
+    va_list arg;
+    va_start(arg, format);
+
+    char msg[512];
+    vsnprintf(msg, sizeof(msg), format, arg);
+
+    va_end(arg);
+
+    // Safely append a newline character
+    size_t msg_len = strlen(msg);
+    if (msg_len < sizeof(msg) - 1) {
+        msg[msg_len] = '\n';
+        msg[msg_len + 1] = '\0';
+    } else {
+        msg[sizeof(msg) - 2] = '\n';
+        msg[sizeof(msg) - 1] = '\0';
+    }
+
+    std::filesystem::path logFilePath = baseDir / "DaedalusX64.log";
+    std::ofstream log(logFilePath, std::ios::out | std::ios::app); // Open in append mode
+    if (log.is_open()) {
+        log.write(msg, strlen(msg));
+        log.close();
+    } else {
+        // Handle the error case where the file could not be opened
+        std::cerr << "Failed to open log file: " << logFilePath << std::endl;
+    }
 }
-#endif
 
 static void CheckDSPFirmware()
 {	
@@ -138,7 +151,7 @@ int main(int argc, char* argv[])
 	std::string rom = UI::DrawRomSelector();
 	std::filesystem::path RomPath = baseDir / "Roms" / std::string(rom);
 
-	System_Open(RomPath.string().c_str());
+	System_Open(RomPath.string());
 	CPU_Run();
 	System_Close();
 	}

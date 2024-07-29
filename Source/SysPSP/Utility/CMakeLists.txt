@@ -11,10 +11,8 @@ add_library(Utility_PSP OBJECT
                                 exception.cpp 
                                 FastMemcpyPSP.cpp 
                                 ModulePSP.cpp
-                                VolatileMemPSP.cpp
-                                ${PROJECT_SOURCE_DIR}/Source/SysPosix/Utility/TimingPosix.cpp 
+                                VolatileMemPSP.cpp 
                                 ${PROJECT_SOURCE_DIR}/Source/SysPosix/Utility/ThreadPosix.cpp
-                                ${PROJECT_SOURCE_DIR}/Source/SysPosix/Utility/IOPosix.cpp
                                 ${ADDITIONAL}
             )
 

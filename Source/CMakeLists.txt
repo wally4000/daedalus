@@ -112,6 +112,7 @@ endif()
 		option(DAEDALUS_SIM_DOUBLES "Simulate Doubles" ON)
 		option(INTRAFONT "Use Native Fonts" ON) #If this is off, SDL will be enabled
 		option(DAEDALUS_SDL "Enable SDL" OFF)
+		option(AudioOutput "Use old library" ON)
 
 	elseif(UNIX)
 		option(DAEDALUS_SDL "SDL Build" ON)

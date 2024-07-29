@@ -107,8 +107,9 @@ bool loadShader(const std::filesystem::path& shader_path)
 	}
 	gN64FragmentLibrary  = shader_code;
 
-	return true;
 	}
+
+	return true;
 }
 
 bool initgl()

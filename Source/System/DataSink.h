@@ -1,7 +1,7 @@
 #ifndef UTILITY_DATASINK_H_
 #define UTILITY_DATASINK_H_
 
-#include <stdio.h>
+
 #include "Utility/Paths.h"
 class DataSink
 {

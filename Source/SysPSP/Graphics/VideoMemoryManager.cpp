@@ -3,7 +3,7 @@
 
 #include "Base/Types.h"
 
-#include <stdio.h>
+
 #include <pspge.h>
 
 #include "Utility/VolatileMem.h"

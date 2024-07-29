@@ -17,7 +17,7 @@ homepage: http://wordpress.fx-world.org
 #include "System/Timing.h"
 
 #include <cstring>
-#include <stdio.h>
+
 
 //*****************************************************************************
 //Copy native N64 memory with CPU only //Corn

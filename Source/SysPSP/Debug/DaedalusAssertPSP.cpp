@@ -25,7 +25,7 @@
 #ifdef DAEDALUS_ENABLE_ASSERTS
 
 #include <stdarg.h>
-#include <stdio.h>
+
 
 #include <pspdebug.h>
 #include <pspctrl.h>

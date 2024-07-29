@@ -4,11 +4,11 @@
 #define UTILITY_VOLATILEMEM_H_
 
 #ifdef DAEDALUS_PSP
-void* malloc_volatile_PSP(size_t size);
+void* malloc_volatile_PSP(std::size_t size);
 void free_volatile_PSP(void* ptr);
 #endif
 
-inline void* malloc_volatile(size_t size)
+inline void* malloc_volatile(std::size_t size)
 {
 #ifdef DAEDALUS_PSP
 	return malloc_volatile_PSP(size);

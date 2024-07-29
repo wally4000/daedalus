@@ -1,6 +1,6 @@
 #include <3ds.h>
 #include <GL/picaGL.h>
-#include <stdio.h>
+
 
 #include "UserInterface.h"
 

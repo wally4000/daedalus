@@ -1,7 +1,7 @@
 
 // Taken from PicoDrive's libretro implementation for 3DS.
 #include <3ds.h>
-#include <stdio.h>
+
 
 #include "MemoryCTR.h"
 

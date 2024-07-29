@@ -2,7 +2,7 @@
 #include "Base/Types.h"
 #include "HLEAudio/AudioPlugin.h"
 #include "Config/ConfigOptions.h"
-#include <stdio.h>
+
 #include <SDL2/SDL.h>
 #include "Config/ConfigOptions.h"
 #include "Core/Memory.h"

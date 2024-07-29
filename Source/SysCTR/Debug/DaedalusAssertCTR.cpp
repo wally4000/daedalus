@@ -20,7 +20,7 @@
 
 
 
-#include <stdio.h>
+
 #include "Base/Assert.h"
 
 #ifdef DAEDALUS_ENABLE_ASSERTS

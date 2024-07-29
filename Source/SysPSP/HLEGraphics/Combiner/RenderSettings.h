@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef SYSPSP_HLEGRAPHICS_COMBINER_RENDERSETTINGS_H_
 #define SYSPSP_HLEGRAPHICS_COMBINER_RENDERSETTINGS_H_
 
-#include <stdio.h>
+
 
 #include <string>
 #include <vector>

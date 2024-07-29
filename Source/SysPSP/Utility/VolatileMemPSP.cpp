@@ -11,7 +11,7 @@ http://gitorious.org/~jjs/ags/ags-for-psp
 #include "Base/Types.h"
 
 #include <malloc.h>
-#include <stdio.h>
+
 
 #include <pspkernel.h>
 #include <psppower.h>

@@ -2,7 +2,7 @@
 #include <pspkernel.h>
 #include <pspsysevent.h>
 
-#include <stdio.h>
+
 #include <string.h>
 #include <pspge.h>
 

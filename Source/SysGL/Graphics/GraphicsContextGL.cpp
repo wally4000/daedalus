@@ -2,7 +2,7 @@
 
 #include "Base/Types.h"
 
-#include <stdio.h>
+
 
 #include <GL/glew.h>
 

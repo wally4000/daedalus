@@ -12,7 +12,7 @@
 #include "System/Timing.h"
 #include <pthread.h>
 
-EAudioPluginMode gAudioPluginEnabled = APM_ENABLED_ASYNC;
+EAudioPluginMode gAudioPluginEnabled = APM_ENABLED_SYNC;
 
 pthread_t Asyncthread;
 int  Asyncthreadreturn;

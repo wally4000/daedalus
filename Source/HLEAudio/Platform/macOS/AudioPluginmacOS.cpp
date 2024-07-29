@@ -45,7 +45,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <pthread.h>
 
-EAudioPluginMode gAudioPluginEnabled = APM_DISABLED;
+EAudioPluginMode gAudioPluginEnabled = APM_ENABLED_SYNC;
 
 pthread_t Asyncthread;
 int  Asyncthreadreturn;

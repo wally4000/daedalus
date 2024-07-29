@@ -1,10 +1,12 @@
+add_subdirectory(Platform)
+
 add_library(HLEAudio OBJECT
                     ABI1.cpp
                     ABI2.cpp
-                    ABI3.cpp
                     ABI3mp3.cpp 
-                    AudioBuffer.cpp
                     ABI_ADPCM.cpp 
+                    AudioBuffer.cpp
+                    ABI3.cpp
                     ABI_Buffers.cpp 
                     ABI_Filters.cpp 
                     ABI_MixerInterleave.cpp 
@@ -16,3 +18,5 @@ add_library(HLEAudio OBJECT
 
 list(APPEND daed_libs "HLEAudio")
 set(daed_libs ${daed_libs} PARENT_SCOPE)
+
+message( ${daed_libs})

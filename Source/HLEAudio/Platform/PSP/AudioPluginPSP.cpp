@@ -26,12 +26,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
 #include "Base/Types.h"
-#include <stdio.h>
-#include <new>
 
 #include <pspkernel.h>
 #include <pspaudiolib.h>
 #include <pspaudio.h>
+#include <cstdlib>
+#include <iostream>
 
 #include "Config/ConfigOptions.h"
 #include "Core/CPU.h"
@@ -43,9 +43,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "HLEAudio/HLEAudioInternal.h"
 #include "HLEAudio/AudioBuffer.h"
 #include "HLEAudio/AudioPlugin.h"
-// #include "SysPSP/Utility/JobManager.h"
 #include "SysPSP/Utility/CacheUtil.h"
-// #include "SysPSP/Utility/JobManager.h"
 #include "Utility/FramerateLimiter.h"
 #include "System/Thread.h"
 
@@ -54,21 +52,21 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "SysPSP/PRX/MediaEngine/me.h"
 #include "SysPSP/Utility/ModulePSP.h"
 
-bool gLoadedMediaEnginePRX {false};
-
-volatile me_struct *mei;
-
+bool gLoadedMediaEnginePRX = false;
+std::unique_ptr<me_struct, decltype(&free)> mei(nullptr, &free);
 bool InitialiseMediaEngine()
 {
 	if ( gLoadedMediaEnginePRX == false)
 	{
 		if( CModule::Load("Plugins/mediaengine.prx") < 0 )	return false;
 
-		mei = (volatile struct me_struct *)malloc_64(sizeof(struct me_struct));
-		mei = (volatile struct me_struct *)(make_uncached_ptr(mei));
+		mei.reset(reinterpret_cast<me_struct*>(malloc_64(sizeof(me_struct))));
+		// mei = (volatile struct me_struct *)malloc_64(sizeof(struct me_struct));
+	        mei = std::unique_ptr<me_struct, decltype(&free)>(
+            reinterpret_cast<me_struct*>(make_uncached_ptr(mei.get())), &free);
 		sceKernelDcacheWritebackInvalidateAll();
 
-		if (InitME(mei) == 0)
+		if (InitME(mei.get()) == 0)
 		{
 			gLoadedMediaEnginePRX = true;
 			return true;
@@ -83,8 +81,9 @@ bool InitialiseMediaEngine()
 	}
 	else
 	{
-		printf("Media Engine already Initialised\n");
+		std::cout <<  "Media Engine already initialised" << std::endl;
 	}
+	return true;
 }
 
 #endif
@@ -242,7 +241,7 @@ EProcessResult	AudioPluginPSP::ProcessAList()
 		case APM_ENABLED_ASYNC:
 			{
 				sceKernelDcacheWritebackInvalidateAll();
-				if(BeginME( mei, (int)&Audio_Ucode, (int)NULL, -1, NULL, -1, NULL) < 0){
+				if(BeginME( mei.get(), (int)&Audio_Ucode, (int)NULL, -1, NULL, -1, NULL) < 0){
 						Audio_Ucode();
 						result = PR_COMPLETED;
 						break;
@@ -262,7 +261,7 @@ EProcessResult	AudioPluginPSP::ProcessAList()
 
 void audioCallback( void * buf, unsigned int length, void * userdata )
 {
-	AudioPluginPSP * ac( reinterpret_cast< AudioPluginPSP * >( userdata ) );
+	auto ac = reinterpret_cast< AudioPluginPSP * >( userdata );
 
 	ac->FillBuffer( reinterpret_cast< Sample * >( buf ), length );
 }

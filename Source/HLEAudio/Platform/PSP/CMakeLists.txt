@@ -1,0 +1,7 @@
+if(DAEDALUS_SDL)
+add_library(AudioPlugin OBJECT ${PROJECT_SOURCE_DIR}/Source/HLEAudio/SDL/AudioPluginSDL.cpp)
+elseif(AUDIOOUTPUT)
+add_library(AudioPlugin OBJECT old/AudioOutput.cpp old/AudioPluginPSP.cpp)
+else()
+add_library(AudioPlugin OBJECT AudioPluginPSP.cpp)
+endif()

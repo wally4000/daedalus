@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "RomFile/RomFileMemory.h"
 #include "Utility/MemoryHeap.h"
-
+#include "Utility/MemoryPool.h"
 #include <stdlib.h>
 #include <iostream> 
 
@@ -42,8 +42,11 @@ public:
 	virtual void	Free(void * ptr);
 
 private:
+
 #ifdef DAEDALUS_PSP
 	CMemoryHeap *	mRomMemoryHeap;
+#else
+		std::allocator<char> allocator;
 #endif
 };
 
@@ -105,7 +108,8 @@ void * IROMFileMemory::Alloc( u32 size )
 #ifdef DAEDALUS_PSP
 	return mRomMemoryHeap->Alloc( size );
 #else
-	return malloc( size );
+	void* ptr = allocator.allocate(size);
+	return ptr;
 #endif
 }
 
@@ -115,7 +119,8 @@ void  IROMFileMemory::Free(void * ptr)
 #ifdef DAEDALUS_PSP
 	mRomMemoryHeap->Free( ptr );
 #else
-std::cout << "Freeing Memory" << std::endl;
-	free( ptr );
+std::cout << "Freeing Rom  Memory" << std::endl;
+std::allocator<char> allocator;
+	allocator.deallocate(static_cast<char*>(ptr), 1);
 #endif
 }

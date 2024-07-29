@@ -197,9 +197,9 @@ void HandleEndOfFrame()
 		CGraphicsContext::Get()->SwitchToLcdDisplay();
 		CGraphicsContext::Get()->ClearAllSurfaces();
 
-		CDrawText::Initialise();
+	if(!CDrawText::Initialise()) {}
 
-		CUIContext *	p_context( CUIContext::Create() );
+		auto	p_context = CUIContext::Create();
 
 		if(p_context != NULL)
 		{

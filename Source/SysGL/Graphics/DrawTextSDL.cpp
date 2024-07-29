@@ -22,7 +22,7 @@ TTF_Font *gFonts[] =
 };
 DAEDALUS_STATIC_ASSERT(std::size(gFonts) == CDrawText::NUM_FONTS);
 
-void CDrawText::Initialise()
+bool CDrawText::Initialise()
 {
     #ifdef DAEDALUS_PSP
         // I dunno, maybe 8?
@@ -38,6 +38,8 @@ void CDrawText::Initialise()
     {
 		printf( "SDL could not open TTF Font! SDL Error: %s\n", SDL_GetError() );
 	}
+
+    return true;
 
 }
 

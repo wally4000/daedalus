@@ -811,7 +811,10 @@ bool IGraphicsContext::Initialise()
 	sceGuFinish();
 
 	// Initialize DrawText
-	CDrawText::Initialise();
+	if(!CDrawText::Initialise())
+	{
+		return false;
+	}
 
 	// The app is ready to go
 	mInitialised = true;

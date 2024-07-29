@@ -42,7 +42,7 @@ intraFont *gFonts[] =
 DAEDALUS_STATIC_ASSERT(std::size(gFonts) == CDrawText::NUM_FONTS);
 
 
-void CDrawText::Initialise()
+bool CDrawText::Initialise()
 {
 	intraFontInit();
 
@@ -55,6 +55,8 @@ void CDrawText::Initialise()
 		DAEDALUS_ASSERT(gFonts[i] != NULL, "Unable to load font (or forgot!)");
 	}
 #endif
+
+return true;
 }
 
 

@@ -119,9 +119,12 @@ bool initgl()
 	p /= shader_path;
 
 	
-	loadShader(p);
-	
+	if(!loadShader(p))
+	{
 	std::cout << "Loading Shader File: " << p << std::endl;
+	}
+	
+
 	// Only do software emulation of mirror_s/mirror_t if we're not doing accurate UV handling
 	gRDPStateManager.SetEmulateMirror(!gAccurateUVPipe);
 

@@ -6,7 +6,7 @@
 #include "Core/Memory.h"
 #include "Ultra/ultra_os.h"
 
-#include <stddef.h>		// ofsetof
+#include <cstddef>		// ofsetof
 
 /*
 typedef struct OSMesgQueue_s {

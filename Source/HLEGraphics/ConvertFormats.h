@@ -21,7 +21,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define HLEGRAPHICS_CONVERTFORMATS_H_
 
 // convert rgba values (0-255 per channel) to a dword in A8R8G8B8 order..
-#define CONVERT_RGBA(r,g,b,a)  (a<<24) | (b<<16) | (g<<8) | r
+constexpr u32 convert_rgba(u8 r, u8 g, u8 b, u8 a) noexcept {
+    return (static_cast<u32>(a) << 24) | 
+           (static_cast<u32>(b) << 16) | 
+           (static_cast<u32>(g) << 8)  | 
+           static_cast<u32>(r);
+}
+// #define CONVERT_RGBA(r,g,b,a)  (a<<24) | (b<<16) | (g<<8) | r
 
 #include <array>
 
@@ -89,7 +95,7 @@ static std::array<const u8, 32> FiveToEight = {
 
  static inline u32 RGBA32(u8 a, u8 b, u8 g, u8 r)
  {
-	 return CONVERT_RGBA(r, g, b, a);
+	 return convert_rgba(r, g, b, a);
  }
 
 static inline u32 RGBA16(u16 v)
@@ -98,27 +104,27 @@ static inline u32 RGBA16(u16 v)
 	u32 g = FiveToEight[(v>> 6)&0x1f];
 	u32 b = FiveToEight[(v>> 1)&0x1f];
 	u32 a = ((v     )&0x01)? 255 : 0;
-	return CONVERT_RGBA(r, g, b, a);
+	return convert_rgba(r, g, b, a);
 }
 
 static inline u32 IA16(u16 v)
 {
 	u32 i = (v>>8)&0xff;
 	u32 a = (v   )&0xff;
-	return CONVERT_RGBA(i, i, i, a);
+	return convert_rgba(i, i, i, a);
 }
 
 static inline u32 I4(u8 v)
 {
 	u32 i = FourToEight[v & 0x0f];
-	return CONVERT_RGBA(i, i, i, i);
+	return convert_rgba(i, i, i, i);
 }
 
 static inline u32 IA4(u8 v)
 {
 	u32 i = ThreeToEight[(v & 0x0f) >> 1];
 	u32 a = OneToEight[(v & 0x01)];
-	return CONVERT_RGBA(i, i, i, a);
+	return convert_rgba(i, i, i, a);
 }
 
 static inline u32 YUV16(s32 Y, s32 U, s32 V)
@@ -130,7 +136,7 @@ static inline u32 YUV16(s32 Y, s32 U, s32 V)
     r = r < 0 ? 0 : (r > 255 ? 255 : r);
     g = g < 0 ? 0 : (g > 255 ? 255 : g);
     b = b < 0 ? 0 : (b > 255 ? 255 : b);
-    return CONVERT_RGBA(r, g, b, 255);
+    return convert_rgba(r, g, b, 255);
 }
 
 static inline u16 YUVtoRGBA(u8 y, u8 u, u8 v)

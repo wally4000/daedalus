@@ -32,10 +32,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Config/ConfigOptions.h"
 
 #include "Ultra/ultra_R4300.h"
-#include "System/IO.h"
 #include "Utility/StringUtil.h"
-#include "Utility/VolatileMem.h"
-#include <filesystem>
+#include "Utility/Paths.h"
 
 //
 // Cheatcode routines and format based from 1964
@@ -236,7 +234,7 @@ static void CheatCodes_Clear()
 
 	if(codegrouplist != nullptr)
 	{
-		free_volatile(codegrouplist);
+		free(codegrouplist);
 		codegrouplist = nullptr;
 	}
 }
@@ -365,7 +363,7 @@ bool CheatCodes_Read(const char *rom_name, const char *file [[maybe_unused]], u8
 		// Allocate memory for groups
 		//
 //		printf("number of cheats loaded %d | %d kbs used of memory\n",numberofgroups,(numberofgroups *sizeof(CODEGROUP))/ 1024);
-		codegrouplist = (CODEGROUP *) malloc_volatile(numberofgroups *sizeof(CODEGROUP));
+		codegrouplist = (CODEGROUP *) malloc(numberofgroups *sizeof(CODEGROUP));
 		if(codegrouplist == nullptr)
 		{
 			//printf("Cannot allocate memory to load cheat code");

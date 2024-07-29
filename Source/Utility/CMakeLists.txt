@@ -5,7 +5,7 @@ add_library(Utility OBJECT
                             FramerateLimiter.cpp
                             Hash.cpp 
                             IniFile.cpp 
-                            MemoryHeap.cpp  
+                            MemoryHeap.cpp
                             Paths.cpp
                             Profiler.cpp  
                             Stream.cpp 

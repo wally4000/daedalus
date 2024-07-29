@@ -21,7 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define UTILITY_TRANSLATE_H_
 
 #include "Base/Types.h"
-#include <filesystem>
+#include "Utility/Paths.h"
 #include <string>
 
 bool		 Translate_Init();

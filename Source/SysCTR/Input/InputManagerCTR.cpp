@@ -24,14 +24,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <cstring>
 #include <vector>
 #include <3ds.h>
-#include <filesystem>
+#include "Utility/Paths.h"
 
 #include "Config/ConfigOptions.h"
 #include "Debug/DBGConsole.h"
 #include "Math/Math.h"
 #include "Utility/MathUtil.h"
 #include "Utility/IniFile.h"
-#include "System/IO.h"
 #include "Base/Macros.h"
 #include "Interface/Preferences.h"
 #include "Utility/Stream.h"

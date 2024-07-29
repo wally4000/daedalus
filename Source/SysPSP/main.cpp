@@ -61,7 +61,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "System/SystemInit.h"
 #include "Utility/BatchTest.h"
-#include "System/IO.h"
 #include "Utility/ModulePSP.h"
 #include "Interface/Preferences.h"
 #include "Utility/Profiler.h"
@@ -70,7 +69,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Utility/Timer.h"
 
 
-#include <filesystem>
+#include "Utility/Paths.h"
 
 #ifdef DAEDALUS_SDL
 #include <SDL2/SDL.h>

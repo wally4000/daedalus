@@ -31,7 +31,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "RomFile/RomFileCache.h"
 #include "RomFile/RomFileMemory.h"
 #include "Utility/Stream.h"
-#include "System/IO.h"
 
 #include <cstring> 
 

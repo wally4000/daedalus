@@ -36,7 +36,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Core/ROM.h"
 #include "Input/InputManager.h"
 #include "Interface/RomDB.h"
-#include "System/IO.h"
+#include "Utility/Paths.h"
 
 
 #include "Utility/Translate.h"
@@ -99,7 +99,7 @@ template<> bool	CSingleton< CPreferences >::Create()
 CPreferences::~CPreferences()
 {
 }
-#include <filesystem>
+#include "Utility/Paths.h"
 IPreferences::IPreferences()
 :	mDirty( false )
 {

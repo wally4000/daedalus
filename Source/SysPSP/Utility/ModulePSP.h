@@ -19,7 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #ifndef SYSPSP_UTILITY_MODULEPSP_H_
 #define SYSPSP_UTILITY_MODULEPSP_H_
-#include <filesystem>
+#include "Utility/Paths.h"
 namespace CModule
 {
 	void Unload( int id );

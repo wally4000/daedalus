@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Base/Types.h"
 
 #include <ctype.h>
-#include <filesystem>
+#include "Utility/Paths.h"
 #include <iostream>
 #include <fstream>
 #include <format>
@@ -38,7 +38,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Debug/DBGConsole.h"
 #include "OSHLE/patch.h"		// For GetCorrectOp
 #include "Ultra/ultra_R4300.h"
-#include "System/IO.h"
 #include "Debug/PrintOpCode.h"
 
 

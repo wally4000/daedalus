@@ -18,7 +18,7 @@
 #include "Interface/RomDB.h"
 #include "System/SystemInit.h"
 
-#include "System/IO.h"
+
 #include "Interface/Preferences.h"
 #include "RomFile/RomFile.h"
 

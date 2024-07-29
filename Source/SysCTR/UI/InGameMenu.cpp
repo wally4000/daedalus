@@ -22,7 +22,7 @@
 #include "Interface/RomDB.h"
 #include "System/SystemInit.h"
 #include "Utility/BatchTest.h"
-#include "System/IO.h"
+
 #include "Interface/Preferences.h"
 #include "Utility/Profiler.h"
 #include "System/Thread.h"

@@ -63,8 +63,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #ifdef DUMPOSFUNCTIONS
 #include "Debug/Dump.h"
-#include "System/IO.h"
-
 static const char * const gEventStrings[23] =
 {
 	"OS_EVENT_SW1",

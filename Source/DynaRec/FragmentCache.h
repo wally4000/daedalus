@@ -31,7 +31,7 @@ class	CCodeBufferManager;
 #include <vector>
 #include <array>
 #include <memory>
-#include <filesystem>
+#include "Utility/Paths.h"
 
 struct FHashT
 {

@@ -20,7 +20,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "Base/Types.h"
 #include "Debug/Synchroniser.h"
-#include <filesystem>
+#include "Utility/Paths.h"
 
 #ifdef DAEDALUS_ENABLE_SYNCHRONISATION
 
@@ -29,7 +29,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Debug/DBGConsole.h"
 #include "Debug/Dump.h"
 #include "Utility/MathUtil.h"
-#include "System/IO.h"
 #include "System/CompressedStream.h"
 
 

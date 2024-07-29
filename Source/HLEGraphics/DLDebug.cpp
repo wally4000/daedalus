@@ -5,13 +5,12 @@
 #ifdef DAEDALUS_DEBUG_DISPLAYLIST
 #include <stdarg.h>
 #include <format>
-#include <filesystem>
+#include "Utility/Paths.h"
 #include "Core/ROM.h"
 #include "Debug/DBGConsole.h"
 #include "Debug/Dump.h"
 #include "HLEGraphics/RDP.h"
 #include "Ultra/ultra_gbi.h"
-#include "System/IO.h"
 #include "Base/Macros.h"
 
 

@@ -46,7 +46,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Utility/BatchTest.h"
 #include "uCodes/UcodeDefs.h"
 #include "uCodes/Ucode.h"
-#include "System/IO.h"
 #include "Utility/Profiler.h"
 
 

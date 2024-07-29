@@ -18,7 +18,6 @@
 #include "SysGL/GL.h"
 #include "SysGL/HLEGraphics/RendererGL.h"
 
-#include "System/IO.h"
 #include "Base/Macros.h"
 #include "Utility/Profiler.h"
 

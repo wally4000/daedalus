@@ -27,7 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <set>
 #include <map>
 #include <fstream>
-#include <filesystem>
+#include "Utility/Paths.h"
 #include <iostream>
 
 #include "Core/ROM.h"
@@ -35,8 +35,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Debug/DBGConsole.h"
 #include "Interface/RomDB.h"
 #include "Utility/IniFile.h"
-#include "System/IO.h"
-
+#include "Utility/Paths.h"
 namespace
 {
 //

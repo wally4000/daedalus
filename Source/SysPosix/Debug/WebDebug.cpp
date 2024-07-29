@@ -18,11 +18,11 @@
 #include <string>
 #include <vector>
 #include <fstream>
-#include <filesystem>
+#include "Utility/Paths.h"
 
 #include "Debug/DBGConsole.h"
 #include "Utility/MathUtil.h"
-#include "System/IO.h"
+
 #include "Base/Macros.h"
 #include "Utility/StringUtil.h"
 #include "System/Thread.h"

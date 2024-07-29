@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "Math/Vector2.h"
 #include <memory>
-#include <filesystem>
+#include "Utility/Paths.h"
 
 #ifdef DAEDALUS_GL
 #include "SysGL/GL.h"

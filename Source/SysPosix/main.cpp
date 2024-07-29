@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Interface/RomDB.h"
 #include "System/SystemInit.h"
 #include "Utility/BatchTest.h"
-#include "System/IO.h"
+
 #include "Config/ConfigOptions.h"
 #include "Interface/Preferences.h"
 #include "Utility/Translate.h"
@@ -32,7 +32,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <SDL2/SDL.h>
 #include <vector>
-#include <filesystem>
+#include "Utility/Paths.h"
 #include <iostream>
 #include <algorithm>
 

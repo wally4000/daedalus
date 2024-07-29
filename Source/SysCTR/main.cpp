@@ -28,7 +28,6 @@
 #include "UI/UserInterface.h"
 #include "UI/RomSelector.h"
 
-#include "System/IO.h"
 #include "Interface/Preferences.h"
 #include "Utility/Profiler.h"
 #include "System/Thread.h"

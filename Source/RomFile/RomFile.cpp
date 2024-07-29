@@ -27,11 +27,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "RomFile/RomFileCompressed.h"
 #include "RomFile/RomFileUncompressed.h"
 #include "Utility/Stream.h"
-#include "System/IO.h"
 
 #include <algorithm>
 #include <string.h>
-#include <filesystem>
+#include "Utility/Paths.h"
 
 
 std::shared_ptr<ROMFile> ROMFile::Create( const std::filesystem::path& filename )

@@ -21,15 +21,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define SYSPSP_HLEAUDIO_AUDIOPLUGINPSP_H_
 
 #include "HLEAudio/AudioPlugin.h"
+#include <memory> 
 
 class AudioOutput;
 
 class CAudioPluginPsp : public CAudioPlugin
 {
 private:
-	CAudioPluginPsp();
+
 public:
-	static CAudioPluginPsp *		Create();
+	CAudioPluginPsp();
+	static std::unique_ptr<CAudioPluginPsp>		Create();
 
 
 	virtual ~CAudioPluginPsp();

@@ -57,12 +57,12 @@ static const u32	PSP_NUM_SAMPLES {512};
 static SceUID bufferEmpty {};
 
 static s32 sound_channel {PSP_AUDIO_NEXT_CHANNEL};
-static volatile s32 sound_volume {PSP_VOLUME_MAX};
+static volatile s32 sound_volume {PSP_AUDIO_VOLUME_MAX};
 static volatile u32 sound_status {0};
 
 static volatile int pcmflip {0};
-static s16 __attribute__((aligned(16))) pcmout1[PSP_NUM_AUDIO_SAMPLES]; // # of stereo samples
-static s16 __attribute__((aligned(16))) pcmout2[PSP_NUM_AUDIO_SAMPLES];
+static s16 __attribute__((aligned(16))) pcmout1[PSP_NUM_SAMPLES]; // # of stereo samples
+static s16 __attribute__((aligned(16))) pcmout2[PSP_NUM_SAMPLES];
 
 static bool audio_open {false};
 
@@ -159,7 +159,7 @@ AudioOutput::AudioOutput()
 	// Allocate audio buffer with malloc_64 to avoid cached/uncached aliasing
 	void * mem = malloc_64( sizeof( CAudioBuffer ) );
 	mAudioBuffer = new( mem ) CAudioBuffer( BUFFER_SIZE );
-	mAudioBufferUncached = (CAudioBuffer*)make_unached_ptr(mem);
+	mAudioBufferUncached = (CAudioBuffer*)make_uncached_ptr(mem);
 	// Ideally we could just invalidate this range?
 	dcache_wbinv_range_unaligned( mAudioBuffer, mAudioBuffer+sizeof( CAudioBuffer ) );
 }

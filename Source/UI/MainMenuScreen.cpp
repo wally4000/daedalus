@@ -100,7 +100,7 @@ class IMainMenuScreen : public CMainMenuScreen, public CUIScreen
 				bool				IsOptionValid( EMenuOption option ) const;
 
 				void				OnRomSelected( const char * rom_filename );
-				void				OnSavestateSelected( const char * savestate_filename );
+				void				OnSavestateSelected( const std::filesystem::path savestate_filename );
 				void				OnStartEmulation();
 
 	private:
@@ -323,7 +323,7 @@ void	IMainMenuScreen::OnRomSelected( const char * rom_filename )
 
 // This feature is not really stable
 
-void	IMainMenuScreen::OnSavestateSelected( const char * savestate_filename )
+void	IMainMenuScreen::OnSavestateSelected( const std::filesystem::path savestate_filename )
 {
 	// If the CPU is running we need to queue a request to load the state
 	// (and possibly switch roms). Otherwise we just load the rom directly

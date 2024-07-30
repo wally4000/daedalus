@@ -77,6 +77,7 @@ class ISavestateSelectorComponent : public CSavestateSelectorComponent
 		std::vector<std::string> 		mElementTitle;
 		bool					mSlotEmpty[ NUM_SAVESTATE_SLOTS ];
 		std::filesystem::path		mPVFilename[ NUM_SAVESTATE_SLOTS ];
+		std::filesystem::path 		mPVScreenshot [NUM_SAVESTATE_SLOTS ];
 		s8						mPVExists[ NUM_SAVESTATE_SLOTS ];	//0=skip, 1=file exists, -1=show no preview
 		std::shared_ptr<CNativeTexture>	mPreviewTexture;
 		u32						mLastPreviewLoad;
@@ -102,9 +103,9 @@ namespace
 	   void MakeSaveSlotPath(std::filesystem::path& path, std::filesystem::path& png_path, u32 slot_idx, const std::filesystem::path& slot_path)
     {
 		//XXXX Todo Add support for alternative directories
-		std::filesystem::create_directory("SaveStates");
-        std::filesystem::path save_directory = "SaveStates";
+        std::filesystem::path save_directory = setBasePath("SaveStates");
         std::filesystem::path full_directory = save_directory / slot_path;
+		std::filesystem::create_directory(full_directory);
 
         std::string filename_png = std::format("saveslot{}.ss.png", slot_idx);
         std::string filename_ss = std::format("saveslot{}.ss", slot_idx);
@@ -176,8 +177,7 @@ void ISavestateSelectorComponent::LoadSlots() {
     for (u32 i = 0; i < NUM_SAVESTATE_SLOTS; ++i) {
        std::string str = std::string("Slot ") + std::to_string(i + 1) + ": ";
 		 
-        std::filesystem::path filename_ss;
-        MakeSaveSlotPath(filename_ss, mPVFilename[i], i, current_slot_path);
+        MakeSaveSlotPath(mPVFilename[i], mPVScreenshot[i], i, current_slot_path);
 		// Is outputting filenames correctly
         mPVExists[i] = std::filesystem::exists(mPVFilename[i]) ? 1 : -1;
 

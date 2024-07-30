@@ -116,11 +116,11 @@ MemFuncWrite 	g_MemoryLookupTableWrite[0x4000];
 void * 			g_pMemoryBuffers[NUM_MEM_BUFFERS];
 
 
-#include "Memory_Read.inl"
-#include "Memory_WriteValue.inl"
+#include "Memory_Read.h"
+#include "Memory_WriteValue.h"
 
 #ifndef DAEDALUS_SILENT
-#include "Memory_ReadInternal.inl"
+#include "Memory_ReadInternal.h"
 #endif
 
 bool Memory_Init()

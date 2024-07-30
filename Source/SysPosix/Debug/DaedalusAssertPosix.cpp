@@ -27,6 +27,7 @@
 #include <stdarg.h>
 
 #include <stdlib.h>
+#include <stdio.h>
 
 DaedalusAssertHook gAssertHook = NULL;
 

@@ -7,4 +7,5 @@
 
 extern const std::filesystem::path baseDir;
 
+std::filesystem::path setBasePath(const std::filesystem::path& path);
 #endif //UTILITY_PATHS_H

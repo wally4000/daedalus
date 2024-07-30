@@ -102,10 +102,8 @@ CPreferences::~CPreferences()
 #include "Utility/Paths.h"
 IPreferences::IPreferences()
 :	mDirty( false )
-{
-		std::filesystem::path ini_filename = baseDir;
-	ini_filename /= "preferences.ini";
-	OpenPreferencesFile( ini_filename );
+{;
+	OpenPreferencesFile( setBasePath("Preferences.ini"));
 }
 
 IPreferences::~IPreferences()
@@ -128,7 +126,6 @@ bool IPreferences::OpenPreferencesFile( const std::filesystem::path  &filename )
 	mFilename = filename;
 
 	auto p_ini_file = CIniFile::Create( filename ) ;
-	// CIniFile * p_ini_file( CIniFile::Create( filename ) );
 	if( p_ini_file == NULL )
 	{
 		return false;

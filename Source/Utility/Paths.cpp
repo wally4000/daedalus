@@ -20,7 +20,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "Base/Types.h"
 #include "Utility/Paths.h"
-#include "Utility/Paths.h"
+#include <iostream>
+
 /*
     Declare the base DaedalusX64 directory for your device.
     If it doesn't require a custom path then all files will appear in the current directory.
@@ -33,3 +34,12 @@ const std::filesystem::path baseDir = "ux0:/data";
 #else
 const std::filesystem::path baseDir = std::filesystem::current_path();
 #endif
+
+// TODO Create directory structure here
+
+std::filesystem::path setBasePath(const std::filesystem::path& path)
+{
+    auto combinedPath = baseDir / path;
+    std::cout << "Path set for:" << path << "to:" << combinedPath << std::endl;
+    return combinedPath;
+}

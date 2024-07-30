@@ -151,10 +151,8 @@ template<> bool	CSingleton< CRomSettingsDB >::Create()
 	DAEDALUS_ASSERT_Q(mpInstance == nullptr);
 	#endif
 	mpInstance = std::make_shared<IRomSettingsDB>();
-	std::filesystem::path p = baseDir;
-	p /= "roms.ini";
 
-	mpInstance->OpenSettingsFile( p );
+	mpInstance->OpenSettingsFile( setBasePath("roms.ini") );
 
 	return true;
 }
@@ -220,8 +218,9 @@ static RomID	RomIDFromString( const char * str )
 
 bool IRomSettingsDB::OpenSettingsFile( const std::filesystem::path &filename )
 {
-	std::filesystem::path mFilename = baseDir;
-	mFilename /= filename;
+	setBasePath(filename);	
+	// std::filesystem::path mFilename = baseDir;
+	// mFilename /= filename;
 
 	auto p_ini_file = CIniFile::Create(filename);
 	if( p_ini_file == nullptr )

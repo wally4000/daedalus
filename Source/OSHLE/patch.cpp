@@ -959,9 +959,12 @@ fail_find:
 
 static void Patch_FlushCache()
 {
+	std::filesystem::path path = setBasePath("SaveGames/Cache");
+	std::filesystem::path name = g_ROM.mFileName.filename();
+	name.replace_extension("hle");
+	path /= name;
 
-	std::filesystem::path name = Save_As(g_ROM.mFileName, ".hle", "SaveGames/Cache");
-	std::ofstream fp(name, std::ios::binary);
+	std::ofstream fp(path, std::ios::binary);
 
 	if (fp.is_open())
 	{
@@ -1009,9 +1012,12 @@ static void Patch_FlushCache()
 
 static bool Patch_GetCache()
 {
+	std::filesystem::path path = setBasePath("SaveGames/Cache");
+	std::filesystem::path name = g_ROM.mFileName.filename();
+	name.replace_extension("hle");
+	path /= name;
 
-	std::filesystem::path name = Save_As(g_ROM.mFileName, ".hle", "SaveGames/Cache");
-	std::fstream fp(name, std::ios::in |std::ios::binary);
+	std::fstream fp(path, std::ios::in |std::ios::binary);
 
 	if(fp.is_open())
 	{

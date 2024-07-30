@@ -253,11 +253,8 @@ bool Translate_Read(u32 idx, const std::filesystem::path& dir)
 
 	// Build path where we'll load the translation file(s)
 	
-	std::filesystem::path path = baseDir / dir;
-	std::filesystem::path language = gLanguage[ idx ].c_str();
-	std::filesystem::path ext  = ".lng";
-	path /= language;
-	path += ext;
+	const std::string languageFile = "Language/" + gLanguage[idx] + ".lng";
+	const std::filesystem::path& path = setBasePath(languageFile);
 	
 
 	std::cout << "Language Path: " << path << std::endl;

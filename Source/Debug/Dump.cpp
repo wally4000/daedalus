@@ -59,20 +59,6 @@ void Dump_GetDumpDirectory(std::filesystem::path& rootdir, const std::filesystem
 
 }
 
-// Fetch the filename, extension, create the output file.
-std::filesystem::path Save_As(const std::filesystem::path filename, const std::filesystem::path extension, std::filesystem::path dest)
-{
-	std::filesystem::create_directories(baseDir/"SaveGames/Cache/"); // Create the Save Directories if not already done
-
-	std::filesystem::path path = baseDir;
-	
-	std::filesystem::path file = filename.filename();
-	file.replace_extension(extension);	
-	path /= dest;
-	std::filesystem::path gSaveFileName = path /= file;
-	return gSaveFileName;
-
-}
 
 #ifndef DAEDALUS_SILENT
 //*****************************************************************************

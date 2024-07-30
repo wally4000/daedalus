@@ -30,7 +30,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <cstring> 
 #include <vector>
 #include <fstream>
-
+#include <algorithm>
 
 static void InitMempackContent();
 
@@ -72,13 +72,15 @@ bool Save_Reset()
 	gSaveDirty = false;
 	if (gSaveSize > 0)
 	{
-		gSaveFileName = Save_As(g_ROM.mFileName, ext, "SaveGames/");
-		std::fstream file(gSaveFileName, std::ios::in | std::ios::out | std::ios::binary);
+		std::filesystem::path saveDir = setBasePath("SaveGames");
+		gSaveFileName = g_ROM.mFileName;
+		std::filesystem::path fullPath = saveDir / (gSaveFileName.filename().string());
+		fullPath.replace_extension(ext);
+		std::cout << "SaveFile is: " << fullPath << std::endl;
+		std::ifstream file(fullPath, std::ios::binary);
 		if (file.is_open())
-
-		// if (fp != nullptr)
 		{
-			DBGConsole_Msg(0, "Loading save from [C%s]", gSaveFileName.string().c_str());
+			DBGConsole_Msg(0, "Loading save from [C%s]", fullPath.string().c_str());
 
 			std::vector<u8> buffer(2048);
 			u8 * dst = (u8*)g_pMemoryBuffers[MEM_SAVE];
@@ -92,31 +94,39 @@ bool Save_Reset()
 					dst[d+i] = buffer[i^U8_TWIDDLE];
 				}
 			}
-			// fclose(fp);
+
 		}
 		else
 		{
-			DBGConsole_Msg(0, "Save File [C%s] cannot be found.", gSaveFileName.string().c_str());
+			DBGConsole_Msg(0, "Save File [C%s] cannot be found.", fullPath.string().c_str());
 		}
 	}
 
 	// init mempack, we always assume the presence of the mempack for simplicity 
 	{	
-		gSaveFileName = Save_As(g_ROM.mFileName, ".mpk", "SaveGames/");
-		std::fstream file(gSaveFileName, std::ios::in |std::ios::out |std::ios::binary);
-		if (file.is_open())
+		std::filesystem::path saveDir = setBasePath("SaveGames");
+		gSaveFileName = g_ROM.mFileName;
+		std::filesystem::path fullPath = saveDir / (gSaveFileName.filename().string());
+		fullPath.replace_extension(".mpk");
+		bool fileExists = std::filesystem::exists(fullPath); 
+		std::cout << "Mempak is: " << fullPath << std::endl;
+		std::fstream file(fullPath, std::ios::in | std::ios::out | std::ios::binary);
+		if (!file)
 		{
-			DBGConsole_Msg(0, "Loading MemPack from [C%s]", gSaveFileName.string().c_str());
-			file.read(reinterpret_cast<char*>(g_pMemoryBuffers[MEM_MEMPACK]), MemoryRegionSizes[MEM_MEMPACK]);
-			gMempackDirty = false;
+				std::cout << "Initailising MemPak" << std::endl;
+				DBGConsole_Msg(0, "MemPack File [C%s] cannot be found.", fullPath.string().c_str());
+			 InitMempackContent();
+			 gMempackDirty = true;
+
 		}
 		else
-		{
-			DBGConsole_Msg(0, "MemPack File [C%s] cannot be found.", gSaveFileName.string().c_str());
-			InitMempackContent();
-			gMempackDirty = true;
+			{
+				std::cout << "Loading MemPak from: " << fullPath << std::endl;
+				DBGConsole_Msg(0, "Loading MemPack from [C%s]", fullPath.string().c_str());
+				file.read(static_cast<char*>(g_pMemoryBuffers[MEM_MEMPACK]), MemoryRegionSizes[MEM_MEMPACK]);
+				gMempackDirty = false;
+			}
 		}
-	}
 
 	return true;
 }
@@ -144,7 +154,7 @@ void Save_Flush()
 	if (gSaveDirty && g_ROM.settings.SaveType != SAVE_TYPE_UNKNOWN)
 	{
 		DBGConsole_Msg(0, "Saving to [C%s]", gSaveFileName.string().c_str());
-		std::fstream fp(gSaveFileName, std::ios::in | std::ios::out | std::ios::binary);
+		std::fstream fp(gSaveFileName, std::ios::in | std::ios::out | std::ios::binary | std::ios::app);
 
 		if (fp.is_open())
 		{
@@ -158,9 +168,7 @@ void Save_Flush()
 					buffer[i^U8_TWIDDLE] = src[d+i];
 				}
 				fp.write(reinterpret_cast<char*>(buffer.data()), buffer.size());
-				// fwrite(buffer, 1, sizeof(buffer), fp);
 			}
-			// fclose(fp);
 		}
 		gSaveDirty = false;
 	}
@@ -168,9 +176,11 @@ void Save_Flush()
 	if (gMempackDirty)
 	{
 		DBGConsole_Msg(0, "Saving MemPack to [C%s]", gMempackFileName.string().c_str());
-		std::ofstream fp(gMempackFileName, std::ios::in | std::ios::out | std::ios::binary);
+		std::ofstream fp(gMempackFileName, std::ios::out | std::ios::binary);
 		if (fp.is_open())
 		{
+			std::cout << "File opened successfully." << std::endl;
+            std::cout << "Writing " << MemoryRegionSizes[MEM_MEMPACK] << " bytes to the file." << std::endl;
 			fp.write(reinterpret_cast<char*>(g_pMemoryBuffers[MEM_MEMPACK]), MemoryRegionSizes[MEM_MEMPACK]);	
 		}
 		gMempackDirty = false;
@@ -184,7 +194,7 @@ void Save_Flush()
 //
 static const u8 gMempackInitialize[] =
 {
-	0x81,0x01,0x02,0x03, 0x04,0x05,0x06,0x07, 0x08,0x09,0x0a,0x0b, 0x0C,0x0D,0x0E,0x0F,
+    0x81,0x01,0x02,0x03, 0x04,0x05,0x06,0x07, 0x08,0x09,0x0a,0x0b, 0x0C,0x0D,0x0E,0x0F,
 	0x10,0x11,0x12,0x13, 0x14,0x15,0x16,0x17, 0x18,0x19,0x1A,0x1B, 0x1C,0x1D,0x1E,0x1F,
 	0xFF,0xFF,0xFF,0xFF, 0x05,0x1A,0x5F,0x13, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00,
 	0xFF,0xFF,0xFF,0xFF, 0xFF,0xFF,0xFF,0xFF, 0xFF,0xFF,0x01,0xFF, 0x66,0x25,0x99,0xCD,
@@ -200,22 +210,22 @@ static const u8 gMempackInitialize[] =
 	0xFF,0xFF,0xFF,0xFF, 0xFF,0xFF,0xFF,0xFF, 0xFF,0xFF,0x01,0xFF, 0x66,0x25,0x99,0xCD,
 	0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00,
 	0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00,
-	0x00,0x71,0x00,0x03, 0x00,0x03,0x00,0x03, 0x00,0x03,0x00,0x03, 0x00,0x03,0x00,0x03
+	0x00,0x71,0x00,0x03, 0x00,0x03,0x00,0x03, 0x00,0x03,0x00,0x03, 0x00,0x03,0x00,0x03,
 };
 
 static void InitMempackContent()
 {
 	for (size_t dst_off = 0; dst_off < MemoryRegionSizes[MEM_MEMPACK]; dst_off += 32 * 1024)
 	{
-		u8 * mempack = (u8*)g_pMemoryBuffers[MEM_MEMPACK] + dst_off;
-
-		memcpy(mempack, gMempackInitialize, 272);
-
-		for (u32 i = 272; i < 0x8000; i += 2)
+		u8 * mempack = static_cast<u8*>(g_pMemoryBuffers[MEM_MEMPACK]) + dst_off;
+		for (u32 i = 0; i < 0x8000; i += 2)
 		{
-			mempack[i]   = 0x00;
-			mempack[i+1] = 0x03;
+			mempack[i + 0] = 0x00;
+			mempack[i + 1] = 0x03;
 		}
+
+		std::cout << "size of gMempak Initalise: " << sizeof(gMempackInitialize) << std::endl;
+		memcpy(mempack, gMempackInitialize, sizeof(gMempackInitialize));
 
 		DAEDALUS_ASSERT(dst_off + 0x8000 <= MemoryRegionSizes[MEM_MEMPACK], "Buffer overflow");
 		DAEDALUS_ASSERT(dst_off + sizeof(gMempackInitialize) <= MemoryRegionSizes[MEM_MEMPACK], "Buffer overflow");

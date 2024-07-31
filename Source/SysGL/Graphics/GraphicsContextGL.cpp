@@ -21,8 +21,11 @@
 SDL_Window * gWindow = nullptr;
 SDL_Renderer * gSdlRenderer = nullptr;
 SDL_GLContext gContext = nullptr;
-
+// u32 mDumpNextScreen = false;
+extern bool gTakeScreenshotSS;
 extern void HandleEndOfFrame();
+
+
 
 class GraphicsContextGL : public CGraphicsContext
 {
@@ -46,9 +49,15 @@ public:
 	virtual void ViewportType(u32 * width, u32 * height) const;
 
 	virtual void SetDebugScreenTarget( ETargetSurface buffer [[maybe_unused]] ) {}
-	virtual void DumpNextScreen() {}
-	virtual void DumpScreenShot() {}
+	void DumpNextScreen() { mDumpNextScreen = 2; }
+	virtual void DumpScreenShot();
+
 	virtual void UItoGL();
+
+private:
+	virtual void 		SaveScreenshot (const std::filesystem::path filename, s32 x, s32 y, u32 width, u32 height);
+
+	u32 mDumpNextScreen = false;
 };
 
 template<> bool CSingleton< CGraphicsContext >::Create()
@@ -66,7 +75,6 @@ GraphicsContextGL::~GraphicsContextGL()
 	gWindow = NULL;
 	SDL_Quit();
 }
-
 
 extern bool initgl();
 bool GraphicsContextGL::Initialise()
@@ -134,15 +142,25 @@ bool GraphicsContextGL::Initialise()
 }
 
 void GraphicsContextGL::UItoGL(){
-	if(gSdlRenderer != nullptr){
-	SDL_RenderPresent(gSdlRenderer);
-	SDL_RenderFlush(gSdlRenderer);
-	SDL_DestroyRenderer(gSdlRenderer);
-	gSdlRenderer = nullptr;
-	SDL_DestroyWindow(gWindow);
-	gWindow = NULL;
-	GraphicsContextGL::Initialise();
-	}
+// 	if(gSdlRenderer != nullptr){
+// 				// SDL_GL_SwapWindow(gWindow);
+// 		SDL_DestroyRenderer(gSdlRenderer);
+// 		// SDL_RenderClear(gSdlRenderer);
+// 	// SDL_RenderFlush(gSdlRenderer);
+// 		UpdateFrame(false);
+// 	// SDL_RenderPresent(gSdlRenderer);
+
+// 	}
+
+// 	// SDL_DestroyRenderer(gSdlRenderer);
+// 	// gSdlRenderer = nullptr;
+// 	// SDL_DestroyWindow(gWindow);
+// 	// gWindow = NULL;
+// 	// GraphicsContextGL::Initialise();
+	SDL_SetRenderDrawColor(gSdlRenderer, 0, 0, 0, 255);
+        SDL_RenderClear(gSdlRenderer);
+		SDL_GL_MakeCurrent(gWindow, gContext);
+		SDL_GL_SwapWindow(gWindow);
 }
 
 void GraphicsContextGL::GetScreenSize(u32 * width, u32 * height) const
@@ -221,10 +239,60 @@ void GraphicsContextGL::UpdateFrame( bool wait_for_vbl [[maybe_unused]] )
 	if (gSdlRenderer == nullptr) {
 		SDL_GL_SwapWindow(gWindow);
 	}
-
 	
 //	if( gCleanSceneEnabled ) //TODO: This should be optional
 //	{
 	//	ClearColBuffer( c32(0xff000000) ); // ToDo : Use gFillColor instead?
 	//}
+	if( mDumpNextScreen )
+	{
+		mDumpNextScreen--;
+		if (!mDumpNextScreen)
+		{
+			if(gTakeScreenshotSS)	// We are taking a screenshot for savestate
+			{
+				gTakeScreenshotSS = false;
+				StoreSaveScreenData();
+
+			}
+			else
+			{
+				DumpScreenShot();
+			}
+		}
+	}
+
+}
+
+
+void GraphicsContextGL::SaveScreenshot( const std::filesystem::path filename, s32 x, s32 y, u32 width, u32 height)
+{
+    std::cout << "Saving Screenshot" << std::endl;
+
+
+    SDL_Surface* sshot = SDL_CreateRGBSurface(0, SCREEN_WIDTH, SCREEN_HEIGHT, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
+    if (!sshot)
+    {
+        std::cerr << "Error: Unable to create SDL surface: " << SDL_GetError() << std::endl;
+        return;
+    }
+
+    std::cout << "Reading Pixels" << std::endl;
+    glReadPixels(x, SCREEN_HEIGHT - y - height, width, height, GL_RGBA, GL_UNSIGNED_BYTE, sshot->pixels);
+
+    std::cout << "Saving BMP" << std::endl;
+    if (SDL_SaveBMP(sshot, filename.string().c_str()) != 0)
+    {
+        std::cerr << "Error: Unable to save BMP: " << SDL_GetError() << std::endl;
+    }
+
+    SDL_FreeSurface(sshot);
+}
+
+void GraphicsContextGL::DumpScreenShot()
+{
+	std::cout << "Taking Screenshot" << std::endl;
+	std::filesystem::path filename = "hello.bmp";
+
+	SaveScreenshot(filename, 1920/2, 1080/2, 1920, 1080 );
 }

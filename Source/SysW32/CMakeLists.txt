@@ -1,5 +1,4 @@
 add_subdirectory(Debug)
-add_subdirectory(HLEAudio)
 add_subdirectory(Utility)
 
 

@@ -43,7 +43,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Utility/Translate.h"
 #include "Menu.h"
 
-extern void battery_info();
+
+
 
 namespace {
 	enum EMenuOption
@@ -233,6 +234,7 @@ void	IPauseScreen::Render()
 	char					info[120];
 
 #if DAEDALUS_PSP
+extern void battery_info();
 	s32 bat = scePowerGetBatteryLifePercent();
 	s32 batteryLifeTime = scePowerGetBatteryLifeTime();
 	if(!scePowerIsBatteryCharging())
@@ -247,12 +249,14 @@ void	IPauseScreen::Render()
 			snprintf(info, sizeof(info), "[%s]" ,
 			Translate_String("Battery is Charging"));
 	}
-#endif
+
 
 	// Battery Info
 	mpContext->SetFontStyle( CUIContext::FS_REGULAR );
 	mpContext->DrawTextAlign( 0, SCREEN_WIDTH - LIST_TEXT_LEFT, AT_RIGHT, CATEGORY_TEXT_TOP, info, DrawTextUtilities::TextWhiteDisabled, DrawTextUtilities::TextBlueDisabled );
-	
+	#endif
+
+
 	auto p_option_text = gMenuOptionNames[ previous ];
 	mpContext->DrawTextAlign( LIST_TEXT_LEFT, LIST_TEXT_WIDTH, AT_LEFT, y + mpContext->GetFontHeight(), p_option_text, IsOptionValid( previous ) ? valid_colour : invalid_colour );
 

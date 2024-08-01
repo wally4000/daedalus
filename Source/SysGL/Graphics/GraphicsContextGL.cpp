@@ -142,25 +142,10 @@ bool GraphicsContextGL::Initialise()
 }
 
 void GraphicsContextGL::UItoGL(){
-// 	if(gSdlRenderer != nullptr){
-// 				// SDL_GL_SwapWindow(gWindow);
-// 		SDL_DestroyRenderer(gSdlRenderer);
-// 		// SDL_RenderClear(gSdlRenderer);
-// 	// SDL_RenderFlush(gSdlRenderer);
-// 		UpdateFrame(false);
-// 	// SDL_RenderPresent(gSdlRenderer);
 
-// 	}
-
-// 	// SDL_DestroyRenderer(gSdlRenderer);
-// 	// gSdlRenderer = nullptr;
-// 	// SDL_DestroyWindow(gWindow);
-// 	// gWindow = NULL;
-// 	// GraphicsContextGL::Initialise();
-	SDL_SetRenderDrawColor(gSdlRenderer, 0, 0, 0, 255);
-        SDL_RenderClear(gSdlRenderer);
-		SDL_GL_MakeCurrent(gWindow, gContext);
-		SDL_GL_SwapWindow(gWindow);
+	SDL_DestroyRenderer(gSdlRenderer);
+	gSdlRenderer = nullptr;
+	GraphicsContextGL::Initialise();
 }
 
 void GraphicsContextGL::GetScreenSize(u32 * width, u32 * height) const

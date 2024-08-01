@@ -34,7 +34,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 static void InitMempackContent();
 
-std::filesystem::path gSaveFileName;
+static std::filesystem::path gSaveFileName;
 static bool				gSaveDirty;
 static u32				gSaveSize;
 static std::filesystem::path	gMempackFileName;
@@ -73,21 +73,20 @@ bool Save_Reset()
 	if (gSaveSize > 0)
 	{
 		std::filesystem::path saveDir = setBasePath("SaveGames");
-		gSaveFileName = g_ROM.mFileName;
-		std::filesystem::path fullPath = saveDir / (gSaveFileName.filename().string());
-		fullPath.replace_extension(ext);
-		std::cout << "SaveFile is: " << fullPath << std::endl;
-		std::ifstream file(fullPath, std::ios::binary);
+		std::filesystem::path romName = g_ROM.mFileName;
+		gSaveFileName = saveDir / (romName.filename().string());
+		gSaveFileName.replace_extension(ext);
+		std::ifstream file(gSaveFileName, std::ios::in | std::ios::binary);
 		if (file.is_open())
 		{
-			DBGConsole_Msg(0, "Loading save from [C%s]", fullPath.string().c_str());
+			DBGConsole_Msg(0, "Loading save from [C%s]", gSaveFileName.string().c_str());
 
-			std::vector<u8> buffer(2048);
+			u8 buffer[2048];
 			u8 * dst = (u8*)g_pMemoryBuffers[MEM_SAVE];
 
-			for (u32 d = 0; d < gSaveSize; d += buffer.size())
+			for (u32 d = 0; d < gSaveSize; d += sizeof(buffer))
 			{
-				file.read(reinterpret_cast<char*>(buffer.data()), buffer.size());
+				file.read(reinterpret_cast<char*>(buffer), sizeof(buffer));
 
 				for (u32 i = 0; i < sizeof(buffer); i++)
 				{
@@ -98,31 +97,28 @@ bool Save_Reset()
 		}
 		else
 		{
-			DBGConsole_Msg(0, "Save File [C%s] cannot be found.", fullPath.string().c_str());
+			DBGConsole_Msg(0, "Save File [C%s] cannot be found.", gSaveFileName.string().c_str());
 		}
 	}
 
 	// init mempack, we always assume the presence of the mempack for simplicity 
 	{	
 		std::filesystem::path saveDir = setBasePath("SaveGames");
-		gSaveFileName = g_ROM.mFileName;
-		std::filesystem::path fullPath = saveDir / (gSaveFileName.filename().string());
-		fullPath.replace_extension(".mpk");
-		bool fileExists = std::filesystem::exists(fullPath); 
-		std::cout << "Mempak is: " << fullPath << std::endl;
-		std::fstream file(fullPath, std::ios::in | std::ios::out | std::ios::binary);
+		std::filesystem::path romName = g_ROM.mFileName;
+		gMempackFileName = saveDir / (romName.filename().string());
+		gMempackFileName.replace_extension(".mpk");
+		bool fileExists = std::filesystem::exists(gMempackFileName); 
+		std::fstream file(gMempackFileName, std::ios::in | std::ios::out | std::ios::binary);
 		if (!file)
 		{
-				std::cout << "Initailising MemPak" << std::endl;
-				DBGConsole_Msg(0, "MemPack File [C%s] cannot be found.", fullPath.string().c_str());
+			DBGConsole_Msg(0, "MemPack File [C%s] cannot be found.", gMempackFileName.string().c_str());
 			 InitMempackContent();
 			 gMempackDirty = true;
 
 		}
 		else
 			{
-				std::cout << "Loading MemPak from: " << fullPath << std::endl;
-				DBGConsole_Msg(0, "Loading MemPack from [C%s]", fullPath.string().c_str());
+				DBGConsole_Msg(0, "Loading MemPack from [C%s]", gMempackFileName.string().c_str());
 				file.read(static_cast<char*>(g_pMemoryBuffers[MEM_MEMPACK]), MemoryRegionSizes[MEM_MEMPACK]);
 				gMempackDirty = false;
 			}
@@ -133,6 +129,7 @@ bool Save_Reset()
 
 void Save_Fini()
 {
+	std::cout << "Save Fini called" << std::endl;
 	gSaveDirty = true;
 	gMempackDirty = true;
 	
@@ -141,6 +138,7 @@ void Save_Fini()
 
 void Save_MarkSaveDirty()
 {
+		std::cout << "Save Mark Dirty called" << std::endl;
 	gSaveDirty = true;
 }
 
@@ -153,12 +151,12 @@ void Save_Flush()
 {
 	if (gSaveDirty && g_ROM.settings.SaveType != SAVE_TYPE_UNKNOWN)
 	{
-		DBGConsole_Msg(0, "Saving to [C%s]", gSaveFileName.string().c_str());
-		std::fstream fp(gSaveFileName, std::ios::in | std::ios::out | std::ios::binary | std::ios::app);
 
+		DBGConsole_Msg(0, "Saving to [C%s]", gSaveFileName.string().c_str());
+		std::ofstream fp(gSaveFileName, std::ios::binary);
 		if (fp.is_open())
 		{
-			std::vector<u8> buffer(2048);
+			u8 buffer[2048];
 			u8 * src = (u8*)g_pMemoryBuffers[MEM_SAVE];
 
 			for (u32 d = 0; d < gSaveSize; d += sizeof(buffer))
@@ -167,7 +165,7 @@ void Save_Flush()
 				{
 					buffer[i^U8_TWIDDLE] = src[d+i];
 				}
-				fp.write(reinterpret_cast<char*>(buffer.data()), buffer.size());
+				fp.write(reinterpret_cast<char*>(buffer), sizeof(buffer));
 			}
 		}
 		gSaveDirty = false;
@@ -175,8 +173,10 @@ void Save_Flush()
 
 	if (gMempackDirty)
 	{
+		// XXX We could have file generate on write and initiaise if not already done.
+
 		DBGConsole_Msg(0, "Saving MemPack to [C%s]", gMempackFileName.string().c_str());
-		std::ofstream fp(gMempackFileName, std::ios::out | std::ios::binary);
+		std::ofstream fp(gMempackFileName, std::ios::out );
 		if (fp.is_open())
 		{
 			std::cout << "File opened successfully." << std::endl;

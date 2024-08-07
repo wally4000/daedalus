@@ -2,6 +2,7 @@ add_library(Core OBJECT
 
                         CPU.cpp 
                         DMA.cpp 
+                        Dynamo.cpp
                         FlashMem.cpp  
                         Interpret.cpp 
                         Interrupt.cpp 

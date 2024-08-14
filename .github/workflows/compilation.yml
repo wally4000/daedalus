@@ -75,7 +75,7 @@ jobs:
 
   build-ctr:
     runs-on: ubuntu-latest
-    container: devkitpro/devkitarm:latest
+    container: wally4000/daedalusx64:latest
     steps:
       - uses: actions/checkout@v4 
 

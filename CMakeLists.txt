@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.24)
+cmake_minimum_required(VERSION 3.20) #C++ 23 support
 project (DaedalusX64 LANGUAGES C CXX ASM)
 
 message(${CMAKE_SYSTEM_PROCESSOR} " Detected") 

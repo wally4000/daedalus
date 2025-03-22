@@ -65,6 +65,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 std::unique_ptr<CGraphicsPlugin> gGraphicsPlugin;
 std::unique_ptr<CAudioPlugin> gAudioPlugin;
 
+extern bool InitController();
+extern void ShutdownController();
+
 static bool InitAudioPlugin()
 {
 	std::unique_ptr<CAudioPlugin> audio_plugin = CreateAudioPlugin();
@@ -165,7 +168,7 @@ static const std::array<SysEntityEntry, 17> gSysInitTable =
 	{"GraphicsContext",		CGraphicsContext::Create,	CGraphicsContext::Destroy},
 	{"Preference",			CPreferences::Create,		CPreferences::Destroy},
 	{"Memory",				Memory_Init,				Memory_Fini},
-	{"Controller",			CController::Create,		CController::Destroy},
+	{"Controller",			InitController,		ShutdownController},
 	{"RomBuffer",			RomBuffer::Create,			RomBuffer::Destroy},
 
 #if defined(DAEDALUS_POSIX) || defined(DAEDALUS_W32)

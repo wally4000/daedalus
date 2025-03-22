@@ -163,7 +163,7 @@ void DMA_SI_CopyFromDRAM( )
 void DMA_SI_CopyToDRAM( )
 {
 	// Check controller status!
-	CController::Get()->Process();
+	CController::Get().Process();
 
 	u32 mem = Memory_SI_GetRegister(SI_DRAM_ADDR_REG) & 0x1fffffff;
 	u32 * src = (u32 *)g_pMemoryBuffers[MEM_PIF_RAM];

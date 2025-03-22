@@ -62,6 +62,12 @@ public:
 
 };
 
+CInputManager& CInputManager::Get()
+{
+	static IInputManager instance;
+	return instance;
+}
+
 IInputManager::~IInputManager()
 {
 }

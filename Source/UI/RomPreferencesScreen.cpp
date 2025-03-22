@@ -71,11 +71,11 @@ namespace
 		{
 		}
 
-		virtual	void			OnNext()				{ *mSetting = (*mSetting + 1) % CInputManager::Get()->GetNumConfigurations(); }
-		virtual	void			OnPrevious()			{ *mSetting = (*mSetting + CInputManager::Get()->GetNumConfigurations() - 1) % CInputManager::Get()->GetNumConfigurations(); }
+		virtual	void			OnNext()				{ *mSetting = (*mSetting + 1) % CInputManager::Get().GetNumConfigurations(); }
+		virtual	void			OnPrevious()			{ *mSetting = (*mSetting + CInputManager::Get().GetNumConfigurations() - 1) % CInputManager::Get().GetNumConfigurations(); }
 
-		virtual const char *	GetSettingName() const	{ return CInputManager::Get()->GetConfigurationName( *mSetting ); }
-		virtual const std::string	GetDescription() const	{ return CInputManager::Get()->GetConfigurationDescription( *mSetting ); }
+		virtual const char *	GetSettingName() const	{ return CInputManager::Get().GetConfigurationName( *mSetting ); }
+		virtual const std::string	GetDescription() const	{ return CInputManager::Get().GetConfigurationDescription( *mSetting ); }
 
 	private:
 		u32 *					mSetting;

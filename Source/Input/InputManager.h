@@ -2,11 +2,11 @@
 #define INPUT_INPUTMANAGER_H_
 
 #include "Ultra/ultra_os.h"
-#include "Base/Singleton.h"
+
 
 #include <glm/glm.hpp>
 
-class CInputManager : public CSingleton< CInputManager >
+class CInputManager
 {
 	public:
 		virtual ~CInputManager() {}
@@ -23,8 +23,12 @@ class CInputManager : public CSingleton< CInputManager >
 
 		virtual void GetState( OSContPad pPad[4] ) = 0;
 
-		static bool Init() { return CInputManager::Get()->Initialise();}
-		static void Fini() { CInputManager::Get()->Finalise();}
+		static bool Init() { return CInputManager::Get().Initialise();}
+		static void Fini() { CInputManager::Get().Finalise();}
+
+		static CInputManager& Get();
+
+
 };
 
 glm::vec2	ApplyDeadzone( const glm::vec2 & in, f32 min_deadzone, f32 max_deadzone );

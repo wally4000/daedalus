@@ -252,7 +252,7 @@ void CController::Process()
 	}
 
 	// Read controller data here (here gets called fewer times than CONT_READ_CONTROLLER)
-	CInputManager::Get()->GetState( mContPads );
+	CInputManager::Get().GetState( mContPads );
 
 	bool stop = false;
 

@@ -164,7 +164,7 @@ static const std::array<SysEntityEntry, 17> gSysInitTable =
 #endif
 	{ "ROM Database", []() { (void)CRomDB::Get(); return true; }, []() {} },
 	{ "ROM Settings", InitRomSettingsDB, []() {} },
-	{"InputManager",		CInputManager::Create,		CInputManager::Destroy},
+	{"InputManager",		CInputManager::Init,		CInputManager::Fini},
 	#ifndef DAEDALUS_CTR
 	{"Language",			Translate_Init,				NULL},
 	#endif

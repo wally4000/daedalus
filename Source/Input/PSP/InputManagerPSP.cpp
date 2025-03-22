@@ -288,6 +288,12 @@ class IInputManager : public CInputManager
 		std::vector<CControllerConfig*>		mControllerConfigs;
 };
 
+
+CInputManager& CInputManager::Get()
+{
+	static IInputManager instance;
+	return instance;
+}
 //*****************************************************************************
 //
 //*****************************************************************************

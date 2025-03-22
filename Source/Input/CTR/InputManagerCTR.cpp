@@ -219,6 +219,7 @@ class CControllerConfig
 		CButtonMapping *	mButtonMappings[ NUM_N64_BUTTONS ];
 };
 
+
 CControllerConfig::CControllerConfig()
 {
 	for( u32 i = 0; i < NUM_N64_BUTTONS; ++i )
@@ -258,6 +259,13 @@ u32		CControllerConfig::GetN64ButtonsState( u32 psp_button_mask ) const
 
 	return state;
 }
+
+CInputManager& CInputManager::Get()
+{
+	static IInputManager instance;
+	return instance;
+}
+
 
 //*****************************************************************************
 //

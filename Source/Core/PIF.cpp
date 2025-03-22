@@ -507,7 +507,7 @@ bool	IController::ProcessController(u8 *cmd, u32 channel )
 		#endif
 		cmd[3] = 0x05;
 		cmd[4] = 0x00;
-		cmd[5] = CONT_STATUS_PAK_PRESENT | CONT_STATUS_PAK_CHANGED;
+		cmd[5] = CONT_STATUS_PAK_PRESENT;
 		break;
 
 	case CONT_READ_CONTROLLER:

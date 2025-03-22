@@ -175,9 +175,9 @@ IGraphicsContext::IGraphicsContext()
 	//Set up PSP Dlists in VRAM(if available)
 	void *ptr;
 	bool is_videmem;
-	CVideoMemoryManager::Get()->Alloc( DLISTSIZE, &ptr, &is_videmem );
+	CVideoMemoryManager::Get().Alloc( DLISTSIZE, &ptr, &is_videmem );
 	list[0] = (u32*)ptr;
-	CVideoMemoryManager::Get()->Alloc( DLISTSIZE, &ptr, &is_videmem );
+	CVideoMemoryManager::Get().Alloc( DLISTSIZE, &ptr, &is_videmem );
 	list[1] = (u32*)ptr;
 #endif
 }
@@ -734,13 +734,13 @@ bool IGraphicsContext::Initialise()
 	//Alloc all buffers with one call to save alloc list overhead //Corn
 	if ( PSP_TV_CABLE > 0 )
 	{
-		CVideoMemoryManager::Get()->Alloc( FRAME_SIZE + LACED_SIZE + DEPTH_SIZE, &draw_buffer, &is_videmem );
+		CVideoMemoryManager::Get().Alloc( FRAME_SIZE + LACED_SIZE + DEPTH_SIZE, &draw_buffer, &is_videmem );
 		disp_buffer =  (void*)((u32)draw_buffer + FRAME_SIZE);
 		depth_buffer = (void*)((u32)draw_buffer + FRAME_SIZE + LACED_SIZE);
 	}
 	else
 	{
-		CVideoMemoryManager::Get()->Alloc( FRAME_SIZE + FRAME_SIZE + DEPTH_SIZE, &draw_buffer, &is_videmem );
+		CVideoMemoryManager::Get().Alloc( FRAME_SIZE + FRAME_SIZE + DEPTH_SIZE, &draw_buffer, &is_videmem );
 		disp_buffer =  (void*)((u32)draw_buffer + FRAME_SIZE);
 		depth_buffer = (void*)((u32)draw_buffer + FRAME_SIZE + FRAME_SIZE);
 	}

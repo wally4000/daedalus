@@ -27,7 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Core/PIF.h"
 #include "RomFile/ROMBuffer.h"
 #include "RomFile/RomSettings.h"
-
+#include "RomFile/RomFileMemory.h"
 #include "Interface/RomDB.h"
 #include "System/SystemInit.h"
 #ifdef DAEDALUS_PSP
@@ -136,8 +136,8 @@ static void ProfilerVblCallback(void * arg)
 
 static bool Profiler_Init()
 {
-	if (!CProfiler::Create())
-		return false;
+	(void)CProfiler::Get();
+		return true;
 
 	CPU_RegisterVblCallback(&ProfilerVblCallback, NULL);
 
@@ -176,8 +176,8 @@ static const std::array<SysEntityEntry, 17> gSysInitTable =
 { "Preference", []() { (void)CPreferences::Get(); return true; }, []() {} },
 
 	{"Memory",				Memory_Init,				Memory_Fini},
-	{"Controller",			InitController,		ShutdownController},
-	{"RomBuffer",			RomBuffer::Create,			RomBuffer::Destroy},
+	{"Controller",			InitController,		NULL},
+	{ "RomBuffer", [](){ (void)CROMFileMemory::Get(); return true; }, [](){} },
 
 #if defined(DAEDALUS_POSIX) || defined(DAEDALUS_W32)
 #ifdef DAEDALUS_DEBUG_DISPLAYLIST

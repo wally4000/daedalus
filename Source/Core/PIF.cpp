@@ -169,12 +169,6 @@ bool InitController()
 	return true;
 }
 
-void ShutdownController()
-{
-	// No-op for static-local singleton
-}
-
-
 // Destructor
 
 CController::~CController() {}

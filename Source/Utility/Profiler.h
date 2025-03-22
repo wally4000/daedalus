@@ -8,14 +8,13 @@
 
 #ifdef DAEDALUS_ENABLE_PROFILING
 
-#include "Base/Singleton.h"
+
 
 struct SProfileItemHandle;
 
-class CProfiler : public CSingleton< CProfiler >
+class CProfiler
 {
-	protected:
-		friend class CSingleton< CProfiler >;
+
 	public:
 		CProfiler();
 		virtual ~CProfiler();

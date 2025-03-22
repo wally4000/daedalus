@@ -414,13 +414,10 @@ CProfiler::~CProfiler()
 	delete mpImpl;
 }
 
-template<> bool CSingleton< CProfiler >::Create()
+static CProfiler& Get()
 {
-	DAEDALUS_ASSERT_Q(mpInstance == nullptr);
-
-	mpInstance = std::make_shared<CProfiler>();
-
-	return true;
+	static CProfiler instance;
+	return instance;
 }
 
 SProfileItemHandle CProfiler::AddItem( const char * p_str )

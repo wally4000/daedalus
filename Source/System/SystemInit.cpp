@@ -166,7 +166,7 @@ static const std::array<SysEntityEntry, 17> gSysInitTable =
 
 	{"Preference",			CPreferences::Create,		CPreferences::Destroy},
 	{"Memory",				Memory_Init,				Memory_Fini},
-	{"Controller",			CController::Create,		CController::Destroy},
+	{"Controller",			Create_Controller,		Destroy_Controller},
 	{"RomBuffer",			RomBuffer::Create,			RomBuffer::Destroy},
 
 #if defined(DAEDALUS_POSIX) || defined(DAEDALUS_W32)

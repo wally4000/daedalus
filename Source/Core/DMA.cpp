@@ -36,6 +36,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "OSHLE/OSTask.h"
 #include "OSHLE/patch.h"
 #include "Utility/FastMemcpy.h"
+#include <iostream>
 
 // 1 - Ignores IMEM for speed, its not needed for HLE RSP
 // 2 - Forces a linear transfer which assumes a count of 0 and skip of 0
@@ -163,8 +164,14 @@ void DMA_SI_CopyFromDRAM( )
 void DMA_SI_CopyToDRAM( )
 {
 	// Check controller status!
-	CController::Get()->Process();
-
+	if (gController != nullptr)
+	{
+	gController->Process();
+	}
+	else
+	{
+		std::cout << "gController is null" << std::endl;
+	}
 	u32 mem = Memory_SI_GetRegister(SI_DRAM_ADDR_REG) & 0x1fffffff;
 	u32 * src = (u32 *)g_pMemoryBuffers[MEM_PIF_RAM];
 	u32 * dst = (u32 *)(g_pu8RamBase + mem);

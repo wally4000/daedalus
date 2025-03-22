@@ -274,9 +274,9 @@ void	IPauseScreen::Run()
 	CUIScreen::Run();
 
 #ifdef DAEDALUS_PSP
-	CGraphicsContext::Get()->SwitchToChosenDisplay();
+	mGraphicsContext->SwitchToChosenDisplay();
 #endif
-	CGraphicsContext::Get()->ClearAllSurfaces();
+	mGraphicsContext->ClearAllSurfaces();
 }
 
 void IPauseScreen::OnResume()

@@ -611,7 +611,7 @@ void RendererGL::RestoreRenderStates()
 	glDisable(GL_CULL_FACE);
 
 	u32 width, height;
-	CGraphicsContext::Get()->GetScreenSize(&width, &height);
+	mGraphicsContext->GetScreenSize(&width, &height);
 
 	glScissor(0,0, width,height);
 	glEnable(GL_SCISSOR_TEST);

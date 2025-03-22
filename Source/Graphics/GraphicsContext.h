@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define GRAPHICS_GRAPHICSCONTEXT_H_
 
 #include "Base/Types.h"
-#include "Base/Singleton.h"
+#include <memory> 
 
 class c32;
 
@@ -31,10 +31,14 @@ class c32;
 // multithreaded code. Threads can Grab the CGraphicsContext to prevent
 // other threads from changing/releasing any of the pointers while it is
 // running.
+class CGraphicsContext;
+extern std::unique_ptr<CGraphicsContext> mGraphicsContext;
 
-class CGraphicsContext : public CSingleton< CGraphicsContext >
+class CGraphicsContext 
 {
 public:
+	static bool Create(); 
+	static void Destroy(); 
 	virtual ~CGraphicsContext() {}
 
 	enum ETargetSurface

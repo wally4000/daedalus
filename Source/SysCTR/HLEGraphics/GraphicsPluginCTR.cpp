@@ -215,7 +215,7 @@ void CGraphicsPluginImpl::UpdateScreen()
 		
 		if(!gFrameskipActive)
 		{
-			CGraphicsContext::Get()->UpdateFrame( false );
+			mGraphicsContext->UpdateFrame( false );
 		}
 
 		static u32 current_frame = 0;

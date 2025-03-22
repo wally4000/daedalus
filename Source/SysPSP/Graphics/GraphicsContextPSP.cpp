@@ -42,6 +42,7 @@
 
 
 constexpr std::string gScreenDumpDumpPathFormat = "sd{}.png";
+std::unique_ptr<CGraphicsContext> mGraphicsContext;
 
 #define DLISTSIZE 1*1024*1024	//Size of PSP Dlist
 
@@ -146,13 +147,15 @@ private:
 //*************************************************************************************
 //
 //*************************************************************************************
-template<> bool CSingleton< CGraphicsContext >::Create()
+bool CGraphicsContext::Create()
 {
-	#ifdef DAEDALUS_ENABLE_ASSERTS
-	DAEDALUS_ASSERT_Q(mpInstance == nullptr);
-#endif
-	 mpInstance = std::make_shared<IGraphicsContext>();
-	return mpInstance->Initialise();
+    mGraphicsContext = std::make_unique<IGraphicsContext>(); 
+    return mGraphicsContext->Initialise();
+}
+
+void CGraphicsContext::Destroy()
+{
+    mGraphicsContext.reset();
 }
 
 //////////////////////////////////////////////////////////////////////

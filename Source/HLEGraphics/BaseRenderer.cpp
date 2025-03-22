@@ -269,7 +269,7 @@ void BaseRenderer::Reset()
 //*****************************************************************************
 void BaseRenderer::BeginScene()
 {
-	CGraphicsContext::Get()->BeginFrame();
+	mGraphicsContext->BeginFrame();
 
 	RestoreRenderStates();
 
@@ -285,7 +285,7 @@ void BaseRenderer::BeginScene()
 //*****************************************************************************
 void BaseRenderer::EndScene()
 {
-	CGraphicsContext::Get()->EndFrame();
+	mGraphicsContext->EndFrame();
 
 	//
 	//	Clear this, to ensure we're force to check for updates to it on the next frame
@@ -308,7 +308,7 @@ void BaseRenderer::InitViewport()
 	// Get the current display dimensions. This might change frame by frame e.g. if the window is resized.
 	u32 display_width  = 0;
 	u32 display_height = 0;
-	CGraphicsContext::Get()->ViewportType(&display_width, &display_height);
+	mGraphicsContext->ViewportType(&display_width, &display_height);
 #ifdef DAEDALUS_ENABLE_ASSERTS
 	DAEDALUS_ASSERT( display_width && display_height, "Unhandled viewport type" );
 #endif

@@ -14,12 +14,14 @@
 #include "UI/DrawText.h"
 
 #include "UI/Menu.h"
+#include <memory> 
 
 SDL_Window * gWindow = nullptr;
 SDL_Renderer * gSdlRenderer = nullptr;
 SDL_GLContext gContext = nullptr;
 
 extern void HandleEndOfFrame();
+std::unique_ptr<CGraphicsContext> mGraphicsContext;
 
 class GraphicsContextGL : public CGraphicsContext
 {
@@ -48,13 +50,6 @@ public:
 	virtual void UItoGL();
 };
 
-template<> bool CSingleton< CGraphicsContext >::Create()
-{
-	DAEDALUS_ASSERT_Q(mpInstance == nullptr);
-
-	mpInstance = std::make_shared<GraphicsContextGL>();
-	return mpInstance->Initialise();
-}
 
 
 GraphicsContextGL::~GraphicsContextGL()
@@ -65,9 +60,21 @@ GraphicsContextGL::~GraphicsContextGL()
 }
 
 
+bool CGraphicsContext::Create()
+{
+    mGraphicsContext = std::make_unique<GraphicsContextGL>(); 
+    return mGraphicsContext->Initialise();
+}
+
+void CGraphicsContext::Destroy()
+{
+    mGraphicsContext.reset();
+}
+
 extern bool initgl();
 bool GraphicsContextGL::Initialise()
 {
+
 
 	//Initialize SDL
 	if( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_EVENTS | SDL_INIT_GAMECONTROLLER ) < 0 )

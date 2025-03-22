@@ -295,10 +295,10 @@ void	IMainMenuScreen::Run()
 	CUIScreen::Run();
 
 	// switch back to the emulator display
-	CGraphicsContext::Get()->SwitchToChosenDisplay();
+	mGraphicsContext->SwitchToChosenDisplay();
 
 	// Clear everything to black - looks a bit tidier
-	CGraphicsContext::Get()->ClearAllSurfaces();
+	mGraphicsContext->ClearAllSurfaces();
 }
 
 void	IMainMenuScreen::OnRomSelected( const char * rom_filename )
@@ -363,7 +363,7 @@ void	IMainMenuScreen::OnStartEmulation()
 void DisplayRomsAndChoose(bool show_splash)
 {
 	// switch back to the LCD display
-	CGraphicsContext::Get()->SwitchToLcdDisplay();
+	mGraphicsContext->SwitchToLcdDisplay();
 
 	auto	p_context =  CUIContext::Create();
 

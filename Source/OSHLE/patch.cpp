@@ -527,15 +527,15 @@ void Patch_RecurseAndFind()
 #else
 #ifdef DAEDALUS_PSP
 		//Update patching progress on PSPscreen
-		CGraphicsContext::Get()->BeginFrame();
-		CGraphicsContext::Get()->ClearToBlack();
+		CGraphicsContext::Get().BeginFrame();
+		CGraphicsContext::Get().ClearToBlack();
 		#ifdef INTRAFONT
 		intraFontPrintf( ltn8, 480/2, (272>>1)-50, "Searching for os functions. This may take several seconds...");
 		intraFontPrintf( ltn8, 480/2, (272>>1), "OS HLE Patching: %d%%", i * 100 / (nPatchSymbols-1));
 		intraFontPrintf( ltn8, 480/2, (272>>1)-50, "Searching for %s", g_PatchSymbols[i]->Name );
 		#endif
-		CGraphicsContext::Get()->EndFrame();
-		CGraphicsContext::Get()->UpdateFrame( true );
+		CGraphicsContext::Get().EndFrame();
+		CGraphicsContext::Get().UpdateFrame( true );
 #endif
 #endif //DAEDALUS_DEBUG_CONSOLE
 		// Skip symbol if already found, or if it is a variable
@@ -626,14 +626,14 @@ void Patch_RecurseAndFind()
 #else
 #ifdef DAEDALUS_PSP
 		//Update patching progress on PSPscreen
-		CGraphicsContext::Get()->BeginFrame();
-		CGraphicsContext::Get()->ClearToBlack();
+		CGraphicsContext::Get().BeginFrame();
+		CGraphicsContext::Get().ClearToBlack();
 		#ifdef INTRAFONT
 		intraFontPrintf( ltn8, 480/2, (272>>1), "Symbols Identified: %d%%", 100 * nFound / (nPatchSymbols-1));
 		intraFontPrintf( ltn8, 480/2, (272>>1)+50, "Range 0x%08x -> 0x%08x", first, last );
 		#endif
-		CGraphicsContext::Get()->EndFrame();
-		CGraphicsContext::Get()->UpdateFrame( true );
+		CGraphicsContext::Get().EndFrame();
+		CGraphicsContext::Get().UpdateFrame( true );
 #endif
 #endif
 	}
@@ -671,13 +671,13 @@ void Patch_RecurseAndFind()
 #else
 #ifdef DAEDALUS_PSP
 		//Update patching progress on PSPscreen
-		CGraphicsContext::Get()->BeginFrame();
-		CGraphicsContext::Get()->ClearToBlack();
+		CGraphicsContext::Get().BeginFrame();
+		CGraphicsContext::Get().ClearToBlack();
 		#ifdef INTRAFONT
 		intraFontPrintf( ltn8, 480/2, 272>>1, "Variables Identified: %d%%", 100 * nFound / (nPatchVariables-1) );
 		#endif
-		CGraphicsContext::Get()->EndFrame();
-		CGraphicsContext::Get()->UpdateFrame( true );
+		CGraphicsContext::Get().EndFrame();
+		CGraphicsContext::Get().UpdateFrame( true );
 #endif
 #endif
 	}

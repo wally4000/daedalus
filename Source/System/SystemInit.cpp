@@ -172,7 +172,7 @@ static const std::array<SysEntityEntry, 17> gSysInitTable =
 { "VideoMemory", []() { (void)CVideoMemoryManager::Get(); return true; }, []() {} },
 
 #endif
-	{"GraphicsContext",		CGraphicsContext::Create,	CGraphicsContext::Destroy},
+{ "GraphicsContext", []() { return CGraphicsContext::Get().Initialise(); }, []() {} },
 	{"Preference",			CPreferences::Create,		CPreferences::Destroy},
 	{"Memory",				Memory_Init,				Memory_Fini},
 	{"Controller",			InitController,		ShutdownController},

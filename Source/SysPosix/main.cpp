@@ -88,8 +88,8 @@ void HandleEndOfFrame()
 	if (activate_pause_menu && isRunning == true)
 	{
 
-		CGraphicsContext::Get()->SwitchToLcdDisplay();
-		CGraphicsContext::Get()->ClearAllSurfaces();
+		CGraphicsContext::Get().SwitchToLcdDisplay();
+		CGraphicsContext::Get().ClearAllSurfaces();
 
 		auto p_context = CUIContext::Create();
 

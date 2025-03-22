@@ -225,7 +225,7 @@ void RendererPSP::RestoreRenderStates()
 	//sceGuDisable(GU_CLIP_PLANES);
 
 	//u32 width, height;
-	//CGraphicsContext::Get()->GetScreenSize(&width, &height);
+	//CGraphicsContext::Get().GetScreenSize(&width, &height);
 
 	//This was breaking Glover's sky and Rocket Robot's right/left sides of the screen when in un/scaled mode
 	//I think the problem was that GetScreenSize for PSP only returns 480x240, we should get the current screen size?

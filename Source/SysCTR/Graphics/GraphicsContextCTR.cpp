@@ -75,14 +75,12 @@ private:
 //*************************************************************************************
 //
 //*************************************************************************************
-template<> bool CSingleton< CGraphicsContext >::Create()
+CGraphicsContext& CGraphicsContext::Get()
 {
-	#ifdef DAEDALUS_ENABLE_ASSERTS
-	DAEDALUS_ASSERT_Q(mpInstance == nullptr);
-#endif
-	 mpInstance = std::make_shared<IGraphicsContext>();
-	return mpInstance->Initialise();
+	static IGraphicsContext instance;
+	return instance;
 }
+
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction

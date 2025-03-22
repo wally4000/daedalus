@@ -620,7 +620,7 @@ void RendererGL::RestoreRenderStates()
 
     // Scissor
     u32 width, height;
-    CGraphicsContext::Get()->GetScreenSize(&width, &height);
+    CGraphicsContext::Get().GetScreenSize(&width, &height);
     glScissor(0, 0, width, height);
     glEnable(GL_SCISSOR_TEST);
 

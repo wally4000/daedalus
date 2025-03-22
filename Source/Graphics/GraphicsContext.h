@@ -23,7 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define GRAPHICS_GRAPHICSCONTEXT_H_
 
 #include "Base/Types.h"
-#include "Base/Singleton.h"
 
 class c32;
 
@@ -32,9 +31,11 @@ class c32;
 // other threads from changing/releasing any of the pointers while it is
 // running.
 
-class CGraphicsContext : public CSingleton< CGraphicsContext >
+class CGraphicsContext
 {
 public:
+	static CGraphicsContext& Get();
+
 	virtual ~CGraphicsContext() {}
 
 	enum ETargetSurface

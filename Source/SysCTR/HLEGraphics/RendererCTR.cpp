@@ -291,7 +291,7 @@ void RendererCTR::DrawPrimitives(DaedalusVtx * p_vertices, u32 num_vertices, u32
 {
 	if((gVertexCount + num_vertices + 1) > gMaxVertices)
 	{
-		CGraphicsContext::Get()->ResetVertexBuffer();
+		CGraphicsContext::Get().ResetVertexBuffer();
 	}
 	
 	for (uint32_t i = 0; i < num_vertices; i++)

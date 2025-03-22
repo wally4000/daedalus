@@ -23,15 +23,24 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "Base/Types.h"
 #include "Base/Singleton.h"
+#include "Utility/MemoryHeap.h"
 
-class CROMFileMemory : public CSingleton< CROMFileMemory >
+class CROMFileMemory
 {
 public:
-	virtual ~CROMFileMemory();
+	static CROMFileMemory& Get();
+	void* Alloc( u32 size );
+	void Free( void * ptr );
 
-//	virtual	bool			IsAvailable() = 0;
-	virtual void * 			Alloc( u32 size ) = 0;
-	virtual void			Free( void * ptr ) = 0;
+private:
+	~CROMFileMemory();
+	CROMFileMemory();
+	CROMFileMemory(const CROMFileMemory&) = delete;
+	CROMFileMemory& operator=(const CROMFileMemory&) = delete;
+
+	#ifdef DAEDALUS_PSP
+		CMemoryHeap *	mRomMemoryHeap;
+	#endif
 };
 
 

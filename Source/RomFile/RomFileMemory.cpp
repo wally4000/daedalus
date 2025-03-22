@@ -18,49 +18,20 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 
-#include "Base/Types.h"
 
 #include "RomFile/RomFileMemory.h"
-#include "Utility/MemoryHeap.h"
 
-#include <stdlib.h>
 #include <iostream> 
 
 extern bool PSP_IS_SLIM;
 
-CROMFileMemory::~CROMFileMemory() {}
-
-
-class IROMFileMemory : public CROMFileMemory
+CROMFileMemory& CROMFileMemory::Get()
 {
-public:
-	IROMFileMemory();
-	~IROMFileMemory();
-
-//	virtual	bool	IsAvailable();
-	virtual void *	Alloc( u32 size );
-	virtual void	Free(void * ptr);
-
-private:
-#ifdef DAEDALUS_PSP
-	CMemoryHeap *	mRomMemoryHeap;
-#endif
-};
-
-
-
-template<> bool CSingleton< CROMFileMemory >::Create()
-{
-	#ifdef DAEDALUS_ENABLE_ASSERTS
-	DAEDALUS_ASSERT_Q(mpInstance == nullptr);
-	#endif
-
-	mpInstance = std::make_shared<IROMFileMemory>();
-	return mpInstance != NULL;
+	static CROMFileMemory instance;
+	return instance;
 }
 
-
-IROMFileMemory::IROMFileMemory()
+CROMFileMemory::CROMFileMemory()
 {
 #ifdef DAEDALUS_PSP
 	//
@@ -76,13 +47,11 @@ IROMFileMemory::IROMFileMemory()
 		mRomMemoryHeap = CMemoryHeap::Create( 2 * 1024 * 1024 );
 	}
 #endif
-// #ifdef DAEDALUS_POSIX
-// 	mRomMemoryHeap = CMemoryHeap::Create(21 * 1024 * 1024);
-// #endif
+
 }
 
 
-IROMFileMemory::~IROMFileMemory()
+CROMFileMemory::~CROMFileMemory()
 {
 #ifdef DAEDALUS_PSP
 	delete mRomMemoryHeap;
@@ -90,16 +59,7 @@ IROMFileMemory::~IROMFileMemory()
 }
 
 
-/*
-bool IROMFileMemory::IsAvailable()
-{
-	DAEDALUS_ASSERT( mRomMemoryHeap != NULL, "This heap isn't available" );
-
-	return mRomMemoryHeap != NULL;
-}
-*/
-
-void * IROMFileMemory::Alloc( u32 size )
+void * CROMFileMemory::Alloc( u32 size )
 {
 	std::cout << "Allocating Memory" << std::endl;
 #ifdef DAEDALUS_PSP
@@ -110,7 +70,7 @@ void * IROMFileMemory::Alloc( u32 size )
 }
 
 
-void  IROMFileMemory::Free(void * ptr)
+void  CROMFileMemory::Free(void * ptr)
 {
 #ifdef DAEDALUS_PSP
 	mRomMemoryHeap->Free( ptr );

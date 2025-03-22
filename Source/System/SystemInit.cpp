@@ -154,7 +154,7 @@ static void Profiler_Fini()
 static const std::array<SysEntityEntry, 17> gSysInitTable =
 {{
 #ifdef DAEDALUS_DEBUG_CONSOLE
-	{"DebugConsole",		CDebugConsole::Create,		CDebugConsole::Destroy},
+{ "CDebugConsole", []() { (void)CDebugConsole::Get(); return true; }, []() {} },
 #endif
 #ifdef DAEDALUS_LOG
 	{"Logger",				Debug_InitLogging},

@@ -453,14 +453,6 @@ void IInputManager::GetState( OSContPad pPad[4] )
 	}
 }
 
-template<> bool CSingleton< CInputManager >::Create()
-{
-	DAEDALUS_ASSERT_Q(mpInstance == NULL);
-
-	mpInstance = std::make_shared<IInputManager>();
-	return mpInstance->Initialise();
-}
-
 //*****************************************************************************
 //	Some utility classes for handling our expression evaluation
 //*****************************************************************************

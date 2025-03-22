@@ -98,7 +98,7 @@ namespace
 			u8 *			p_temp_buffer( new u8[ TEMP_BUFFER_SIZE ] );
 
 #ifdef DAEDALUS_DEBUG_CONSOLE
-			CDebugConsole::Get()->MsgOverwriteStart();
+			CDebugConsole::Get().MsgOverwriteStart();
 #endif
 
 			u32				offset( 0 );
@@ -110,7 +110,7 @@ namespace
 #ifdef DAEDALUS_DEBUG_CONSOLE
 				if ((offset % 0x8000) == 0)
 				{
-					CDebugConsole::Get()->MsgOverwrite(0, "Converted [M%d / %d] KB", offset /1024, total_length / 1024 );
+					CDebugConsole::Get().MsgOverwrite(0, "Converted [M%d / %d] KB", offset /1024, total_length / 1024 );
 				}
 #endif
 				u32			length_to_process( std::min( length_remaining, TEMP_BUFFER_SIZE ) );
@@ -131,8 +131,8 @@ namespace
 				length_remaining -= length_to_process;
 			}
 #ifdef DAEDALUS_DEBUG_CONSOLE
-			CDebugConsole::Get()->MsgOverwrite(0, "Converted [M%d / %d] KB", offset /1024, total_length / 1024 );
-			CDebugConsole::Get()->MsgOverwriteEnd();
+			CDebugConsole::Get().MsgOverwrite(0, "Converted [M%d / %d] KB", offset /1024, total_length / 1024 );
+			CDebugConsole::Get().MsgOverwriteEnd();
 #endif
 
 			fclose( fh );

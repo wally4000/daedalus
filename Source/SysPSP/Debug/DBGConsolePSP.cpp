@@ -54,13 +54,10 @@ private:
 	char				mFormattingBuffer[ 2048 ];
 };
 
-template<> bool	CSingleton< CDebugConsole >::Create()
+CDebugConsole& CDebugConsole::Get()
 {
-	DAEDALUS_ASSERT_Q(mpInstance == nullptr);
-
-	mpInstance = std::make_shared<IDebugConsole>();
-
-	return true;
+	static IDebugConsole instance;
+	return instance;
 }
 
 CDebugConsole::~CDebugConsole()

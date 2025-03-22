@@ -49,13 +49,11 @@ class IDebugConsole : public CDebugConsole
 		void MsgOverwriteEnd() {}
 };
 
-template<> bool CSingleton< CDebugConsole >::Create()
+
+CDebugConsole& IDebugConsole::Get()
 {
-	DAEDALUS_ASSERT(mpInstance == NULL, "Already initialised");
-
-	mpInstance = std::make_shared<IDebugConsole>();
-
-	return mpInstance ? true : false;
+	static IDebugConsole instance;
+	return instance;
 }
 
 CDebugConsole::~CDebugConsole()

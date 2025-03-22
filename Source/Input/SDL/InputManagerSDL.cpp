@@ -240,6 +240,7 @@ void IInputManager::GetState( OSContPad pPad[4] )
 		if (keys [ SDL_SCANCODE_PAGEDOWN ] ){  pPad[0].button |= R_CBUTTONS;}
 	}
 
+}
 
 u32	 IInputManager::GetNumConfigurations() const
 {

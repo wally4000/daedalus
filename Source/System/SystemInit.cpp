@@ -65,8 +65,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 std::unique_ptr<CGraphicsPlugin> gGraphicsPlugin;
 std::unique_ptr<CAudioPlugin> gAudioPlugin;
 
+
 extern bool InitController();
 extern void ShutdownController();
+
 
 static bool InitAudioPlugin()
 {

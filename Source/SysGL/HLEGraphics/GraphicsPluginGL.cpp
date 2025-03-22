@@ -139,9 +139,8 @@ bool CGraphicsPluginImpl::Initialise()
 	{
 		return false;
 	}
-
-	(void)CTextureCache::Get();
-
+	gTextureCache = std::make_unique<CTextureCache>();
+	
 	if (!DLParser_Initialise())
 	{
 		return false;

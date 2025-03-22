@@ -29,10 +29,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 struct TextureInfo;
 
 
+class CTextureCache; // Forward declaration
+
+extern std::unique_ptr<CTextureCache> gTextureCache;
 class CTextureCache 
 {
 public:
-	static CTextureCache& Get();
 	CTextureCache();
 	virtual ~CTextureCache();
 
@@ -84,5 +86,6 @@ private:
 	Mutex				mDebugMutex;
 #endif
 };
+
 
 #endif // HLEGRAPHICS_TEXTURECACHE_H_

@@ -148,7 +148,7 @@ int main(int argc, char **argv)
 						try 
 						{ 
 							std::filesystem::path dir = std::filesystem::absolute(relative_path);
-							CRomDB::Get()->AddRomDirectory(dir.string().c_str());
+							CRomDB::Get().AddRomDirectory(dir.string().c_str());
 						}
 						catch (const std::filesystem::filesystem_error& e) 
 						{
@@ -178,7 +178,7 @@ int main(int argc, char **argv)
 			//
 			// Commit the preferences and roms databases before starting to run
 			//
-			CRomDB::Get()->Commit();
+			CRomDB::Get().Commit();
 			CPreferences::Get()->Commit();
 
 			CPU_Run();
@@ -192,7 +192,7 @@ int main(int argc, char **argv)
 		DisplayRomsAndChoose(show_splash);
 		show_splash = false;
 
-		// CRomDB::Get()->Commit();
+		// CRomDB::Get().Commit();
 		CPreferences::Get()->Commit();
 		isRunning = true;
 		CPU_Run();

@@ -22,8 +22,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "HLEGraphics/CachedTexture.h"
 
-#include "Base/Singleton.h"
-
 #include "System/Mutex.h"
 
 #include <vector>
@@ -31,9 +29,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 struct TextureInfo;
 
 
-class CTextureCache : public CSingleton< CTextureCache >
+class CTextureCache 
 {
 public:
+	static CTextureCache& Get();
 	CTextureCache();
 	virtual ~CTextureCache();
 

@@ -35,13 +35,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 //#define PROFILE_TEXTURE_CACHE
 
-template<> bool CSingleton< CTextureCache >::Create()
+CTextureCache& CTextureCache::Get()
 {
-	#ifdef DAEDALUS_ENABLE_ASSERTS
-	DAEDALUS_ASSERT_Q(mpInstance == nullptr);
-#endif
-	mpInstance = std::make_shared<CTextureCache>();
-	return mpInstance != nullptr;
+	static CTextureCache instance;
+	return instance;
 }
 
 CTextureCache::CTextureCache()

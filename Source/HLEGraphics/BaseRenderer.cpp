@@ -1744,7 +1744,7 @@ void BaseRenderer::UpdateTileSnapshot( u32 index, u32 tile_idx )
 		}
 		else
 		{
-			std::shared_ptr<CNativeTexture> texture = CTextureCache::Get()->GetOrCreateTexture( ti );
+			std::shared_ptr<CNativeTexture> texture = CTextureCache::Get().GetOrCreateTexture( ti );
 
 			if( texture != NULL && texture != mBoundTexture[ index ] )
 			{
@@ -1912,7 +1912,7 @@ void BaseRenderer::PrepareTexRectUVs(TexCoord * puv0, TexCoord * puv1)
 //*****************************************************************************
 std::shared_ptr<CNativeTexture> BaseRenderer::LoadTextureDirectly( const TextureInfo & ti )
 {
-	std::shared_ptr<CNativeTexture> texture = CTextureCache::Get()->GetOrCreateTexture( ti );
+	std::shared_ptr<CNativeTexture> texture = CTextureCache::Get().GetOrCreateTexture( ti );
 	if (texture)
 	{
 		texture->InstallTexture();

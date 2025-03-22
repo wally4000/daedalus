@@ -162,7 +162,7 @@ static const std::array<SysEntityEntry, 17> gSysInitTable =
 #ifdef DAEDALUS_ENABLE_PROFILING
 	{"Profiler",			Profiler_Init,				Profiler_Fini},
 #endif
-	{"ROM Database",		CRomDB::Create,				CRomDB::Destroy},
+	{ "ROM Database", []() { (void)CRomDB::Get(); return true; }, []() {} },
 	{ "ROM Settings", InitRomSettingsDB, []() {} },
 	{"InputManager",		CInputManager::Create,		CInputManager::Destroy},
 	#ifndef DAEDALUS_CTR

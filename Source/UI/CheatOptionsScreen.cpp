@@ -146,7 +146,7 @@ ICheatOptionsScreen::ICheatOptionsScreen( CUIContext * p_context, const RomID & 
 ,	mRomName( "?" )
 ,	mIsFinished( false )
 {
-	CPreferences::Get()->GetRomPreferences( mRomID, &mRomPreferences );
+	CPreferences::Get().GetRomPreferences( mRomID, &mRomPreferences );
 
 	RomSettings			settings;
 	if ( CRomSettingsDB::Get().GetSettings( rom_id, &settings ) )
@@ -283,9 +283,9 @@ void	ICheatOptionsScreen::Run()
 
 void	ICheatOptionsScreen::OnConfirm()
 {
-	CPreferences::Get()->SetRomPreferences( mRomID, mRomPreferences );
+	CPreferences::Get().SetRomPreferences( mRomID, mRomPreferences );
 
-	CPreferences::Get()->Commit();
+	CPreferences::Get().Commit();
 
 	mRomPreferences.Apply();
 

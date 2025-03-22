@@ -173,7 +173,8 @@ static const std::array<SysEntityEntry, 17> gSysInitTable =
 
 #endif
 { "GraphicsContext", []() { return CGraphicsContext::Get().Initialise(); }, []() {} },
-	{"Preference",			CPreferences::Create,		CPreferences::Destroy},
+{ "Preference", []() { (void)CPreferences::Get(); return true; }, []() {} },
+
 	{"Memory",				Memory_Init,				Memory_Fini},
 	{"Controller",			InitController,		ShutdownController},
 	{"RomBuffer",			RomBuffer::Create,			RomBuffer::Destroy},

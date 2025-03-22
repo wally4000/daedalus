@@ -203,7 +203,7 @@ void HandleEndOfFrame()
 
 
 		// Commit the preferences database before starting to run
-		// CPreferences::Get()->Commit();
+		// CPreferences::Get().Commit();
 	}
 
 	//	Reset the elapsed time to avoid glitches when we restart
@@ -245,7 +245,7 @@ int main(int argc, char* argv[])
 			show_splash = false;
 
 			CRomDB::Get().Commit();
-			CPreferences::Get()->Commit();
+			CPreferences::Get().Commit();
 
 			CPU_Run();
 			System_Close();

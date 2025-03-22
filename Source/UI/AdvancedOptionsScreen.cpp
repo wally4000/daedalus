@@ -81,7 +81,7 @@ IAdvancedOptionsScreen::IAdvancedOptionsScreen( CUIContext * p_context, const Ro
 ,	mRomName( "?" )
 ,	mIsFinished( false )
 {
-	CPreferences::Get()->GetRomPreferences( mRomID, &mRomPreferences );
+	CPreferences::Get().GetRomPreferences( mRomID, &mRomPreferences );
 
 	RomSettings			settings;
 	if ( CRomSettingsDB::Get().GetSettings( rom_id, &settings ) )
@@ -183,8 +183,8 @@ void	IAdvancedOptionsScreen::Run()
 
 void	IAdvancedOptionsScreen::OnConfirm()
 {
-	CPreferences::Get()->SetRomPreferences( mRomID, mRomPreferences );
-	CPreferences::Get()->Commit();
+	CPreferences::Get().SetRomPreferences( mRomID, mRomPreferences );
+	CPreferences::Get().Commit();
 	mRomPreferences.Apply();
 	mIsFinished = true;
 }

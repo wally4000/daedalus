@@ -22,23 +22,70 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef UTILITY_PREFERENCES_H_
 #define UTILITY_PREFERENCES_H_
 
-#include "Base/Singleton.h"
-#include "Interface/GlobalPreferences.h"
+#include "Base/Types.h"
+
+#include <fstream>
+#include <string>
+#include <set>
+#include <map>
+#include <filesystem>
+
+#include "Core/ROM.h"
+#include "Input/InputManager.h"
+#include "Interface/ConfigOptions.h"
+#include "Interface/RomDB.h"
 #include "Interface/RomPreferences.h"
+#include "Interface/GlobalPreferences.h"
+#include "Utility/FramerateLimiter.h"
+#include "Utility/IniFile.h"
+#include "Utility/Paths.h"
+#include "Utility/Translate.h"
 
 class RomID;
 
-class CPreferences : public CSingleton<CPreferences>
+
+// Audio is disabled on the PSP by default, but enabled on other platforms.
+#ifdef DAEDALUS_PSP
+static const EAudioPluginMode      kDefaultAudioPluginMode      = APM_DISABLED;
+static const ETextureHashFrequency kDefaultTextureHashFrequency = THF_DISABLED;
+#else
+static const EAudioPluginMode      kDefaultAudioPluginMode = APM_ENABLED_SYNC;
+static const ETextureHashFrequency kDefaultTextureHashFrequency = THF_EVERY_FRAME;
+#endif
+
+static u32						GetTexureHashFrequencyAsFrames( ETextureHashFrequency thf );
+static ETextureHashFrequency	GetTextureHashFrequencyFromFrames( u32 frames );
+
+static u32						GetFrameskipValueAsInt( EFrameskipValue value );
+static EFrameskipValue			GetFrameskipValueFromInt( u32 value );
+
+
+extern EFrameskipValue			gFrameskipValue;
+extern f32 						gZoomX;
+
+class CPreferences
 {
    public:
-	virtual ~CPreferences();
+   static CPreferences& Get();
 
-	virtual bool OpenPreferencesFile(const std::filesystem::path &filename) = 0;
-	virtual void Commit() = 0;
+	 CPreferences(); 
+	 ~CPreferences();
 
-	virtual bool GetRomPreferences(const RomID& id, SRomPreferences* preferences) const = 0;
-	virtual void SetRomPreferences(const RomID& id, const SRomPreferences& preferences) = 0;
-};
+	 bool OpenPreferencesFile(const std::filesystem::path &filename);
+	 void Commit();
+
+	 bool GetRomPreferences(const RomID& id, SRomPreferences* preferences) const;
+	 void SetRomPreferences(const RomID& id, const SRomPreferences& preferences);
+
+	private:
+		void OutputSectionDetails(const RomID & id, const SRomPreferences & preferences, std::ofstream& fh);
+
+		using PreferencesMap = std::map<RomID, SRomPreferences>;
+
+		PreferencesMap			mPreferences;
+		bool					mDirty;
+		std::filesystem::path	mFilename;
+	};
 
 const char* Preferences_GetTextureHashFrequencyDescription(ETextureHashFrequency thf);
 const char* Preferences_GetFrameskipDescription(EFrameskipValue value);

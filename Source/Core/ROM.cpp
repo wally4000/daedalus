@@ -477,7 +477,7 @@ bool ROM_LoadFile()
 		RomSettings			settings;
 		SRomPreferences		preferences;
 
-		if (!CRomSettingsDB::Get()->GetSettings( rom_id, &settings ))
+		if (!CRomSettingsDB::Get().GetSettings( rom_id, &settings ))
 		{
 			settings.Reset();
 		}

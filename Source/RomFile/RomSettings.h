@@ -22,6 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <string>
 #include <filesystem>
+#include <map>
 
 #include "Base/Singleton.h"
 //*****************************************************************************
@@ -81,24 +82,40 @@ struct RomSettings
 
 
 
-//*****************************************************************************
-//
-//*****************************************************************************
 class	RomID;
 
-//*****************************************************************************
-//
-//*****************************************************************************
-class CRomSettingsDB : public CSingleton< CRomSettingsDB >
+
+class CRomSettingsDB 
 {
 	public:
-		virtual					~CRomSettingsDB() {}
+		static CRomSettingsDB& Get()
+		{
+			static CRomSettingsDB instance;
+			return instance;
+		}
 
-		virtual bool			OpenSettingsFile( const std::filesystem::path &filename ) = 0;
-		virtual void			Commit() = 0;
+	bool OpenSettingsFile( const std::filesystem::path &filename);
+	void Commit();
 
-		virtual bool			GetSettings( const RomID & id, RomSettings * settings ) const = 0;
-		virtual void			SetSettings( const RomID & id, const RomSettings & settings ) = 0;
+	bool GetSettings(const RomID& id, RomSettings* settings) const;
+	void SetSettings(const RomID& id,  const RomSettings& settings);
+
+	private:
+	CRomSettingsDB();
+	~CRomSettingsDB();
+
+	// Disable Copy
+	CRomSettingsDB(const CRomSettingsDB&) = delete;
+	CRomSettingsDB& operator=(const CRomSettingsDB&) = delete;
+
+	void OutputSectionDetails(const RomID& id, const RomSettings& settings, std::ostream &fh);
+
+private:
+		using SettingsMap = std::map<RomID, RomSettings>;
+
+		SettingsMap mSettings;
+		std::filesystem::path mFilename;
+		bool mDirty = false;
 };
 
 const char * ROM_GetExpansionPakUsageName( EExpansionPakUsage pak_usage );

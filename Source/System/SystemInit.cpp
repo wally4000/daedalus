@@ -79,6 +79,13 @@ static bool InitAudioPlugin()
 	return true;
 }
 
+static bool InitRomSettingsDB()
+{
+    CRomSettingsDB& db = CRomSettingsDB::Get();
+    db.OpenSettingsFile(setBasePath("roms.ini"));
+    return true;
+}
+
 static void DisposeAudioPlugin()
 {
 	if ( gAudioPlugin != NULL )
@@ -156,7 +163,7 @@ static const std::array<SysEntityEntry, 17> gSysInitTable =
 	{"Profiler",			Profiler_Init,				Profiler_Fini},
 #endif
 	{"ROM Database",		CRomDB::Create,				CRomDB::Destroy},
-	{"ROM Settings",		CRomSettingsDB::Create,		CRomSettingsDB::Destroy},
+	{ "ROM Settings", InitRomSettingsDB, []() {} },
 	{"InputManager",		CInputManager::Create,		CInputManager::Destroy},
 	#ifndef DAEDALUS_CTR
 	{"Language",			Translate_Init,				NULL},

@@ -84,7 +84,7 @@ IAdvancedOptionsScreen::IAdvancedOptionsScreen( CUIContext * p_context, const Ro
 	CPreferences::Get()->GetRomPreferences( mRomID, &mRomPreferences );
 
 	RomSettings			settings;
-	if ( CRomSettingsDB::Get()->GetSettings( rom_id, &settings ) )
+	if ( CRomSettingsDB::Get().GetSettings( rom_id, &settings ) )
 	{
  		mRomName = settings.GameName;
 	}

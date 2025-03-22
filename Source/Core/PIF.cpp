@@ -516,7 +516,7 @@ void	CController::CommandReadMemPack(u32 channel, u8 *cmd)
 	u16 addr = (cmd[3] << 8) | (cmd[4] & 0xE0);
 	u8* data = &cmd[5];
 
-	if (addr <= 0x8001)
+	if (addr < 0x8000)
 	{
 		memcpy(data, &mMemPack[channel][addr], 32);
 	}
@@ -539,7 +539,7 @@ void	CController::CommandWriteMemPack(u32 channel, u8 *cmd)
 	u16 addr = (cmd[3] << 8) | (cmd[4] & 0xE0);
 	u8* data = &cmd[5];
 
-	if (addr <= 0x8000)
+	if (addr < 0x8000)
     {
 		Save_MarkMempackDirty();
 		memcpy(&mMemPack[channel][addr], data, 32);

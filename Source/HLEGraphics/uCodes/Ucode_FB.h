@@ -103,7 +103,7 @@ void RenderFrameBuffer(u32 origin)
 		DrawFrameBuffer(origin, texture);
 
 	gRenderer->EndScene();
-	gGraphicsPlugin->UpdateScreen();
+	CGraphicsPlugin::Get().UpdateScreen();
 }
 
 #endif // DAEDALUS_PSP

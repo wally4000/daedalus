@@ -25,6 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 class CGraphicsPlugin
 {
 	public:
+	static CGraphicsPlugin& Get();  // Singleton accessor
 		virtual ~CGraphicsPlugin();
 
 		virtual bool		StartEmulation() = 0;
@@ -42,6 +43,5 @@ class CGraphicsPlugin
 //	This needs to be defined for all targets.
 //
 std::unique_ptr<CGraphicsPlugin> CreateGraphicsPlugin();
-extern std::unique_ptr<CGraphicsPlugin> gGraphicsPlugin;
 
 #endif // PLUGINS_GRAPHICSPLUGIN_H_

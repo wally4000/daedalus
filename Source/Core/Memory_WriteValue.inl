@@ -227,10 +227,7 @@ static void WriteValue_8440_844F( u32 address, u32 value )
 #ifdef DAEDALUS_LOG
 		DisplayVIControlInfo(value);
 #endif
-		if (gGraphicsPlugin != NULL)
-		{
-			gGraphicsPlugin->ViStatusChanged();
-		}
+		CGraphicsPlugin::Get().ViStatusChanged();
 		break;
 
 	case 0x4:	// VI_ORIGIN_REG
@@ -246,10 +243,10 @@ static void WriteValue_8440_844F( u32 address, u32 value )
 		{
 			// Builtin video plugin already calls UpdateScreen in DLParser_Process
 #ifndef DAEDALUS_GL 
-			gGraphicsPlugin->UpdateScreen();
+			CGraphicsPlugin::Get().UpdateScreen();
 #endif
 #ifndef DAEDALUS_GLES
-			gGraphicsPlugin->UpdateScreen();
+			CGraphicsPlugin::Get().UpdateScreen();
 #endif
 		}
 		break;
@@ -258,10 +255,7 @@ static void WriteValue_8440_844F( u32 address, u32 value )
 	#ifdef DAEDALUS_DEBUG_CONSOLE
 		DPF( DEBUG_VI, "VI_WIDTH_REG set to %d pixels", value );
 		#endif
-		if (gGraphicsPlugin != NULL)
-		{
-			gGraphicsPlugin->ViWidthChanged();
-		}
+		CGraphicsPlugin::Get().ViWidthChanged();
 		break;
 
 	case 0x10:	// VI_CURRENT_REG

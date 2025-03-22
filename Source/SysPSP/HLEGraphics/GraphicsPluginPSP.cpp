@@ -133,15 +133,17 @@ class CGraphicsPluginImpl : public CGraphicsPlugin
 		virtual void		RomClosed();
 };
 
-CGraphicsPluginImpl::~CGraphicsPluginImpl()
-{
+CGraphicsPluginImpl::~CGraphicsPluginImpl() {}
+
+CGraphicsPlugin::~CGraphicsPlugin() {}
+
+
+CGraphicsPlugin& CGraphicsPlugin::Get() {
+    static CGraphicsPluginImpl instance;
+    static bool initialized = instance.Initialise();  // One-time init
+    (void)initialized;  // Suppress unused warning
+    return instance;
 }
-
-
-CGraphicsPlugin::~CGraphicsPlugin()
-{
-}
-
 
 bool CGraphicsPluginImpl::Initialise()
 {
@@ -269,14 +271,3 @@ void CGraphicsPluginImpl::RomClosed()
 	DestroyRenderer();
 }
 
-class std::unique_ptr<CGraphicsPlugin>	CreateGraphicsPlugin()
-{
-	DBGConsole_Msg( 0, "Initialising PSP Graphics Plugin" );
-	auto plugin = std::make_unique<CGraphicsPluginImpl>();
-	if (!plugin->Initialise())
-	{
-		plugin = nullptr;
-	}
-
-	return plugin;
-}

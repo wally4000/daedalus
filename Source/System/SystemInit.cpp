@@ -96,28 +96,6 @@ static void DisposeAudioPlugin()
 	}
 }
 
-static bool InitGraphicsPlugin()
-{
-	#ifdef DAEDALUS_ENABLE_ASSERTS
-	DAEDALUS_ASSERT( gGraphicsPlugin == NULL, "The graphics plugin should not be initialised at this point" );
-	#endif
-	std::unique_ptr<CGraphicsPlugin> graphics_plugin = CreateGraphicsPlugin();
-	if( graphics_plugin != NULL )
-	{
-		 gGraphicsPlugin = std::move(graphics_plugin);
-	}
-	return true;
-}
-
-static void DisposeGraphicsPlugin()
-{
-	if ( gGraphicsPlugin != NULL )
-	{
-		gGraphicsPlugin->RomClosed();
-		gGraphicsPlugin.release();
-		gGraphicsPlugin = NULL;
-	}
-}
 
 
 struct SysEntityEntry
@@ -201,7 +179,7 @@ static const std::array<RomEntityEntry, 12> gRomInitTable =
 	{"InputManager",		CInputManager::Init,	CInputManager::Fini},
 	{"Memory",				Memory_Reset,			Memory_Cleanup},
 	{"Audio",				InitAudioPlugin, 		DisposeAudioPlugin},
-	{"Graphics",			InitGraphicsPlugin, 	DisposeGraphicsPlugin},
+	{ "Graphics", [](){ (void)CGraphicsPlugin::Get(); return true; }, [](){} },
 	{"FramerateLimiter",	FramerateLimiter_Reset,	NULL},
 	//{"RSP", RSP_Reset, NULL},
 	{"CPU",					CPU_RomOpen,				CPU_RomClose},

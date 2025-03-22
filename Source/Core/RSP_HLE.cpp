@@ -135,9 +135,9 @@ static EProcessResult RSP_HLE_Graphics()
 {
 	DAEDALUS_PROFILE( "HLE: Graphics" );
 
-	if (gGraphicsEnabled && gGraphicsPlugin != nullptr)
+	if (gGraphicsEnabled)
 	{
-		gGraphicsPlugin->ProcessDList();
+		CGraphicsPlugin::Get().ProcessDList();
 	}
 	else
 	{

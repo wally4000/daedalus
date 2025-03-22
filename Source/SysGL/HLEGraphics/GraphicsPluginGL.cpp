@@ -114,8 +114,12 @@ class CGraphicsPluginImpl : public CGraphicsPlugin
 		u32					LastOrigin;
 };
 
-
-
+CGraphicsPlugin& CGraphicsPlugin::Get() {
+    static CGraphicsPluginImpl instance;
+    static bool initialized = instance.Initialise();  // One-time init
+    (void)initialized;  // Suppress unused warning
+    return instance;
+}
 CGraphicsPlugin::~CGraphicsPlugin()
 {
 }
@@ -189,14 +193,3 @@ void CGraphicsPluginImpl::RomClosed()
 	DestroyRenderer();
 }
 
-class std::unique_ptr<CGraphicsPlugin>	CreateGraphicsPlugin()
-{
-	DBGConsole_Msg( 0, "Initialising Graphics Plugin [CGL]" );
-	auto plugin = std::make_unique<CGraphicsPluginImpl>();
-	if (!plugin->Initialise())
-	{
-		plugin = nullptr;
-	}
-
-	return plugin;
-}

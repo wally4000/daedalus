@@ -156,11 +156,8 @@ bool CGraphicsPluginImpl::Initialise()
 		return false;
 	}
 
-	if(!CTextureCache::Create())
-	{
-		return false;
-	}
-
+	(void)CTextureCache::Get();
+	
 	if (!DLParser_Initialise())
 	{
 		return false;
@@ -252,7 +249,6 @@ void CGraphicsPluginImpl::RomClosed()
 	DBGConsole_Msg(0, "Finalising Graphics");
 	#endif
 	DLParser_Finalise();
-	CTextureCache::Destroy();
 	DestroyRenderer();
 }
 

@@ -27,6 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <filesystem>
 
 #include "Interface/ConfigOptions.h"
+#include "Input/InputManager.h"
 #include "Debug/DBGConsole.h"
 
 #include "Utility/MathUtil.h"
@@ -260,12 +261,6 @@ u32		CControllerConfig::GetN64ButtonsState( u32 psp_button_mask ) const
 	return state;
 }
 
-CInputManager& CInputManager::Get()
-{
-	static IInputManager instance;
-	return instance;
-}
-
 
 //*****************************************************************************
 //
@@ -296,6 +291,15 @@ class IInputManager : public CInputManager
 		CControllerConfig *					mpControllerConfig;
 		std::vector<CControllerConfig*>		mControllerConfigs;
 };
+
+
+
+CInputManager& CInputManager::Get()
+{
+	static IInputManager instance;
+	return instance;
+}
+
 
 IInputManager::IInputManager() : mpControllerConfig( NULL )
 {
@@ -361,19 +365,6 @@ void IInputManager::GetState( OSContPad pPad[4] )
 	pPad[0].button = mpControllerConfig->GetN64ButtonsState( hidKeysHeld() );
 }
 
-template<> bool	CSingleton< CInputManager >::Create()
-{
-	DAEDALUS_ASSERT_Q(mpInstance == NULL);
-	std::shared_ptr<IInputManager> manager = std::make_shared<IInputManager>();
-	// IInputManager * manager = new IInputManager();
-
-	if(manager->Initialise())
-	{
-		mpInstance = manager;
-		return true;
-	}
-	return false;
-}
 
 u32	 IInputManager::GetNumConfigurations() const
 {

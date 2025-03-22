@@ -241,18 +241,6 @@ void IInputManager::GetState( OSContPad pPad[4] )
 	}
 
 
-
-}
-
-template<> bool CSingleton< CInputManager >::Create()
-{
-	DAEDALUS_ASSERT_Q(mpInstance == NULL);
-
-	mpInstance = std::make_shared<IInputManager>();
-	return mpInstance->Initialise();
-}
-
-
 u32	 IInputManager::GetNumConfigurations() const
 {
 	return 0;

@@ -22,17 +22,22 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define UTILITY_ROMFILEMEMORY_H_
 
 #include "Base/Types.h"
-#include "Base/Singleton.h"
-
-class CROMFileMemory : public CSingleton< CROMFileMemory >
+#include "RomFile/RomFileMemory.h"
+#include "Utility/MemoryHeap.h"
+#include <memory>
+class CROMFileMemory
 {
 public:
-	virtual ~CROMFileMemory();
+	CROMFileMemory();
+	~CROMFileMemory();
 
-//	virtual	bool			IsAvailable() = 0;
-	virtual void * 			Alloc( u32 size ) = 0;
-	virtual void			Free( void * ptr ) = 0;
+	void * 			Alloc( u32 size );
+	void			Free( void * ptr );
+
+	private: 
+	std::unique_ptr<CMemoryHeap> mRomMemoryHeap;
 };
 
+extern std::unique_ptr<CROMFileMemory> gROMFileMemory;
 
 #endif // UTILITY_ROMFILEMEMORY_H_

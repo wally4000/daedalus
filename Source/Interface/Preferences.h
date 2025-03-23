@@ -25,20 +25,51 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Base/Singleton.h"
 #include "Interface/GlobalPreferences.h"
 #include "Interface/RomPreferences.h"
+#include <fstream>
+#include <string>
+#include <set>
+#include <map>
+#include <filesystem>
+#include "Utility/IniFile.h"
+#include "Utility/FramerateLimiter.h"
+
+#include "Interface/ConfigOptions.h"
+#include "Core/ROM.h"
+#include "Input/InputManager.h"
+#include "Interface/RomDB.h"
+#include "Utility/Paths.h"
+
+
+#include "Utility/Translate.h"
+
 
 class RomID;
 
-class CPreferences : public CSingleton<CPreferences>
+class CPreferences 
 {
    public:
-	virtual ~CPreferences();
+	 CPreferences();
+	 ~CPreferences();
 
-	virtual bool OpenPreferencesFile(const std::filesystem::path &filename) = 0;
-	virtual void Commit() = 0;
+	 bool OpenPreferencesFile(const std::filesystem::path &filename);
+	 void Commit();
 
-	virtual bool GetRomPreferences(const RomID& id, SRomPreferences* preferences) const = 0;
-	virtual void SetRomPreferences(const RomID& id, const SRomPreferences& preferences) = 0;
+	 bool GetRomPreferences(const RomID& id, SRomPreferences* preferences) const;
+	 void SetRomPreferences(const RomID& id, const SRomPreferences& preferences);
+
+	 private:
+	 void					OutputSectionDetails( const RomID & id, const SRomPreferences & preferences, std::ofstream& fh );
+
+	private:
+	using PreferencesMap = std::map<RomID, SRomPreferences>;
+
+	 PreferencesMap			mPreferences;
+
+	 bool					mDirty;				// (STRMNNRMN - Changed since read from disk?)
+	 std::filesystem::path	mFilename;
 };
+
+extern std::unique_ptr<CPreferences> gPreferences;
 
 const char* Preferences_GetTextureHashFrequencyDescription(ETextureHashFrequency thf);
 const char* Preferences_GetFrameskipDescription(EFrameskipValue value);

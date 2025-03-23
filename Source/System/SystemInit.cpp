@@ -109,6 +109,15 @@ static void DisposeGraphicsPlugin()
 	}
 }
 
+static bool Init_RomPreferences()
+{
+	gPreferences = std::make_unique<CPreferences>();
+}
+
+static void Destroy_RomPreferences()
+{
+	gPreferences.reset();
+}
 
 struct SysEntityEntry
 {
@@ -164,7 +173,7 @@ static const std::array<SysEntityEntry, 17> gSysInitTable =
 #endif
 	{"GraphicsContext", [](){ return mGraphicsContext->Create(); }, [](){ mGraphicsContext->Destroy(); }},
 
-	{"Preference",			CPreferences::Create,		CPreferences::Destroy},
+	{"Preference",			Init_RomPreferences,		Destroy_RomPreferences},
 	{"Memory",				Memory_Init,				Memory_Fini},
 	{"Controller",			Create_Controller,		Destroy_Controller},
 	{"RomBuffer",			RomBuffer::Create,			RomBuffer::Destroy},

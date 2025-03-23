@@ -481,7 +481,7 @@ bool ROM_LoadFile()
 		{
 			settings.Reset();
 		}
-		if (!CPreferences::Get()->GetRomPreferences( rom_id, &preferences ))
+		if (!gPreferences->GetRomPreferences( rom_id, &preferences ))
 		{
 			preferences.Reset();
 		}

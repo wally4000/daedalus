@@ -22,22 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Base/Types.h"
 #include "Interface/Preferences.h"
 
-#include <fstream>
-#include <string>
-#include <set>
-#include <map>
-#include <filesystem>
-#include "Utility/IniFile.h"
-#include "Utility/FramerateLimiter.h"
 
-#include "Interface/ConfigOptions.h"
-#include "Core/ROM.h"
-#include "Input/InputManager.h"
-#include "Interface/RomDB.h"
-#include "Utility/Paths.h"
-
-
-#include "Utility/Translate.h"
 template <typename T>
 void OutputValue(std::ofstream& fh, const std::string& name, const T& value) {
     fh << name << "=" << value << "\n";
@@ -83,51 +68,16 @@ extern f32 						gZoomX;
 
 SGlobalPreferences				gGlobalPreferences;
 
-class IPreferences : public CPreferences
-{
-	public:
-		IPreferences();
-		virtual ~IPreferences();
 
-		bool					OpenPreferencesFile( const std::filesystem::path &filename );
-		void					Commit();
+std::unique_ptr<CPreferences> gPreferences;
 
-		bool					GetRomPreferences( const RomID & id, SRomPreferences * preferences ) const;
-		void					SetRomPreferences( const RomID & id, const SRomPreferences & preferences );
-
-	private:
-		void					OutputSectionDetails( const RomID & id, const SRomPreferences & preferences, std::ofstream& fh );
-
-	private:
-	using PreferencesMap = std::map<RomID, SRomPreferences>;
-
-		PreferencesMap			mPreferences;
-
-		bool					mDirty;				// (STRMNNRMN - Changed since read from disk?)
-		std::filesystem::path	mFilename;
-};
-
-template<> bool	CSingleton< CPreferences >::Create()
-{
-	#ifdef DAEDALUS_ENABLE_ASSERTS
-	DAEDALUS_ASSERT_Q(mpInstance == nullptr);
-#endif
-	mpInstance = std::make_shared<IPreferences>();
-
-	return true;
-}
-
-CPreferences::~CPreferences()
-{
-}
-
-IPreferences::IPreferences()
+CPreferences::CPreferences()
 :	mDirty( false )
 {
 	OpenPreferencesFile( setBasePath("Preferences.ini"));
 }
 
-IPreferences::~IPreferences()
+CPreferences::~CPreferences()
 {
 	if ( mDirty )
 	{
@@ -142,7 +92,7 @@ static RomID RomIDFromString( const char * str )
 	return RomID( crc1, crc2, (u8)country );
 }
 
-bool IPreferences::OpenPreferencesFile( const std::filesystem::path  &filename )
+bool CPreferences::OpenPreferencesFile( const std::filesystem::path  &filename )
 {
 	mFilename = filename;
 
@@ -309,7 +259,7 @@ bool IPreferences::OpenPreferencesFile( const std::filesystem::path  &filename )
 	return true;
 }
 
-void IPreferences::OutputSectionDetails( const RomID & id, const SRomPreferences & preferences, std::ofstream& fh )
+void CPreferences::OutputSectionDetails( const RomID & id, const SRomPreferences & preferences, std::ofstream& fh )
 {
 	// Generate the CRC-ID for this rom:
 	RomSettings		settings;
@@ -339,7 +289,7 @@ fh << "\n"; // Spacer
 }
 
 // Write out the .ini file, keeping the original comments intact
-void IPreferences::Commit()
+void CPreferences::Commit()
 {
 	std::ofstream fh(mFilename);
 	if (fh.is_open())
@@ -381,7 +331,7 @@ void IPreferences::Commit()
 
 // Retreive the preferences for the specified rom. Returns false if the rom is
 // not in the database
-bool IPreferences::GetRomPreferences( const RomID & id, SRomPreferences * preferences ) const
+bool CPreferences::GetRomPreferences( const RomID & id, SRomPreferences * preferences ) const
 {
 	for ( PreferencesMap::const_iterator it = mPreferences.begin(); it != mPreferences.end(); ++it )
 	{
@@ -396,7 +346,7 @@ bool IPreferences::GetRomPreferences( const RomID & id, SRomPreferences * prefer
 }
 
 // Update the preferences for the specified rom - creates a new entry if necessary
-void IPreferences::SetRomPreferences( const RomID & id, const SRomPreferences & preferences )
+void CPreferences::SetRomPreferences( const RomID & id, const SRomPreferences & preferences )
 {
 	for ( PreferencesMap::iterator it = mPreferences.begin(); it != mPreferences.end(); ++it )
 	{

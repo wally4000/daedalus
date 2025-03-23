@@ -19,7 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
 #include "Base/Types.h"
-#include "ROM.h"
+#include "Core/ROM.h"
 
 #include <stdio.h>
 #include <cstring>
@@ -30,7 +30,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Core/R4300.h"
 #include "RomFile/ROMBuffer.h"
 #include "Core/ROMImage.h"
-#include "RomFile/RomSettings.h"
+
 #include "Interface/ConfigOptions.h"
 #include "Debug/DBGConsole.h"
 #include "Debug/DebugLog.h"
@@ -477,7 +477,7 @@ bool ROM_LoadFile()
 		RomSettings			settings;
 		SRomPreferences		preferences;
 
-		if (!CRomSettingsDB::Get()->GetSettings( rom_id, &settings ))
+		if (!gRomSettingsDB->GetSettings( rom_id, &settings ))
 		{
 			settings.Reset();
 		}

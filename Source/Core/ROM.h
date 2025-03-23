@@ -23,66 +23,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define CORE_ROM_H_
 
 #include "Core/ROMImage.h"
+#include "RomFile/RomSettings.h"
+#include "Interface/RomID.h"
+
 
 #include <string>
 #include <filesystem>
-class RomID
-{
-	public:
-		RomID()
-		{
-			CRC[0] = 0;
-			CRC[1] = 0;
-			CountryID = 0;
-		}
-
-		RomID( u32 crc1, u32 crc2, u8 country_id )
-		{
-			CRC[0] = crc1;
-			CRC[1] = crc2;
-			CountryID = country_id;
-		}
-
-		explicit RomID( const ROMHeader & header )
-		{
-			CRC[0] = header.CRC1;
-			CRC[1] = header.CRC2;
-			CountryID = header.CountryID;
-		}
-
-		bool Empty() const
-		{
-			return CRC[0] == 0 && CRC[1] == 0 && CountryID == 0;
-		}
-
-		bool operator==( const RomID & id ) const		{ return Compare( id ) == 0; }
-		bool operator!=( const RomID & id ) const		{ return Compare( id ) != 0; }
-		bool operator<( const RomID & rhs ) const		{ return Compare( rhs ) < 0; }
-
-		s32 Compare( const RomID & rhs ) const
-		{
-			s32		diff;
-
-			diff = CRC[0] - rhs.CRC[0];
-			if( diff != 0 )
-				return diff;
-
-			diff = CRC[1] - rhs.CRC[1];
-			if( diff != 0 )
-				return diff;
-
-			diff = CountryID - rhs.CountryID;
-			if( diff != 0 )
-				return diff;
-
-			return 0;
-		}
-
-		u32		CRC[2];
-		u8		CountryID;
-};
-
-#include "RomFile/RomSettings.h"
 
 struct SRomPreferences;
 
@@ -121,16 +67,18 @@ enum EGameHacks : uint16_t
 	MAX_HACK_NAMES	//DONT CHANGE THIS! AND SHOULD BE LAST ENTRY
 };
 
+
 //*****************************************************************************
 //
 //*****************************************************************************
 struct RomInfo
 {
 	std::filesystem::path	mFileName;
+	RomSettings 	settings;				// Settings for this rom
 	RomID			mRomID;					// The RomID (unique to this rom)
 
 	ROMHeader		rh;						// Copy of the ROM header, correctly byteswapped
-	RomSettings 	settings;				// Settings for this rom
+
 	u32				TvType;					// OS_TV_NTSC etc
 	ECicType		cic_chip;				// CIC boot chip type
 	union

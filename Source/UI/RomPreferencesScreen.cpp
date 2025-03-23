@@ -228,7 +228,7 @@ IRomPreferencesScreen::IRomPreferencesScreen( CUIContext * p_context, const RomI
 	gPreferences->GetRomPreferences( mRomID, &mRomPreferences );
 
 	RomSettings			settings;
-	if ( CRomSettingsDB::Get()->GetSettings( rom_id, &settings ) )
+	if ( gRomSettingsDB->GetSettings( rom_id, &settings ) )
 	{
  		mRomName = settings.GameName;
 	}

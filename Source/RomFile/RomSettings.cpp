@@ -20,7 +20,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
 #include "Base/Types.h"
-
+#include "RomFile/RomSettings.h"
 
 #include <cstring> 
 
@@ -30,13 +30,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <filesystem>
 #include <iostream>
 
-#include "Core/ROM.h"
-#include "RomFile/RomSettings.h"
-#include "Debug/DBGConsole.h"
-#include "Interface/RomDB.h"
-#include "Utility/IniFile.h"
-#include "Utility/Paths.h"
 
+
+std::unique_ptr<CRomSettingsDB> gRomSettingsDB;
 namespace
 {
 //
@@ -112,55 +108,13 @@ const char * ROM_GetSaveTypeName( ESaveType save_type )
 }
 
 
-//
-
-class IRomSettingsDB : public CRomSettingsDB
-{
-	public:
-		IRomSettingsDB();
-		virtual ~IRomSettingsDB();
-
-		//
-		// CRomSettingsDB implementation
-		//
-		bool			OpenSettingsFile( const std::filesystem::path &filename );
-		void			Commit();												// (STRMNNRMN - Write ini back out to disk?)
-
-		bool			GetSettings( const RomID & id, RomSettings * p_settings ) const;
-		void			SetSettings( const RomID & id, const RomSettings & settings );
-
-	private:
-
-		void			OutputSectionDetails( const RomID & id, const RomSettings & settings, std::ostream &fh );
-
-	private:
-	using SettingsMap = std::map<RomID, RomSettings>;
-		SettingsMap				mSettings;
-
-		bool					mDirty;				// (STRMNNRMN - Changed since read from disk?)
-		const std::filesystem::path		mFilename;
-};
 
 
 
-
-// Singleton creator
-
-template<> bool	CSingleton< CRomSettingsDB >::Create()
-{
-	#ifdef DAEDALUS_ENABLE_ASSERTS
-	DAEDALUS_ASSERT_Q(mpInstance == nullptr);
-	#endif
-	mpInstance = std::make_shared<IRomSettingsDB>();
-	mpInstance->OpenSettingsFile( setBasePath("roms.ini") );
-	return true;
-}
+CRomSettingsDB::CRomSettingsDB() :	mDirty( false ) {}
 
 
-IRomSettingsDB::IRomSettingsDB() :	mDirty( false ) {}
-
-
-IRomSettingsDB::~IRomSettingsDB()
+CRomSettingsDB::~CRomSettingsDB()
 {
 	// if ( mDirty )
 	// {
@@ -215,7 +169,7 @@ static RomID	RomIDFromString( const char * str )
 	return RomID( crc1, crc2, (u8)country );
 }
 
-bool IRomSettingsDB::OpenSettingsFile( const std::filesystem::path &filename )
+bool CRomSettingsDB::OpenSettingsFile( const std::filesystem::path &filename )
 {
 
 	std::filesystem::path mFilename = filename;
@@ -320,7 +274,7 @@ bool IRomSettingsDB::OpenSettingsFile( const std::filesystem::path &filename )
 }
 
 // //	Write out the .ini file, keeping the original comments intact
-void IRomSettingsDB::Commit(){}
+void CRomSettingsDB::Commit(){}
 // 	mFilename = "roms.ini";
 
 
@@ -397,7 +351,7 @@ void IRomSettingsDB::Commit(){}
 // 	}
 
 
-void IRomSettingsDB::OutputSectionDetails( const RomID & id, const RomSettings & settings, std::ostream &out )
+void CRomSettingsDB::OutputSectionDetails( const RomID & id, const RomSettings & settings, std::ostream &out )
 {
 	// Generate the CRC-ID for this rom
     out << "{" << std::hex << std::uppercase << id.CRC[0] << std::hex << std::uppercase << id.CRC[1] << "-"
@@ -433,7 +387,7 @@ void IRomSettingsDB::OutputSectionDetails( const RomID & id, const RomSettings &
 
 // Retreive the settings for the specified rom. Returns false if the rom is
 // not in the database
-bool	IRomSettingsDB::GetSettings( const RomID & id, RomSettings * p_settings ) const
+bool	CRomSettingsDB::GetSettings( const RomID & id, RomSettings * p_settings ) const
 {
 	for ( SettingsMap::const_iterator it = mSettings.begin(); it != mSettings.end(); ++it )
 	{
@@ -449,7 +403,7 @@ bool	IRomSettingsDB::GetSettings( const RomID & id, RomSettings * p_settings ) c
 
 
 // Update the settings for the specified rom - creates a new entry if necessary
-void	IRomSettingsDB::SetSettings( const RomID & id, const RomSettings & settings )
+void	CRomSettingsDB::SetSettings( const RomID & id, const RomSettings & settings )
 {
 	for ( SettingsMap::iterator it = mSettings.begin(); it != mSettings.end(); ++it )
 	{

@@ -137,6 +137,16 @@ struct SysEntityEntry
 	void (*final)();
 };
 
+
+static bool Init_RomSettingsDB()
+{
+	gRomSettingsDB = std::make_unique<CRomSettingsDB>();
+	return gRomSettingsDB->OpenSettingsFile(setBasePath("roms.ini"));
+}
+static void Destroy_RomSettingsDB()
+{
+
+}
 #ifdef DAEDALUS_ENABLE_PROFILING
 static void ProfilerVblCallback(void * arg)
 {
@@ -173,7 +183,7 @@ static const std::array<SysEntityEntry, 17> gSysInitTable =
 	{"Profiler",			Profiler_Init,				Profiler_Fini},
 #endif
 	{"ROM Database",		Init_RomDB,				Destroy_RomDB},
-	{"ROM Settings",		CRomSettingsDB::Create,		CRomSettingsDB::Destroy},
+	{"ROM Settings",		Init_RomSettingsDB,		Destroy_RomSettingsDB},
 	{"InputManager",		CInputManager::Create,		CInputManager::Destroy},
 	#ifndef DAEDALUS_CTR
 	{"Language",			Translate_Init,				NULL},

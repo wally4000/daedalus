@@ -17,14 +17,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-
+#include "Interface/RomID.h"
 #ifndef UI_ADVANCEDOPTIONSSCREEN_H_
 #define UI_ADVANCEDOPTIONSSCREEN_H_
 
 #include <memory>
 
 class CUIContext;
-class RomID;
+
 
 class CAdvancedOptionsScreen
 {

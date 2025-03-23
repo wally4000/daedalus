@@ -22,8 +22,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <string>
 #include <filesystem>
+#include <set>
+#include <map>
+#include <fstream>
+#include <filesystem>
+#include <iostream>
+#include "Debug/DBGConsole.h"
+#include "Interface/RomID.h"
 
-#include "Base/Singleton.h"
+#include "Utility/IniFile.h"
+#include "Utility/Paths.h"
+
 //*****************************************************************************
 // Configurable settings for a rom
 //*****************************************************************************
@@ -80,29 +89,33 @@ struct RomSettings
 };
 
 
-
-//*****************************************************************************
-//
-//*****************************************************************************
-class	RomID;
-
-//*****************************************************************************
-//
-//*****************************************************************************
-class CRomSettingsDB : public CSingleton< CRomSettingsDB >
+class CRomSettingsDB 
 {
 	public:
-		virtual					~CRomSettingsDB() {}
+							~CRomSettingsDB();
+							CRomSettingsDB();
 
-		virtual bool			OpenSettingsFile( const std::filesystem::path &filename ) = 0;
-		virtual void			Commit() = 0;
+		 bool			OpenSettingsFile( const std::filesystem::path &filename );
+		 void			Commit();
 
-		virtual bool			GetSettings( const RomID & id, RomSettings * settings ) const = 0;
-		virtual void			SetSettings( const RomID & id, const RomSettings & settings ) = 0;
+		 bool			GetSettings( const RomID & id, RomSettings * settings ) const;
+		 void			SetSettings( const RomID & id, const RomSettings & settings );
+
+		 private:
+
+		void			OutputSectionDetails( const RomID & id, const RomSettings & settings, std::ostream &fh );
+
+	private:
+	using SettingsMap = std::map<RomID, RomSettings>;
+		SettingsMap				mSettings;
+
+		bool					mDirty;				// (STRMNNRMN - Changed since read from disk?)
+		const std::filesystem::path		mFilename;
 };
 
 const char * ROM_GetExpansionPakUsageName( EExpansionPakUsage pak_usage );
 const char *	ROM_GetSaveTypeName( ESaveType save_type );
 
+extern std::unique_ptr<CRomSettingsDB> gRomSettingsDB;
 
 #endif // CORE_ROMSETTINGS_H_

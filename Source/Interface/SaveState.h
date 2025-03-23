@@ -24,8 +24,8 @@
 #define CORE_SAVESTATE_H_
 
 #include "Utility/Paths.h"
+#include "Interface/RomID.h"
 
-class RomID;
 
 bool SaveState_LoadFromFile( const std::filesystem::path &filename );
 bool SaveState_SaveToFile( const std::filesystem::path &filename );

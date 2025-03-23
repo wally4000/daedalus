@@ -22,9 +22,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define UI_CHEATOPTIONSSCREEN_H_
 
 #include <memory> 
-
+#include "Interface/RomID.h"
 class CUIContext;
-class RomID;
+
 
 class CCheatOptionsScreen
 {

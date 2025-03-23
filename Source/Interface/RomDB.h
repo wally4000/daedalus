@@ -37,10 +37,11 @@
 #include "Interface/RomDB.h"
 #include "Utility/MathUtil.h"
 #include "RomFile/RomFile.h"
+#include "Interface/RomID.h"
 #include "Utility/Stream.h"
 #include "Utility/Paths.h"
 #include <filesystem>
-class	RomID;
+
 
 class	CRomDB
 {

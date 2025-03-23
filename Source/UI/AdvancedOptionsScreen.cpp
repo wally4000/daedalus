@@ -30,6 +30,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "Interface/ConfigOptions.h"
 #include "Core/ROM.h"
+
 #include "RomFile/RomSettings.h"
 #include "Graphics/ColourValue.h"
 #include "Input/InputManager.h"
@@ -84,7 +85,7 @@ IAdvancedOptionsScreen::IAdvancedOptionsScreen( CUIContext * p_context, const Ro
 	gPreferences->GetRomPreferences( mRomID, &mRomPreferences );
 
 	RomSettings			settings;
-	if ( CRomSettingsDB::Get()->GetSettings( rom_id, &settings ) )
+	if ( gRomSettingsDB->GetSettings( rom_id, &settings ) )
 	{
  		mRomName = settings.GameName;
 	}

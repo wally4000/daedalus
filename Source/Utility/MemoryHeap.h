@@ -23,22 +23,52 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define UTILITY_MEMORYHEAP_H_
 
 #include "Base/Types.h"
+#include "Utility/MathUtil.h"
+#include <memory> 
+struct Chunk
+{
+	u8 *	Ptr;
+	u32		Length;
+#ifdef DAEDALUS_DEBUG_MEMORY
+	u32		Tag;
+#endif
+};
+
+
 
 class CMemoryHeap
 {
 public:
-	static CMemoryHeap * Create( u32 size );						// Allocate and manage a new region of this size
-	static CMemoryHeap * Create( void * base_ptr, u32 size );		// Manage this region of pre-allocated memory
+	static std::unique_ptr<CMemoryHeap> Create( u32 size );						// Allocate and manage a new region of this size
+	static std::unique_ptr<CMemoryHeap> Create( void * base_ptr, u32 size );		// Manage this region of pre-allocated memory
 
-	virtual ~CMemoryHeap();
+	CMemoryHeap(u32 size );
+	CMemoryHeap( void * base_ptr, u32 size);
+	~CMemoryHeap();
+	void *		Alloc( u32 size );
+	void		Free( void * ptr );
 
-	virtual void *		Alloc( u32 size ) = 0;
-	virtual void		Free( void * ptr ) = 0;
-
-	virtual bool		IsFromHeap( void * ptr ) const = 0;			// Does this chunk of memory belong to this heap?
+	bool		IsFromHeap( void * ptr ) const;		// Does this chunk of memory belong to this heap?
 #ifdef DAEDALUS_DEBUG_MEMORY
-	//virtual u32		GetAvailableMemory() const = 0;
-	virtual void		DisplayDebugInfo() const = 0;
+	//u32		GetAvailableMemory() const;
+	void		DisplayDebugInfo() const;
+#endif
+	private:
+
+	void *				InsertNew( u32 idx, u8 * adr, u32 size );
+
+
+	private:
+		u8 *				mBasePtr;
+		u32					mTotalSize;
+		bool				mDeleteOnDestruction;
+	
+		Chunk *				mpMemMap;
+		u32					mMemMapLen;
+
+		
+#ifdef SHOW_MEM
+u32					mMemAlloc;
 #endif
 };
 

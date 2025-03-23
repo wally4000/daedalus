@@ -45,14 +45,6 @@ public:
     virtual void UItoGL();
 };
 
-template<> bool CSingleton< CGraphicsContext >::Create()
-{
-    DAEDALUS_ASSERT_Q(mpInstance == nullptr);
-
-    mpInstance = std::make_shared<GraphicsContextGL>();
-    return mpInstance->Initialise();
-}
-
 GraphicsContextGL::~GraphicsContextGL()
 {
     // Destroy context and window

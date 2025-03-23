@@ -20,13 +20,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //Define line below to show amount of allocated VRAM //Corn
 #include <cstdio>
 
-#include "Base/Types.h"
+
 #include "Utility/MemoryHeap.h"
 
 #include <stdlib.h>
 #include <string.h>
 
-#include "Utility/MathUtil.h"
+
 
 
 //
@@ -37,75 +37,18 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //
 
 
-struct Chunk
+std::unique_ptr<CMemoryHeap> CMemoryHeap::Create(u32 size)
 {
-	u8 *	Ptr;
-	u32		Length;
-#ifdef DAEDALUS_DEBUG_MEMORY
-	u32		Tag;
-#endif
-};
-
-
-class IMemoryHeap : public CMemoryHeap
-{
-public:
-	IMemoryHeap( u32 size );
-	IMemoryHeap( void * base_ptr, u32 size );
-
-	~IMemoryHeap();
-
-	virtual void *		Alloc( u32 size );
-	virtual void		Free( void * ptr );
-
-	virtual bool		IsFromHeap( void * ptr ) const;
-#ifdef DAEDALUS_DEBUG_MEMORY
-	//virtual u32		GetAvailableMemory() const;
-	virtual void		DisplayDebugInfo() const;
-#endif
-private:
-	void *				InsertNew( u32 idx, u8 * adr, u32 size );
-
-
-private:
-	u8 *				mBasePtr;
-	u32					mTotalSize;
-	bool				mDeleteOnDestruction;
-
-	Chunk *				mpMemMap;
-	u32					mMemMapLen;
-#ifdef SHOW_MEM
-	u32					mMemAlloc;
-#endif
-};
-
-//*****************************************************************************
-//
-//*****************************************************************************
-CMemoryHeap * CMemoryHeap::Create( u32 size )
-{
-	return new IMemoryHeap( size );
+	return std::make_unique<CMemoryHeap>(size);
 }
 
-//*****************************************************************************
-//
-//*****************************************************************************
-CMemoryHeap * CMemoryHeap::Create( void * base_ptr, u32 size )
+std::unique_ptr<CMemoryHeap> CMemoryHeap::Create(void* base_ptr, u32 size)
 {
-	return new IMemoryHeap( base_ptr, size );
+	return std::make_unique<CMemoryHeap>(base_ptr, size);
 }
 
-//*****************************************************************************
-//
-//*****************************************************************************
-CMemoryHeap::~CMemoryHeap()
-{
-}
 
-//*****************************************************************************
-//
-//*****************************************************************************
-IMemoryHeap::IMemoryHeap( u32 size )
+CMemoryHeap::CMemoryHeap( u32 size )
 :	mBasePtr( new u8[ size ] )
 ,	mTotalSize( size )
 ,	mDeleteOnDestruction( true )
@@ -117,10 +60,8 @@ IMemoryHeap::IMemoryHeap( u32 size )
 {
 }
 
-//*****************************************************************************
-//
-//*****************************************************************************
-IMemoryHeap::IMemoryHeap( void * base_ptr, u32 size )
+
+CMemoryHeap::CMemoryHeap( void * base_ptr, u32 size )
 :	mBasePtr( reinterpret_cast< u8 * >( base_ptr ) )
 ,	mTotalSize( size )
 ,	mDeleteOnDestruction( false )
@@ -132,10 +73,8 @@ IMemoryHeap::IMemoryHeap( void * base_ptr, u32 size )
 {
 }
 
-//*****************************************************************************
-//
-//*****************************************************************************
-IMemoryHeap::~IMemoryHeap()
+
+CMemoryHeap::~CMemoryHeap()
 {
 	if( mDeleteOnDestruction )
 	{
@@ -143,18 +82,14 @@ IMemoryHeap::~IMemoryHeap()
 	}
 }
 
-//*****************************************************************************
-//
-//*****************************************************************************
-bool	IMemoryHeap::IsFromHeap( void * ptr ) const
+
+bool	CMemoryHeap::IsFromHeap( void * ptr ) const
 {
 	return ptr >= mBasePtr && ptr < (mBasePtr + mTotalSize);
 }
 
-//*****************************************************************************
-//
-//*****************************************************************************
-void * IMemoryHeap::InsertNew( u32 idx, u8 * adr, u32 size )
+
+void * CMemoryHeap::InsertNew( u32 idx, u8 * adr, u32 size )
 {
 	Chunk *tmp = reinterpret_cast< Chunk * >( realloc(mpMemMap, (mMemMapLen + 1) * sizeof(mpMemMap[0]) ) );
 	if( tmp == NULL )
@@ -175,10 +110,8 @@ void * IMemoryHeap::InsertNew( u32 idx, u8 * adr, u32 size )
 	return mpMemMap[idx].Ptr;
 }
 
-//*****************************************************************************
-//
-//*****************************************************************************
-void* IMemoryHeap::Alloc( u32 size )
+
+void* CMemoryHeap::Alloc( u32 size )
 {
 	// FIXME(strmnnrmn): This code was removed at some point - does something else help guarantee alignment?
 	// Might be that we just want to lower it to 4 or 8.
@@ -221,10 +154,8 @@ void* IMemoryHeap::Alloc( u32 size )
 	return InsertNew( mMemMapLen, adr, size );
 }
 
-//*****************************************************************************
-//
-//*****************************************************************************
-void  IMemoryHeap::Free( void * ptr )
+
+void  CMemoryHeap::Free( void * ptr )
 {
 	#ifdef DAEDALUS_ENABLE_ASSERTS
 	DAEDALUS_ASSERT( ptr == NULL || IsFromHeap( ptr ), "Memory is not from this heap" );
@@ -256,10 +187,8 @@ void  IMemoryHeap::Free( void * ptr )
 }
 
 #ifdef DAEDALUS_DEBUG_MEMORY
-//*****************************************************************************
-//
-//*****************************************************************************
-void IMemoryHeap::DisplayDebugInfo() const
+
+void CMemoryHeap::DisplayDebugInfo() const
 {
 	printf( "  #  Address    Length  Tag\n" );
 

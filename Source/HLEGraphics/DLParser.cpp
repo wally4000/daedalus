@@ -504,7 +504,7 @@ u32 DLParser_Process(u32 instruction_limit, DLDebugOutput * debug_output)
 
 	gRDPFrame++;
 
-	CTextureCache::Get()->PurgeOldTextures();
+	gTextureCache->PurgeOldTextures();
 
 	// Initialise stack
 	gDlistStackPointer=0;

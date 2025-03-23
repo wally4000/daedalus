@@ -136,10 +136,7 @@ bool CGraphicsPluginImpl::Initialise()
 		return false;
 	}
 
-	if (!CTextureCache::Create())
-	{
-		return false;
-	}
+	gTextureCache = std::make_unique<CTextureCache>();
 
 	if (!DLParser_Initialise())
 	{
@@ -189,7 +186,7 @@ void CGraphicsPluginImpl::RomClosed()
 	DBGConsole_Msg(0, "Finalising GLGraphics");
 
 	DLParser_Finalise();
-	CTextureCache::Destroy();
+	gTextureCache.reset();
 	DestroyRenderer();
 }
 

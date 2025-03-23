@@ -416,6 +416,6 @@ const std::string SaveState_GetRom( const std::filesystem::path &filename )
 	stream >> rom_header;
 	ROMFile::ByteSwap_3210(&rom_header, 64);
 
-	return CRomDB::Get()->QueryFilenameFromID(
+	return gRomDB->QueryFilenameFromID(
 		RomID( rom_header.CRC1, rom_header.CRC2, rom_header.CountryID ));
 }

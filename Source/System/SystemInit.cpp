@@ -64,7 +64,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 std::unique_ptr<CGraphicsPlugin> gGraphicsPlugin;
 std::unique_ptr<CAudioPlugin> gAudioPlugin;
-
+std::unique_ptr<CRomDB> gRomDB;
 static bool InitAudioPlugin()
 {
 	std::unique_ptr<CAudioPlugin> audio_plugin = CreateAudioPlugin();
@@ -112,6 +112,7 @@ static void DisposeGraphicsPlugin()
 static bool Init_RomPreferences()
 {
 	gPreferences = std::make_unique<CPreferences>();
+	return true;
 }
 
 static void Destroy_RomPreferences()
@@ -119,6 +120,16 @@ static void Destroy_RomPreferences()
 	gPreferences.reset();
 }
 
+static bool Init_RomDB()
+{
+	gRomDB = std::make_unique<CRomDB>();
+	return gRomDB->OpenDB(setBasePath("rom.db"));
+}
+
+static void Destroy_RomDB()
+{
+	gRomDB.reset();
+}
 struct SysEntityEntry
 {
 	const char *name;
@@ -161,7 +172,7 @@ static const std::array<SysEntityEntry, 17> gSysInitTable =
 #ifdef DAEDALUS_ENABLE_PROFILING
 	{"Profiler",			Profiler_Init,				Profiler_Fini},
 #endif
-	{"ROM Database",		CRomDB::Create,				CRomDB::Destroy},
+	{"ROM Database",		Init_RomDB,				Destroy_RomDB},
 	{"ROM Settings",		CRomSettingsDB::Create,		CRomSettingsDB::Destroy},
 	{"InputManager",		CInputManager::Create,		CInputManager::Destroy},
 	#ifndef DAEDALUS_CTR

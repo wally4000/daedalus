@@ -2,80 +2,47 @@
 
 
 #include "Base/Types.h"
-
+#include "SysPSP/Graphics/VideoMemoryManager.h"
 #include <stdio.h>
 #include <pspge.h>
 
-#include "Utility/VolatileMem.h"
-#include "Utility/MemoryHeap.h"
-#include "Utility/MathUtil.h"
-#include "SysPSP/Graphics/VideoMemoryManager.h"
+
 
 const u32 ERAM(3 * 512 * 1024);	//Amount of extra (volatile)RAM to use for textures in addition to VRAM //Corn
-//*****************************************************************************
-//
-//*****************************************************************************
-CVideoMemoryManager::~CVideoMemoryManager()
+
+
+bool Init_PSP_VideoMemoryManager()
 {
+	gVideo_MemoryManager = std::make_unique<CVideoMemoryManager>();
+	return true;
 }
 
-//*****************************************************************************
-//
-//*****************************************************************************
-class IVideoMemoryManager : public CVideoMemoryManager
+
+void Destroy_PSP_VideoMemoryManager()
 {
-public:
-	IVideoMemoryManager();
-	~IVideoMemoryManager();
-
-	virtual bool	Alloc( u32 size, void ** data, bool * isvidmem );
-	virtual void	Free(void * ptr);
-#ifdef DAEDALUS_DEBUG_MEMORY
-	virtual void	DisplayDebugInfo();
-#endif
-private:
-	CMemoryHeap *	mVideoMemoryHeap;
-	CMemoryHeap *	mRamMemoryHeap;
-};
-
-
-//*****************************************************************************
-//
-//*****************************************************************************
-template<> bool CSingleton< CVideoMemoryManager >::Create()
-{
-	#ifdef DAEDALUS_ENABLE_ASSERTS
-	DAEDALUS_ASSERT_Q(mpInstance == nullptr);
-#endif
-	mpInstance = std::make_shared<IVideoMemoryManager>();
-	return mpInstance != nullptr;
+	if (gVideo_MemoryManager)
+	{
+		gVideo_MemoryManager.reset();
+	}
 }
 
-//*****************************************************************************
-//
-//*****************************************************************************
-IVideoMemoryManager::IVideoMemoryManager()
-:	mVideoMemoryHeap( CMemoryHeap::Create( make_uncached_ptr( sceGeEdramGetAddr() ), sceGeEdramGetSize() ) )
-,	mRamMemoryHeap( CMemoryHeap::Create( make_uncached_ptr( (void*)(((u32)malloc_volatile(ERAM + 0xF) + 0xF) & ~0xF) ), ERAM ) )
+std::unique_ptr<CVideoMemoryManager> gVideo_MemoryManager;
+
+
+CVideoMemoryManager::CVideoMemoryManager()
+:	mVideoMemoryHeap( std::unique_ptr<CMemoryHeap>(CMemoryHeap::Create( make_uncached_ptr( sceGeEdramGetAddr() ), sceGeEdramGetSize() )))
+,	mRamMemoryHeap( std::unique_ptr<CMemoryHeap>(CMemoryHeap::Create( make_uncached_ptr( (void*)(((u32)malloc_volatile(ERAM + 0xF) + 0xF) & ~0xF) ), ERAM ) ))
 //,	mRamMemoryHeap( CMemoryHeap::Create( 1 * 1024 * 1024 ) )
 {
 	printf( "vram base: %p\n", sceGeEdramGetAddr() );
 	printf( "vram size: %d KB\n", sceGeEdramGetSize() / 1024 );
 }
 
-//*****************************************************************************
-//
-//*****************************************************************************
-IVideoMemoryManager::~IVideoMemoryManager()
-{
-	delete mVideoMemoryHeap;
-	delete mRamMemoryHeap;
-}
 
-//*****************************************************************************
-//
-//*****************************************************************************
-bool IVideoMemoryManager::Alloc( u32 size, void ** data, bool * isvidmem )
+CVideoMemoryManager::~CVideoMemoryManager() {}
+
+
+bool CVideoMemoryManager::Alloc( u32 size, void ** data, bool * isvidmem )
 {
 	void *mem = nullptr;
 
@@ -110,10 +77,8 @@ bool IVideoMemoryManager::Alloc( u32 size, void ** data, bool * isvidmem )
 	return false;
 }
 
-//*****************************************************************************
-//
-//*****************************************************************************
-void  IVideoMemoryManager::Free(void * ptr)
+
+void  CVideoMemoryManager::Free(void * ptr)
 {
 	if( ptr == nullptr )
 	{
@@ -136,10 +101,8 @@ void  IVideoMemoryManager::Free(void * ptr)
 }
 
 #ifdef DAEDALUS_DEBUG_MEMORY
-//*****************************************************************************
-//
-//*****************************************************************************
-void IVideoMemoryManager::DisplayDebugInfo()
+
+void CVideoMemoryManager::DisplayDebugInfo()
 {
 	printf( "VRAM\n" );
 	mVideoMemoryHeap->DisplayDebugInfo();

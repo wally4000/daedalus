@@ -159,7 +159,7 @@ static const std::array<SysEntityEntry, 17> gSysInitTable =
 	{"Language",			Translate_Init,				NULL},
 	#endif
 #ifdef DAEDALUS_PSP
-	{"VideoMemory",			CVideoMemoryManager::Create, NULL},
+	{"VideoMemory",			Init_PSP_VideoMemoryManager, Destroy_PSP_VideoMemoryManager},
 
 #endif
 	{"GraphicsContext", [](){ return mGraphicsContext->Create(); }, [](){ mGraphicsContext->Destroy(); }},

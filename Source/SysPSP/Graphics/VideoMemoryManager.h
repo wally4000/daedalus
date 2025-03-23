@@ -24,17 +24,30 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Base/Types.h"
 #include "Base/Singleton.h"
 
-class CVideoMemoryManager : public CSingleton< CVideoMemoryManager >
+#include "Utility/VolatileMem.h"
+#include "Utility/MemoryHeap.h"
+#include "Utility/MathUtil.h"
+
+bool Init_PSP_VideoMemoryManager();
+void Destroy_PSP_VideoMemoryManager();
+
+class CVideoMemoryManager
 {
 public:
-	virtual ~CVideoMemoryManager();
+	CVideoMemoryManager();
+	 ~CVideoMemoryManager();
 
-	virtual bool			Alloc( u32 size, void ** data, bool * isvidmem ) = 0;
-	virtual void			Free( void * ptr ) = 0;
+	 bool			Alloc( u32 size, void ** data, bool * isvidmem );
+	 void			Free( void * ptr );
 #ifdef DAEDALUS_DEBUG_MEMORY
-	virtual void			DisplayDebugInfo() = 0;
+	 void			DisplayDebugInfo() = 0;
 #endif
+
+private:
+	std::unique_ptr<CMemoryHeap>	mVideoMemoryHeap;
+	std::unique_ptr<CMemoryHeap>	mRamMemoryHeap;
 };
 
+extern std::unique_ptr<CVideoMemoryManager> gVideo_MemoryManager;
 
 #endif // SYSPSP_GRAPHICS_VIDEOMEMORYMANAGER_H_

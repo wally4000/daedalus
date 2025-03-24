@@ -154,14 +154,13 @@ static void Destroy_RomSettingsDB()
 #ifdef DAEDALUS_ENABLE_PROFILING
 static void ProfilerVblCallback(void * arg)
 {
-	CProfiler::Get()->Update();
-	CProfiler::Get()->Display();
+	gProfiler->Update();
+	gProfiler->Display();
 }
 
 static bool Profiler_Init()
 {
-	if (!CProfiler::Create())
-		return false;
+	gProfiler = std::make_unique<CPreferences>();
 
 	CPU_RegisterVblCallback(&ProfilerVblCallback, NULL);
 
@@ -171,7 +170,7 @@ static bool Profiler_Init()
 static void Profiler_Fini()
 {
 	CPU_UnregisterVblCallback(&ProfilerVblCallback, NULL);
-	CProfiler::Destroy();
+	gProfiler.reset();
 }
 #endif
 

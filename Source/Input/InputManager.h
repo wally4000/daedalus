@@ -2,7 +2,7 @@
 #define INPUT_INPUTMANAGER_H_
 
 #include "Ultra/ultra_os.h"
-#include "Base/Singleton.h"
+
 
 #include <glm/glm.hpp>
 #include <memory>

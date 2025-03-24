@@ -12,10 +12,8 @@
 
 struct SProfileItemHandle;
 
-class CProfiler : public CSingleton< CProfiler >
+class CProfiler
 {
-	protected:
-		friend class CSingleton< CProfiler >;
 	public:
 		CProfiler();
 		virtual ~CProfiler();
@@ -32,6 +30,7 @@ class CProfiler : public CSingleton< CProfiler >
 		class CProfilerImpl * mpImpl;
 };
 
+std::unique_ptr<CProfiler> gProfiler;
 //*************************************************************************************
 //
 //*************************************************************************************
@@ -54,12 +53,12 @@ public:
 	CAutoProfile( SProfileItemHandle handle )
 		:	mHandle( handle )
 	{
-		CProfiler::Get()->Enter( mHandle );
+		gProfiler->Enter( mHandle );
 	}
 
 	~CAutoProfile()
 	{
-		CProfiler::Get()->Exit( mHandle );
+		gProfiler->Exit( mHandle );
 	}
 
 private:
@@ -74,7 +73,7 @@ private:
 #ifdef DAEDALUS_ENABLE_PROFILING
 
 #define DAEDALUS_PROFILE( x )											\
-	static	SProfileItemHandle		_profile_item( CProfiler::Get()->AddItem( x ) );	\
+	static	SProfileItemHandle		_profile_item( gProfiler->AddItem( x ) );	\
 	CAutoProfile					_auto_profile( _profile_item );
 
 #else

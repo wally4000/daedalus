@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define SYSPSP_GRAPHICS_VIDEOMEMORYMANAGER_H_
 
 #include "Base/Types.h"
-#include "Base/Singleton.h"
+
 
 #include "Utility/VolatileMem.h"
 #include "Utility/MemoryHeap.h"

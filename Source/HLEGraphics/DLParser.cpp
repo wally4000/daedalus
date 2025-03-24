@@ -401,7 +401,7 @@ SProfileItemHandle * gpProfileItemHandles[ 256 ];
 #define PROFILE_DL_CMD( cmd )								\
 	if(gpProfileItemHandles[ (cmd) ] == NULL)				\
 	{														\
-		gpProfileItemHandles[ (cmd) ] = new SProfileItemHandle( CProfiler::Get()->AddItem( gUcodeName[ cmd ] ));		\
+		gpProfileItemHandles[ (cmd) ] = new SProfileItemHandle( gProfiler->AddItem( gUcodeName[ cmd ] ));		\
 	}														\
 	CAutoProfile		_auto_profile( *gpProfileItemHandles[ (cmd) ] )
 

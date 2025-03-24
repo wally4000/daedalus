@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define DEBUG_DBGCONSOLE_H_
 
 #include "Base/Types.h"
-#include "Base/Singleton.h"
+
 #include "Base/Macros.h"
 
 #ifdef DAEDALUS_DEBUG_CONSOLE

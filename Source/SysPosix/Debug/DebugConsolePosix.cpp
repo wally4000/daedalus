@@ -49,23 +49,20 @@ class IDebugConsole : public CDebugConsole
 		void MsgOverwriteEnd() {}
 };
 
-template<> bool CSingleton< CDebugConsole >::Create()
+std::unique_ptr<CDebugConsole> gDebugConsole;
+bool Init_DebugConsole()
 {
-	DAEDALUS_ASSERT(mpInstance == NULL, "Already initialised");
-
-	mpInstance = std::make_shared<IDebugConsole>();
-
-	return mpInstance ? true : false;
+	gDebugConsole = std::make_unique<IDebugConsole>();
+	return true;
 }
-
-CDebugConsole::~CDebugConsole()
+void Destroy_DebugConsole()
 {
-
+	gDebugConsole.reset();
 }
+CDebugConsole::~CDebugConsole() {}
 
-IDebugConsole::IDebugConsole()
-{
-}
+
+IDebugConsole::IDebugConsole() {}
 
 
 static size_t ParseFormatString(const char * format, char * out, size_t out_len [[maybe_unused]])

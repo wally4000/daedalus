@@ -150,6 +150,7 @@ static void Destroy_RomSettingsDB()
 	gRomSettingsDB.reset();
 }
 
+
 #ifdef DAEDALUS_ENABLE_PROFILING
 static void ProfilerVblCallback(void * arg)
 {
@@ -177,7 +178,7 @@ static void Profiler_Fini()
 static const std::array<SysEntityEntry, 17> gSysInitTable =
 {{
 #ifdef DAEDALUS_DEBUG_CONSOLE
-	{"DebugConsole",		CDebugConsole::Create,		CDebugConsole::Destroy},
+	{"DebugConsole",		Init_DebugConsole,		Destroy_DebugConsole},
 #endif
 #ifdef DAEDALUS_LOG
 	{"Logger",				Debug_InitLogging},

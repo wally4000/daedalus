@@ -28,7 +28,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #ifdef DAEDALUS_DEBUG_CONSOLE
 
-class CDebugConsole : public CSingleton< CDebugConsole >
+bool Init_DebugConsole();
+void Destroy_DebugConsole();
+
+class CDebugConsole 
 {
 	public:
 		virtual ~CDebugConsole();
@@ -40,7 +43,9 @@ class CDebugConsole : public CSingleton< CDebugConsole >
 		virtual void							MsgOverwriteEnd() = 0;
 };
 
-#define DBGConsole_Msg( type, ... )			CDebugConsole::Get()->Msg( type, __VA_ARGS__ )
+extern std::unique_ptr<CDebugConsole> gDebugConsole;
+
+#define DBGConsole_Msg( type, ... )			gDebugConsole->Msg( type, __VA_ARGS__ )
 
 #else
 

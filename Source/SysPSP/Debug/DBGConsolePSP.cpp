@@ -54,18 +54,18 @@ private:
 	char				mFormattingBuffer[ 2048 ];
 };
 
-template<> bool	CSingleton< CDebugConsole >::Create()
+std::unique_ptr<CDebugConsole> gDebugConsole;
+
+bool Init_DebugConsole()
 {
-	DAEDALUS_ASSERT_Q(mpInstance == nullptr);
-
-	mpInstance = std::make_shared<IDebugConsole>();
-
+	gDebugConsole = std::make_unique<IDebugConsole>();
 	return true;
 }
-
-CDebugConsole::~CDebugConsole()
+void Destroy_DebugConsole()
 {
+	gDebugConsole.reset();
 }
+
 
 void IDebugConsole::DisplayString( const char * p_string )
 {

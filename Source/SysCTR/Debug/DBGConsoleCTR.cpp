@@ -47,13 +47,15 @@ public:
 private:
 };
 
-template<> bool	CSingleton< CDebugConsole >::Create()
+std::unique_ptr<CDebugConsole> gDebugConsole;
+bool Init_DebugConsole()
 {
-	DAEDALUS_ASSERT_Q(mpInstance == nullptr);
-
-	mpInstance = std::make_shared<IDebugConsole>();
-
+	gDebugConsole = std::make_unique<IDebugConsole>();
 	return true;
+}
+void Destroy_DebugConsole()
+{
+	gDebugConsole.reset();
 }
 
 CDebugConsole::~CDebugConsole()

@@ -7,6 +7,7 @@
 #include <vector>
 #include <algorithm>
 #include <cstring> 
+#include <memory> 
 
 #include <pspctrl.h>
 #include "Interface/ConfigOptions.h"
@@ -21,6 +22,7 @@
 #include "Interface/Preferences.h"
 #include "Utility/Stream.h"
 #include "Debug/Synchroniser.h"
+
 
 namespace
 {
@@ -288,6 +290,20 @@ class IInputManager : public CInputManager
 		std::vector<CControllerConfig*>		mControllerConfigs;
 };
 
+
+std::unique_ptr<CInputManager> gInputManager = std::make_unique<IInputManager>();
+
+ bool Init_InputManager()
+{
+	gInputManager = std::make_unique<IInputManager>();
+	return gInputManager->Initialise();
+}
+
+ void Destroy_InputManager()
+{
+	gInputManager->Finalise();
+}
+
 //*****************************************************************************
 //
 //*****************************************************************************
@@ -447,13 +463,6 @@ void IInputManager::GetState( OSContPad pPad[4] )
 	}
 }
 
-template<> bool CSingleton< CInputManager >::Create()
-{
-	DAEDALUS_ASSERT_Q(mpInstance == NULL);
-
-	mpInstance = std::make_shared<IInputManager>();
-	return mpInstance->Initialise();
-}
 
 //*****************************************************************************
 //	Some utility classes for handling our expression evaluation

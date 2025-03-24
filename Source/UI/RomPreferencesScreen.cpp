@@ -71,11 +71,11 @@ namespace
 		{
 		}
 
-		virtual	void			OnNext()				{ *mSetting = (*mSetting + 1) % CInputManager::Get()->GetNumConfigurations(); }
-		virtual	void			OnPrevious()			{ *mSetting = (*mSetting + CInputManager::Get()->GetNumConfigurations() - 1) % CInputManager::Get()->GetNumConfigurations(); }
+		virtual	void			OnNext()				{ *mSetting = (*mSetting + 1) % gInputManager->GetNumConfigurations(); }
+		virtual	void			OnPrevious()			{ *mSetting = (*mSetting + gInputManager->GetNumConfigurations() - 1) % gInputManager->GetNumConfigurations(); }
 
-		virtual const char *	GetSettingName() const	{ return CInputManager::Get()->GetConfigurationName( *mSetting ); }
-		virtual const std::string	GetDescription() const	{ return CInputManager::Get()->GetConfigurationDescription( *mSetting ); }
+		virtual const char *	GetSettingName() const	{ return gInputManager->GetConfigurationName( *mSetting ); }
+		virtual const std::string	GetDescription() const	{ return gInputManager->GetConfigurationDescription( *mSetting ); }
 
 	private:
 		u32 *					mSetting;
@@ -240,8 +240,9 @@ IRomPreferencesScreen::IRomPreferencesScreen( CUIContext * p_context, const RomI
 	mElements.Add(std::make_unique<CBoolSetting>( &mRomPreferences.DynarecEnabled, "Dynamic Recompilation", "Dynamic recompilation gives a considerable speed-up for the ROM emulation.", "Enabled", "Disabled" ) );
 	mElements.Add(std::make_unique<CBoolSetting>( &mRomPreferences.PatchesEnabled, "High Level Emulation", "Whether to use replicated OS function calls (faster) instead of emulating the real ones (slower) (WARNING, can cause instability and/or crash on certain ROMs).", "Enabled", "Disabled" ) );
 	mElements.Add(std::make_unique<CAudioSetting>( &mRomPreferences.AudioEnabled, "Audio", "Whether or not to enable audio emulation, and whether to process the audio asynchronously(fast/buggy) or synchronously(slow)." ) );
+#ifndef DAEDALUS_POSIX // Not implemented in Posix Platforms
 	mElements.Add(std::make_unique<CAdjustControllerSetting>( &mRomPreferences.ControllerIndex, "Controller" ) );
-
+#endif
 //	mElements.Add( new CUISpacer( 16 ) );
 
 	mElements.Add(std::make_unique<CUICommandImpl>(std::bind(&IRomPreferencesScreen::OnConfirm, this ), "Save & Return", "Confirm changes to settings and return." ) );

@@ -65,6 +65,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 std::unique_ptr<CGraphicsPlugin> gGraphicsPlugin;
 std::unique_ptr<CAudioPlugin> gAudioPlugin;
 std::unique_ptr<CRomDB> gRomDB;
+
+
 static bool InitAudioPlugin()
 {
 	std::unique_ptr<CAudioPlugin> audio_plugin = CreateAudioPlugin();
@@ -145,8 +147,9 @@ static bool Init_RomSettingsDB()
 }
 static void Destroy_RomSettingsDB()
 {
-
+	gRomSettingsDB.reset();
 }
+
 #ifdef DAEDALUS_ENABLE_PROFILING
 static void ProfilerVblCallback(void * arg)
 {
@@ -184,7 +187,7 @@ static const std::array<SysEntityEntry, 17> gSysInitTable =
 #endif
 	{"ROM Database",		Init_RomDB,				Destroy_RomDB},
 	{"ROM Settings",		Init_RomSettingsDB,		Destroy_RomSettingsDB},
-	{"InputManager",		CInputManager::Create,		CInputManager::Destroy},
+	{"InputManager",		Init_InputManager,		Destroy_InputManager},
 	#ifndef DAEDALUS_CTR
 	{"Language",			Translate_Init,				NULL},
 	#endif
@@ -218,7 +221,7 @@ static const std::array<RomEntityEntry, 12> gRomInitTable =
 {{
 	{"RomBuffer",			RomBuffer::Open, 		RomBuffer::Close},
 	{"Settings",			ROM_LoadFile,			ROM_UnloadFile},
-	{"InputManager",		CInputManager::Init,	CInputManager::Fini},
+	{"InputManager",		Init_InputManager,	Destroy_InputManager},
 	{"Memory",				Memory_Reset,			Memory_Cleanup},
 	{"Audio",				InitAudioPlugin, 		DisposeAudioPlugin},
 	{"Graphics",			InitGraphicsPlugin, 	DisposeGraphicsPlugin},

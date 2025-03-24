@@ -5,8 +5,12 @@
 #include "Base/Singleton.h"
 
 #include <glm/glm.hpp>
+#include <memory>
 
-class CInputManager : public CSingleton< CInputManager >
+bool Init_InputManager();
+void Destroy_InputManager();
+
+class CInputManager
 {
 	public:
 		virtual ~CInputManager() {}
@@ -23,10 +27,8 @@ class CInputManager : public CSingleton< CInputManager >
 
 		virtual void GetState( OSContPad pPad[4] ) = 0;
 
-		static bool Init() { return CInputManager::Get()->Initialise();}
-		static void Fini() { CInputManager::Get()->Finalise();}
 };
-
+extern std::unique_ptr<CInputManager> gInputManager;
 glm::vec2	ApplyDeadzone( const glm::vec2 & in, f32 min_deadzone, f32 max_deadzone );
 
 #endif // INPUT_INPUTMANAGER_H_

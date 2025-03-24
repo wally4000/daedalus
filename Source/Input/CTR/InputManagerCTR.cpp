@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <vector>
 #include <3ds.h>
 #include <filesystem>
-
+#include <memory>
 #include "Interface/ConfigOptions.h"
 #include "Debug/DBGConsole.h"
 
@@ -38,6 +38,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Debug/Synchroniser.h"
 
 extern bool isN3DS;
+
 
 class CButtonMapping
 {
@@ -288,6 +289,20 @@ class IInputManager : public CInputManager
 		CControllerConfig *					mpControllerConfig;
 		std::vector<CControllerConfig*>		mControllerConfigs;
 };
+
+std::unique_ptr<CInputManager> gInputManager = std::make_unique<IInputManager>();
+
+ bool Init_InputManager()
+{
+	gInputManager = std::make_unique<IInputManager>();
+	return gInputManager->Initialise();
+}
+
+ void Destroy_InputManager()
+{
+	gInputManager->Finalise();
+}
+
 
 IInputManager::IInputManager() : mpControllerConfig( NULL )
 {

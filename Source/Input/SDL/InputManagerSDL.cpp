@@ -18,7 +18,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include <SDL2/SDL.h>
-
+#include <memory> 
 
 #include "Base/Types.h"
 #include "Input/InputManager.h"
@@ -35,6 +35,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <algorithm>
 #include <iostream>
 SDL_GameController *controller;
+
 
 class IInputManager : public CInputManager
 {
@@ -61,6 +62,19 @@ public:
 	//SDL_GameController *controller;
 
 };
+
+std::unique_ptr<CInputManager> gInputManager = std::make_unique<IInputManager>();
+
+ bool Init_InputManager()
+{
+	gInputManager = std::make_unique<IInputManager>();
+	return gInputManager->Initialise();
+}
+
+ void Destroy_InputManager()
+{
+	gInputManager->Finalise();
+}
 
 IInputManager::~IInputManager()
 {
@@ -110,7 +124,10 @@ void IInputManager::Finalise()
 void IInputManager::GetGamePadStatus()
 {
 	//Check for joystick SDL2 and open it if avaiable 
+	if (!controller && SDL_NumJoysticks() > 0 && SDL_IsGameController(0)) {
 		controller = SDL_GameControllerOpen(0);
+		mGamePadAvailable = controller != nullptr;
+	}
 		if(!controller){
 			mGamePadAvailable = true;
 			#ifdef DAEDALUS_DEBUG_CONSOLE
@@ -238,13 +255,13 @@ void IInputManager::GetState( OSContPad pPad[4] )
 
 }
 
-template<> bool CSingleton< CInputManager >::Create()
-{
-	DAEDALUS_ASSERT_Q(mpInstance == NULL);
+// template<> bool CSingleton< CInputManager >::Create()
+// {
+// 	DAEDALUS_ASSERT_Q(mpInstance == NULL);
 
-	mpInstance = std::make_shared<IInputManager>();
-	return mpInstance->Initialise();
-}
+// 	mpInstance = std::make_shared<IInputManager>();
+// 	return mpInstance->Initialise();
+// }
 
 
 u32	 IInputManager::GetNumConfigurations() const

@@ -241,7 +241,7 @@ bool CPreferences::OpenPreferencesFile( const std::filesystem::path  &filename )
 
 		if( section->FindProperty( "Controller", &property ) )
 		{
-			preferences.ControllerIndex = CInputManager::Get()->GetConfigurationFromName( property->GetValue() );
+			preferences.ControllerIndex = gInputManager->GetConfigurationFromName( property->GetValue() );
 		}
 		if( section->FindProperty( "MemoryAccessOptimisation", &property ) )
 		{
@@ -284,7 +284,7 @@ fh << "AudioEnabled=" << preferences.AudioEnabled << "\n";
 fh << "ZoomX=" << preferences.ZoomX << "\n";
 fh << "MemoryAccessOptimisation=" << preferences.MemoryAccessOptimisation << "\n";
 fh << "CheatsEnabled=" << preferences.CheatsEnabled << "\n";
-fh << "Controller=" << CInputManager::Get()->GetConfigurationName(preferences.ControllerIndex) << "\n";
+fh << "Controller=" << gInputManager->GetConfigurationName(preferences.ControllerIndex) << "\n";
 fh << "\n"; // Spacer
 }
 
@@ -456,7 +456,7 @@ void SRomPreferences::Apply() const
 //	gAdaptFrequency             = AudioAdaptFrequency;
 	gControllerIndex            = ControllerIndex;							//Used during ROM initialization
 
-	CInputManager::Get()->SetConfiguration( ControllerIndex );  //Used after initialization
+	gInputManager->SetConfiguration( ControllerIndex );  //Used after initialization
 }
 
 

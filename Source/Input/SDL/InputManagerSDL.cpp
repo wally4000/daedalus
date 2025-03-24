@@ -251,18 +251,7 @@ void IInputManager::GetState( OSContPad pPad[4] )
 		if (keys [ SDL_SCANCODE_PAGEDOWN ] ){  pPad[0].button |= R_CBUTTONS;}
 	}
 
-
-
 }
-
-// template<> bool CSingleton< CInputManager >::Create()
-// {
-// 	DAEDALUS_ASSERT_Q(mpInstance == NULL);
-
-// 	mpInstance = std::make_shared<IInputManager>();
-// 	return mpInstance->Initialise();
-// }
-
 
 u32	 IInputManager::GetNumConfigurations() const
 {

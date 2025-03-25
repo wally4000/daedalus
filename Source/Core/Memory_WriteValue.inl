@@ -16,6 +16,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
+#include "System/SystemInit.h"
 
 static void WriteValueInvalid( u32 address, u32 value [[maybe_unused]] )
 {
@@ -227,9 +228,9 @@ static void WriteValue_8440_844F( u32 address, u32 value )
 #ifdef DAEDALUS_LOG
 		DisplayVIControlInfo(value);
 #endif
-		if (gGraphicsPlugin != NULL)
+		if (ctx.graphicsPlugin)
 		{
-			gGraphicsPlugin->ViStatusChanged();
+			ctx.graphicsPlugin->ViStatusChanged();
 		}
 		break;
 
@@ -246,10 +247,10 @@ static void WriteValue_8440_844F( u32 address, u32 value )
 		{
 			// Builtin video plugin already calls UpdateScreen in DLParser_Process
 #ifndef DAEDALUS_GL 
-			gGraphicsPlugin->UpdateScreen();
+			ctx.graphicsPlugin->UpdateScreen();
 #endif
 #ifndef DAEDALUS_GLES
-			gGraphicsPlugin->UpdateScreen();
+			ctx.graphicsPlugin->UpdateScreen();
 #endif
 		}
 		break;
@@ -258,9 +259,9 @@ static void WriteValue_8440_844F( u32 address, u32 value )
 	#ifdef DAEDALUS_DEBUG_CONSOLE
 		DPF( DEBUG_VI, "VI_WIDTH_REG set to %d pixels", value );
 		#endif
-		if (gGraphicsPlugin != NULL)
+		if (ctx.graphicsPlugin)
 		{
-			gGraphicsPlugin->ViWidthChanged();
+			ctx.graphicsPlugin->ViWidthChanged();
 		}
 		break;
 

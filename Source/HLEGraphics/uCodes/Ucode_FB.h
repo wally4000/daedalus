@@ -20,6 +20,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef HLEGRAPHICS_UCODES_UCODE_FB_H_
 #define HLEGRAPHICS_UCODES_UCODE_FB_H_
 
+#include "System/SystemInit.h"
+
 #ifndef DAEDALUS_PSP
 static inline std::shared_ptr<CNativeTexture> LoadFrameBuffer(u32 origin)
 {
@@ -103,7 +105,7 @@ void RenderFrameBuffer(u32 origin)
 		DrawFrameBuffer(origin, texture);
 
 	gRenderer->EndScene();
-	gGraphicsPlugin->UpdateScreen();
+	ctx.graphicsPlugin->UpdateScreen();
 }
 
 #endif // DAEDALUS_PSP

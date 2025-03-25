@@ -190,7 +190,7 @@ void CGraphicsPluginImpl::RomClosed()
 	DestroyRenderer();
 }
 
-class std::unique_ptr<CGraphicsPlugin>	CreateGraphicsPlugin()
+ std::unique_ptr<CGraphicsPlugin>	CreateGraphicsPlugin()
 {
 	DBGConsole_Msg( 0, "Initialising Graphics Plugin [CGL]" );
 	auto plugin = std::make_unique<CGraphicsPluginImpl>();

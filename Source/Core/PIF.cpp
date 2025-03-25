@@ -90,7 +90,7 @@ area assignment does not change. After Tx/RxData assignment, this flag is reset 
 #include <fstream>
 #include <sstream>
 #include <memory>
-
+#include "System/SystemInit.h"
 
 #include "Core/PIF.h"
 #include <iostream>
@@ -127,21 +127,6 @@ bool has_rumblepak[4] = {false, false, false, false};
 
 
 std::unique_ptr<CController> gController;
-
-bool Create_Controller()
-{
-	gController = std::make_unique<CController>();
-	return true;
-}
-
-void Destroy_Controller()
-{
-	if (gController)
-	{
-		gController->OnRomClose();
-		gController.reset();
-	}
-}
 
 // Constructor
 
@@ -253,7 +238,7 @@ void CController::Process()
 	}
 
 	// Read controller data here (here gets called fewer times than CONT_READ_CONTROLLER)
-	gInputManager->GetState( mContPads );
+	ctx.gInputManager->GetState( mContPads );
 
 	bool stop = false;
 

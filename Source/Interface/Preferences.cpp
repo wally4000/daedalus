@@ -21,8 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "Base/Types.h"
 #include "Interface/Preferences.h"
-
-
+#include "System/SystemInit.h"
 template <typename T>
 void OutputValue(std::ofstream& fh, const std::string& name, const T& value) {
     fh << name << "=" << value << "\n";
@@ -241,7 +240,7 @@ bool CPreferences::OpenPreferencesFile( const std::filesystem::path  &filename )
 
 		if( section->FindProperty( "Controller", &property ) )
 		{
-			preferences.ControllerIndex = gInputManager->GetConfigurationFromName( property->GetValue() );
+			preferences.ControllerIndex = ctx.gInputManager->GetConfigurationFromName( property->GetValue() );
 		}
 		if( section->FindProperty( "MemoryAccessOptimisation", &property ) )
 		{
@@ -284,7 +283,7 @@ fh << "AudioEnabled=" << preferences.AudioEnabled << "\n";
 fh << "ZoomX=" << preferences.ZoomX << "\n";
 fh << "MemoryAccessOptimisation=" << preferences.MemoryAccessOptimisation << "\n";
 fh << "CheatsEnabled=" << preferences.CheatsEnabled << "\n";
-fh << "Controller=" << gInputManager->GetConfigurationName(preferences.ControllerIndex) << "\n";
+fh << "Controller=" << ctx.gInputManager->GetConfigurationName(preferences.ControllerIndex) << "\n";
 fh << "\n"; // Spacer
 }
 
@@ -456,7 +455,7 @@ void SRomPreferences::Apply() const
 //	gAdaptFrequency             = AudioAdaptFrequency;
 	gControllerIndex            = ControllerIndex;							//Used during ROM initialization
 
-	gInputManager->SetConfiguration( ControllerIndex );  //Used after initialization
+	ctx.gInputManager->SetConfiguration( ControllerIndex );  //Used after initialization
 }
 
 

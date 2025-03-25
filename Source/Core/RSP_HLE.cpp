@@ -39,6 +39,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "Debug/PrintOpCode.h"
 #include "Utility/Profiler.h"
+#include "System/SystemInit.h"
 
 static const bool	gGraphicsEnabled = true;
 static const bool	gAudioEnabled	 = true;
@@ -135,9 +136,9 @@ static EProcessResult RSP_HLE_Graphics()
 {
 	DAEDALUS_PROFILE( "HLE: Graphics" );
 
-	if (gGraphicsEnabled && gGraphicsPlugin != nullptr)
+	if (gGraphicsEnabled && ctx.graphicsPlugin != nullptr)
 	{
-		gGraphicsPlugin->ProcessDList();
+		ctx.graphicsPlugin->ProcessDList();
 	}
 	else
 	{

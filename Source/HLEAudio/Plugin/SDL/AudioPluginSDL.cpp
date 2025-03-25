@@ -18,7 +18,7 @@ void* Audio_UcodeEntry(void* arg) {
     Audio_Ucode();
     return nullptr;
 }
-
+ std::unique_ptr<CAudioPlugin> gAudioPlugin;
 SDL_AudioDeviceID audio_device = 0;
 
 struct Sample {

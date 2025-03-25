@@ -22,7 +22,7 @@
 #include "Interface/Preferences.h"
 #include "Utility/Stream.h"
 #include "Debug/Synchroniser.h"
-
+#include "System/SystemInit.h"
 
 namespace
 {
@@ -295,13 +295,13 @@ std::unique_ptr<CInputManager> gInputManager = std::make_unique<IInputManager>()
 
  bool Init_InputManager()
 {
-	gInputManager = std::make_unique<IInputManager>();
-	return gInputManager->Initialise();
+	ctx.gInputManager = std::make_unique<IInputManager>();
+	return ctx.gInputManager->Initialise();
 }
 
  void Destroy_InputManager()
 {
-	gInputManager->Finalise();
+	ctx.gInputManager->Finalise();
 }
 
 //*****************************************************************************

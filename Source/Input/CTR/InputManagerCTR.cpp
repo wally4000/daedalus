@@ -19,7 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
 #include "Input/InputManager.h"
-
+#include "System/SystemInit.h"
 #include <stack>
 #include <cstring>
 #include <vector>
@@ -294,13 +294,13 @@ std::unique_ptr<CInputManager> gInputManager = std::make_unique<IInputManager>()
 
  bool Init_InputManager()
 {
-	gInputManager = std::make_unique<IInputManager>();
-	return gInputManager->Initialise();
+	ctx.gInputManager = std::make_unique<IInputManager>();
+	return ctx.gInputManager->Initialise();
 }
 
  void Destroy_InputManager()
 {
-	gInputManager->Finalise();
+	ctx.gInputManager->Finalise();
 }
 
 

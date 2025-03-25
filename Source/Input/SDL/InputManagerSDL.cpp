@@ -31,49 +31,24 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #endif
 
 #include "UI/UIContext.h" // for Input structures
-
+#include "System/SystemInit.h"
 #include <algorithm>
 #include <iostream>
+#include "Input/SDL/InputManagerSDL.h"
 SDL_GameController *controller;
 
 
-class IInputManager : public CInputManager
-{
-public:
-	IInputManager();
-	virtual ~IInputManager();
-
-	virtual bool				Initialise();
-	virtual void				Finalise();
-
-	virtual void				GetState( OSContPad pPad[4] );
-
-	virtual u32					GetNumConfigurations() const;
-	virtual const char *		GetConfigurationName( u32 configuration_idx ) const;
-	virtual const char *		GetConfigurationDescription( u32 configuration_idx ) const;
-	virtual void				SetConfiguration( u32 configuration_idx );
-	virtual u32					GetConfigurationFromName( const char * name ) const;
-	void						GetGamePadStatus();
-	void 						GetJoyPad(OSContPad *pPad);
-	
-	private:
-	
-	bool mGamePadAvailable;
-	//SDL_GameController *controller;
-
-};
-
-std::unique_ptr<CInputManager> gInputManager = std::make_unique<IInputManager>();
+std::unique_ptr<CInputManager> gInputManager;
 
  bool Init_InputManager()
 {
-	gInputManager = std::make_unique<IInputManager>();
-	return gInputManager->Initialise();
+	ctx.gInputManager = std::make_unique<IInputManager>();
+	return ctx.gInputManager->Initialise();
 }
 
  void Destroy_InputManager()
 {
-	gInputManager->Finalise();
+	ctx.gInputManager->Finalise();
 }
 
 IInputManager::~IInputManager()

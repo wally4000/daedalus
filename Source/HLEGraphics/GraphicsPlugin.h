@@ -18,6 +18,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #pragma once
+#include "System/SystemInit.h"
 
 #ifndef PLUGINS_GRAPHICSPLUGIN_H_
 #define PLUGINS_GRAPHICSPLUGIN_H_
@@ -42,6 +43,6 @@ class CGraphicsPlugin
 //	This needs to be defined for all targets.
 //
 std::unique_ptr<CGraphicsPlugin> CreateGraphicsPlugin();
-extern std::unique_ptr<CGraphicsPlugin> gGraphicsPlugin;
+// extern std::unique_ptr<CGraphicsPlugin> graphicsPlugin;
 
 #endif // PLUGINS_GRAPHICSPLUGIN_H_

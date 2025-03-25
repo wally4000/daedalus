@@ -37,6 +37,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "UISpacer.h"
 #include "UICommand.h"
 #include "Interface/Preferences.h"
+#include "System/SystemInit.h"
 
 
 namespace
@@ -71,11 +72,11 @@ namespace
 		{
 		}
 
-		virtual	void			OnNext()				{ *mSetting = (*mSetting + 1) % gInputManager->GetNumConfigurations(); }
-		virtual	void			OnPrevious()			{ *mSetting = (*mSetting + gInputManager->GetNumConfigurations() - 1) % gInputManager->GetNumConfigurations(); }
+		virtual	void			OnNext()				{ *mSetting = (*mSetting + 1) % ctx.gInputManager->GetNumConfigurations(); }
+		virtual	void			OnPrevious()			{ *mSetting = (*mSetting + ctx.gInputManager->GetNumConfigurations() - 1) % ctx.gInputManager->GetNumConfigurations(); }
 
-		virtual const char *	GetSettingName() const	{ return gInputManager->GetConfigurationName( *mSetting ); }
-		virtual const std::string	GetDescription() const	{ return gInputManager->GetConfigurationDescription( *mSetting ); }
+		virtual const char *	GetSettingName() const	{ return ctx.gInputManager->GetConfigurationName( *mSetting ); }
+		virtual const std::string	GetDescription() const	{ return ctx.gInputManager->GetConfigurationDescription( *mSetting ); }
 
 	private:
 		u32 *					mSetting;

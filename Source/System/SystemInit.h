@@ -19,6 +19,43 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #pragma once
 #include <filesystem>
+#include <memory>
+ 
+#ifdef DAEDALUS_PSP
+class CVideoMemoryManager;
+#endif
+
+class CPreferences;
+class CRomDB;
+class CInputManager;
+class CRomSettingsDB;
+class CAudioPlugin;
+class CGraphicsPlugin;
+class CROMFileMemory;
+class CROMBuffer;
+class CDebugConsole;
+struct SystemContext {
+
+    std::unique_ptr<CGraphicsPlugin> graphicsPlugin;
+    std::unique_ptr<CAudioPlugin> audioPlugin;
+    std::unique_ptr<CPreferences> preferences;
+    std::unique_ptr<CRomDB> romDB;
+    std::unique_ptr<CRomSettingsDB> romSettingsDB;
+    std::unique_ptr<CInputManager> gInputManager;
+    std::unique_ptr<CROMFileMemory> gROMFileMemory;
+
+    #ifdef DAEDALUS_PSP
+    std::unique_ptr<CVideoMemoryManager> videoMemoryManager;
+    #endif
+
+    #ifdef DAEDALUS_DEBUG_CONSOLE
+    std::unique_ptr<CDebugConsole> debugConsole;
+    #endif
+};
+
+
+extern SystemContext ctx;
+
 // Initialize the whole system
 bool System_Init();
 

@@ -165,9 +165,9 @@ static EProcessResult RSP_HLE_Audio()
 {
 	DAEDALUS_PROFILE( "HLE: Audio" );
 
-	if (gAudioEnabled && gAudioPlugin != nullptr)
+	if (gAudioEnabled && ctx.audioPlugin)
 	{
-		return gAudioPlugin->ProcessAList();
+		return ctx.audioPlugin->ProcessAList();
 	}
 	return PR_COMPLETED;
 }

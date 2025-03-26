@@ -71,24 +71,24 @@ SystemContext* g_SystemContext = &ctx;
 
 std::unique_ptr<CRomDB> gRomDB;
 
- bool Init_LegacyAudio(SystemContext& ctx)
+ bool Init_Audio(SystemContext& ctx)
 {
 	std::unique_ptr<CAudioPlugin> audio_plugin = CreateAudioPlugin();
-	if( audio_plugin != NULL )
+	if(audio_plugin)
 	{
-		gAudioPlugin = std::move(audio_plugin);
+		ctx.audioPlugin = std::move(audio_plugin);
+		ctx.audioPlugin->StartEmulation();
+		return true;
 	}
-	gAudioPlugin->StartEmulation();
-	return true;
+	return false;
 }
 
- void Dispose_LegacyAudio(SystemContext& ctx)
+ void Dispose_Audio(SystemContext& ctx)
 {
-	if ( gAudioPlugin != NULL )
+	if (ctx.audioPlugin)
 	{
-		gAudioPlugin->StopEmulation();
-		gAudioPlugin.release();
-		gAudioPlugin = NULL;
+		ctx.audioPlugin->StopEmulation();
+		ctx.audioPlugin.reset();
 	}
 }
 
@@ -173,7 +173,7 @@ static void ProfilerVblCallback(void * arg)
 	gProfiler->Display();
 }
 
-static bool Profiler_Init()
+static bool Profiler_Init(SystemContext& ctx)
 {
 	gProfiler = std::make_unique<CPreferences>();
 
@@ -182,7 +182,7 @@ static bool Profiler_Init()
 	return true;
 }
 
-static void Profiler_Fini()
+static void Profiler_Fini(SystemContext& ctx)
 {
 	CPU_UnregisterVblCallback(&ProfilerVblCallback, NULL);
 	gProfiler.reset();
@@ -215,6 +215,14 @@ void Destroy_LegacyController(SystemContext& ctx)
 	}
 }
 
+ bool Legacy_GraphicsContextInit(SystemContext& ctx) {
+    return mGraphicsContext->Create(); 
+}
+
+ void Legacy_GraphicsContextDestroy(SystemContext& ctx) {
+    mGraphicsContext->Destroy(); 
+}
+
 bool Legacy_RomBuffer_Init(SystemContext& ctx)
 {
 	// Create memory heap used for either ROM Cache or ROM buffer
@@ -225,70 +233,74 @@ bool Legacy_RomBuffer_Init(SystemContext& ctx)
 static void Legacy_RomBuffer_Destroy(SystemContext& ctx) {
 	return RomBuffer::Destroy();
 }
+#ifdef DAEDALUS_PSP
+bool Init_PSPVideoMemoryManager(SystemContext& ctx)
+{
+	ctx.videoMemoryManager = std::make_unique<CVideoMemoryManager>();
+	return true;
+}
+
+void Destroy_PSPVideoMemoryManager(SystemContext& ctx)
+{
+	if (ctx.videoMemoryManager)
+	{
+		ctx.videoMemoryManager.reset();
+	}
+}
+#endif
 
 #ifdef DAEDALUS_DEBUG_CONSOLE
-bool Legacy_Debug_Init(SystemContext& ctx)
-{
+bool Legacy_Debug_Init(SystemContext& ctx) {	return Init_DebugConsole(); }
 
-	return Init_DebugConsole();
-}
+bool Legacy_DebugLog_Init(SystemContext& ctx) { return Debug_InitLogging(); }
 
-bool Legacy_DebugLog_Init(SystemContext& ctx)
-{
-
-	return Debug_InitLogging();
-}
-
-static void Legacy_Debug_Destroy(SystemContext& ctx) {
-	Destroy_DebugConsole();
-}
+static void Legacy_Debug_Destroy(SystemContext& ctx) {Destroy_DebugConsole(); }
 
 
 // Debug Console
-static bool Init_OldDebug(SystemContext&)              { return Legacy_Debug_Init(ctx); }
-static void Dispose_OldDebug(SystemContext&)           { Legacy_Debug_Destroy(ctx); }
+static bool Init_OldDebug(SystemContext& ctx)              { return Legacy_Debug_Init(ctx); }
+static void Dispose_OldDebug(SystemContext& ctx)           { Legacy_Debug_Destroy(ctx); }
 
 // Debug Logger
-static bool Init_OldDebugLog(SystemContext&)           { return Legacy_DebugLog_Init(ctx); }
+static bool Init_OldDebugLog(SystemContext& ctx)           { return Legacy_DebugLog_Init(ctx); }
 #endif
-// Audio
-static bool Init_OldAudio(SystemContext&)              { return Init_LegacyAudio(ctx); }
-static void Dispose_OldAudio(SystemContext&)           { Dispose_LegacyAudio(ctx); }
 
 // Input Manager
-static bool Init_OldInputManager(SystemContext&)       { return Init_LegacyInputManager(ctx); }
-static void Destroy_OldInputManager(SystemContext&)    { Destroy_LegacyInputManager(ctx); }
+static bool Init_OldInputManager(SystemContext& ctx)       { return Init_LegacyInputManager(ctx); }
+static void Destroy_OldInputManager(SystemContext& ctx)    { Destroy_LegacyInputManager(ctx); }
 
 // ROM DB
-static bool Init_OldRomDB(SystemContext&)              { return Init_LegacyRomDB(ctx); }
-static void Destroy_OldRomDB(SystemContext&)           { Destroy_LegacyRomDB(ctx); }
+static bool Init_OldRomDB(SystemContext& ctx)              { return Init_LegacyRomDB(ctx); }
+static void Destroy_OldRomDB(SystemContext& ctx)            { Destroy_LegacyRomDB(ctx); }
 
 // ROM Settings DB
-static bool Init_OldRomSettingsDB(SystemContext&)      { return Init_LegacyRomSettingsDB(ctx); }
-static void Destroy_OldRomSettingsDB(SystemContext&)   { Destroy_LegacyRomSettingsDB(ctx); }
+static bool Init_OldRomSettingsDB(SystemContext& ctx)      { return Init_LegacyRomSettingsDB(ctx); }
+static void Destroy_OldRomSettingsDB(SystemContext& ctx)   { Destroy_LegacyRomSettingsDB(ctx); }
 
 // Preferences
-static bool Init_OldRomPreferences(SystemContext&)     { return Init_LegacyRomPreferences(ctx); }
-static void Destroy_OldRomPreferences(SystemContext&)  { Destroy_LegacyRomPreferences(ctx); }
+static bool Init_OldRomPreferences(SystemContext& ctx)     { return Init_LegacyRomPreferences(ctx); }
+static void Destroy_OldRomPreferences(SystemContext& ctx)  { Destroy_LegacyRomPreferences(ctx); }
 
 // Graphics Plugin
-static bool Init_OldGraphics(SystemContext&)           { return Init_GraphicsPlugin(ctx); }
-static void Destroy_OldGraphics(SystemContext&)        { Cleanup_GraphicsPlugin(ctx); }
+static bool Init_OldGraphics(SystemContext& ctx)           { return Init_GraphicsPlugin(ctx); }
+static void Destroy_OldGraphics(SystemContext& ctx)        { Cleanup_GraphicsPlugin(ctx); }
 
 // Controller
-static bool Init_OldController(SystemContext&)         { return Init_LegacyController(ctx); }
-static void Destroy_OldController(SystemContext&)      { Destroy_LegacyController(ctx); }
+static bool Init_OldController(SystemContext& ctx)         { return Init_LegacyController(ctx); }
+static void Destroy_OldController(SystemContext& ctx)      { Destroy_LegacyController(ctx); }
 
 // RomBuffer Init
-static bool Init_OldRomBuffer(SystemContext&)          { return Legacy_RomBuffer_Init(ctx); }
-static void Destroy_OldRomBuffer(SystemContext&)       { Legacy_RomBuffer_Destroy(ctx); }
+static bool Init_OldRomBuffer(SystemContext& ctx)          { return Legacy_RomBuffer_Init(ctx); }
+static void Destroy_OldRomBuffer(SystemContext& ctx)       { Legacy_RomBuffer_Destroy(ctx); }
 
+static bool Init_OldGraphicsContext(SystemContext& ctx)          { return Legacy_GraphicsContextInit(ctx); }
+static void Destroy_OldGraphicsContext(SystemContext& ctx)       { Legacy_GraphicsContextDestroy(ctx); }
 
 // FramerateLimiter (System table doesn't use it, but included here if needed)
-static bool Init_OldFramerateLimiter(SystemContext&)   { return FramerateLimiter_Reset(); }
+static bool Init_OldFramerateLimiter(SystemContext& ctx)   { return FramerateLimiter_Reset(); }
 
-static const std::vector<SysEntityEntry> gSysInitTable =
-{{
+const std::vector<SysEntityEntry> gSysInitTable =
+{
 #ifdef DAEDALUS_DEBUG_CONSOLE
 	{"DebugConsole",         Init_OldDebug,              Dispose_OldDebug},
 #endif
@@ -305,12 +317,9 @@ static const std::vector<SysEntityEntry> gSysInitTable =
 	{"Language",             Init_Translate,             nullptr},
 #endif
 #ifdef DAEDALUS_PSP
-	{"VideoMemory",          Init_PSP_VideoMemoryManager, Destroy_PSP_VideoMemoryManager},
+	{"VideoMemory",          Init_PSPVideoMemoryManager, Destroy_PSPVideoMemoryManager},
 #endif
-	{"GraphicsContext",
-		[](SystemContext&) { return mGraphicsContext->Create(); },
-		[](SystemContext&) { mGraphicsContext->Destroy(); }
-	},
+	{"GraphicsContext",		 Init_OldGraphicsContext,  	  Destroy_OldGraphicsContext},
 	{"Preference",           Init_OldRomPreferences,     Destroy_OldRomPreferences},
 	{"Memory",               Init_Memory,                Destroy_Memory},
 	{"Controller",           Init_OldController,         Destroy_OldController},
@@ -323,7 +332,7 @@ static const std::vector<SysEntityEntry> gSysInitTable =
 	{"DLDebuggerWebDebug",   DLDebugger_RegisterWebDebug, nullptr},
 #endif
 #endif
-}};
+};
 
 struct RomEntityEntry
 {
@@ -423,12 +432,12 @@ static void Destroy_OldControllerReset(SystemContext&)    { Legacy_Controller_Ro
 static bool Init_OldSave(SystemContext&)                  { return Legacy_Save_Reset(ctx); }
 static void Destroy_OldSave(SystemContext&)               { Legacy_Save_Fini(ctx); }
 static const std::vector<RomEntityEntry> gRomInitTable =
-{{
+{
 	{"RomBuffer",           Init_OldRomBufferOpen,      Destroy_OldRomBufferOpen},
 	{"Settings",            Init_OldRomFile,            Destroy_OldRomFile},
 	{"InputManager",        Init_OldInputManager,       Destroy_OldInputManager},
 	{"Memory",              Init_OldMemoryReset,        Destroy_OldMemoryReset},
-	{"Audio",               Init_OldAudio,              Dispose_OldAudio},
+	{"Audio",               Init_Audio,                 Dispose_Audio},
 	{"Graphics",            Init_OldGraphics,           Destroy_OldGraphics},
 	{"FramerateLimiter",    Init_OldFramerateLimiter,   nullptr},
 	{"CPU",                 Init_OldCPU,                Destroy_OldCPU},
@@ -438,7 +447,7 @@ static const std::vector<RomEntityEntry> gRomInitTable =
 // #ifdef DAEDALUS_ENABLE_SYNCHRONISATION
 // 	{"CSynchroniser",       CSynchroniser::InitialiseSynchroniser, CSynchroniser::Destroy},
 // #endif
-}};
+};
 
 bool System_Init()
 {
@@ -453,32 +462,6 @@ bool System_Init()
 	}
 	return true;
 }
-// bool System_Init()
-// {
-// 	for(u32 i = 0; i < gSysInitTable.size(); i++)
-// 	{
-// 		const SysEntityEntry & entry = gSysInitTable[i];
-
-// 		if (entry.init == NULL)
-// 			continue;
-
-// 		if (entry.init())
-// 		{
-// 			#ifdef DAEDALUS_DEBUG_CONSOLE
-// 			DBGConsole_Msg(0, "==>Initialized %s", entry.name);
-// 			#endif
-// 		}
-// 		else
-// 		{
-// 				#ifdef DAEDALUS_DEBUG_CONSOLE
-// 			DBGConsole_Msg(0, "==>Initialize %s Failed", entry.name);
-// 			#endif
-// 			return false;
-// 		}
-// 	}
-
-// 	return true;
-// }
 
 bool System_Open(const std::filesystem::path &filename)
 {
@@ -517,20 +500,6 @@ void System_Close()
 	}
 }
 
-// void System_Finalize()
-// {
-// 	for(s32 i = gSysInitTable.size() - 1; i >= 0; i--)
-// 	{
-// 		const SysEntityEntry & entry = gSysInitTable[i];
-
-// 		if (entry.final == NULL)
-// 			continue;
-// 	#ifdef DAEDALUS_DEBUG_CONSOLE
-// 		DBGConsole_Msg(0, "==>Finalize %s", entry.name);
-// 		#endif
-// 		entry.final();
-// 	}
-// }
 
 void System_Finalize(SystemContext& ctx)
 {

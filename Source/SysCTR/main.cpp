@@ -153,7 +153,7 @@ int main(int argc, char* argv[])
 	System_Close();
 	}
 	
-	System_Finalize();
+	System_Finalize(ctx);
 	pglExit();
 
 	return 0;

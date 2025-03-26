@@ -34,6 +34,7 @@
 #include "Graphics/GraphicsContext.h"
 #include "Graphics/PngUtil.h"
 #include "SysPSP/Graphics/VideoMemoryManager.h"
+#include "System/SystemInit.h"
 
 #include "UI/DrawText.h"
 #include "Interface/Preferences.h"
@@ -178,9 +179,9 @@ IGraphicsContext::IGraphicsContext()
 	//Set up PSP Dlists in VRAM(if available)
 	void *ptr;
 	bool is_videmem;
-	gVideo_MemoryManager->Alloc( DLISTSIZE, &ptr, &is_videmem );
+	ctx.videoMemoryManager->Alloc( DLISTSIZE, &ptr, &is_videmem );
 	list[0] = (u32*)ptr;
-	gVideo_MemoryManager->Alloc( DLISTSIZE, &ptr, &is_videmem );
+	ctx.videoMemoryManager->Alloc( DLISTSIZE, &ptr, &is_videmem );
 	list[1] = (u32*)ptr;
 #endif
 }
@@ -737,13 +738,13 @@ bool IGraphicsContext::Initialise()
 	//Alloc all buffers with one call to save alloc list overhead //Corn
 	if ( PSP_TV_CABLE > 0 )
 	{
-		gVideo_MemoryManager->Alloc( FRAME_SIZE + LACED_SIZE + DEPTH_SIZE, &draw_buffer, &is_videmem );
+		ctx.videoMemoryManager->Alloc( FRAME_SIZE + LACED_SIZE + DEPTH_SIZE, &draw_buffer, &is_videmem );
 		disp_buffer =  (void*)((u32)draw_buffer + FRAME_SIZE);
 		depth_buffer = (void*)((u32)draw_buffer + FRAME_SIZE + LACED_SIZE);
 	}
 	else
 	{
-		gVideo_MemoryManager->Alloc( FRAME_SIZE + FRAME_SIZE + DEPTH_SIZE, &draw_buffer, &is_videmem );
+		ctx.videoMemoryManager->Alloc( FRAME_SIZE + FRAME_SIZE + DEPTH_SIZE, &draw_buffer, &is_videmem );
 		disp_buffer =  (void*)((u32)draw_buffer + FRAME_SIZE);
 		depth_buffer = (void*)((u32)draw_buffer + FRAME_SIZE + FRAME_SIZE);
 	}

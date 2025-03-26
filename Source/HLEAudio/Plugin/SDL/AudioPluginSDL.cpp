@@ -18,8 +18,7 @@ void* Audio_UcodeEntry(void* arg) {
     Audio_Ucode();
     return nullptr;
 }
- std::unique_ptr<CAudioPlugin> gAudioPlugin;
-SDL_AudioDeviceID audio_device = 0;
+
 
 struct Sample {
     s16 L;
@@ -50,6 +49,7 @@ public:
 private:
     u32                     mFrequency;
     SDL_Thread*             mAudioThread;
+    SDL_AudioDeviceID       mAudioDevice;
 };
 
 AudioPluginSDL::AudioPluginSDL()
@@ -129,15 +129,10 @@ void AudioPluginSDL::AddBuffer(void * ptr, u32 length)
     if (mAudioThread == nullptr)
         StartAudio();
 
-    if (audio_device == 0) {
-        DBGConsole_Msg(0, "Audio device not initialized");
-        return;
-    }
-
     u32 num_samples = length / sizeof(Sample);
 
     // Queue the samples into SDL's audio buffer
-    if (SDL_QueueAudio(audio_device, ptr, num_samples * sizeof(Sample)) != 0) {
+    if (SDL_QueueAudio(mAudioDevice, ptr, num_samples * sizeof(Sample)) != 0) {
         DBGConsole_Msg(0, "SDL_QueueAudio error: %s", SDL_GetError());
         return;
     }
@@ -156,13 +151,13 @@ int AudioPluginSDL::AudioThread(void * arg)
     audio_spec.callback = NULL;
     audio_spec.userdata = plugin;
 
-    audio_device = SDL_OpenAudioDevice(NULL, 0, &audio_spec, NULL, 0);
-    if (audio_device == 0) {
+    plugin->mAudioDevice = SDL_OpenAudioDevice(NULL, 0, &audio_spec, NULL, 0);
+    if (plugin->mAudioDevice == 0) {
         DBGConsole_Msg(0, "Failed to open audio: %s", SDL_GetError());
         return -1;
     }
 
-    SDL_PauseAudioDevice(audio_device, 0);
+    SDL_PauseAudioDevice(plugin->mAudioDevice, 0);
 
     return 0;
 }
@@ -191,10 +186,10 @@ void AudioPluginSDL::StopAudio()
     }
 
     // Clear the remaining audio data in SDL's audio buffer
-    if (audio_device != 0) {
-        SDL_ClearQueuedAudio(audio_device);
-        SDL_CloseAudioDevice(audio_device);
-        audio_device = 0;
+    if (mAudioDevice != 0) {
+        SDL_ClearQueuedAudio(mAudioDevice);
+        SDL_CloseAudioDevice(mAudioDevice);
+        mAudioDevice = 0;
     }
 }
 

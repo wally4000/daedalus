@@ -199,6 +199,6 @@ int main(int argc, char **argv)
 		System_Close();
 	}
 
-	System_Finalize();
+	System_Finalize(ctx);
 	return result;
 }

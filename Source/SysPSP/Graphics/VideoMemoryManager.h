@@ -48,6 +48,5 @@ private:
 	std::unique_ptr<CMemoryHeap>	mRamMemoryHeap;
 };
 
-extern std::unique_ptr<CVideoMemoryManager> gVideo_MemoryManager;
 
 #endif // SYSPSP_GRAPHICS_VIDEOMEMORYMANAGER_H_

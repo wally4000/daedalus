@@ -66,5 +66,5 @@ bool System_Open(const std::filesystem::path &filename);
 void System_Close();
 
 // Finalize the whole system
-void System_Finalize();
+void System_Finalize(SystemContext &ctx);
 

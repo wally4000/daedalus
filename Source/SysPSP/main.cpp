@@ -233,7 +233,7 @@ int main(int argc, char* argv[])
 			System_Open( argv[1] );
 			CPU_Run();
 			System_Close();
-			System_Finalize();
+			System_Finalize(ctx);
 			return 0;
 		}
 #endif
@@ -251,7 +251,7 @@ int main(int argc, char* argv[])
 			System_Close();
 		}
 
-		System_Finalize();
+		System_Finalize(ctx);
 	}
 
 	return 0;

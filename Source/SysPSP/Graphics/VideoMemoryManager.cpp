@@ -11,23 +11,6 @@
 const u32 ERAM(3 * 512 * 1024);	//Amount of extra (volatile)RAM to use for textures in addition to VRAM //Corn
 
 
-bool Init_PSP_VideoMemoryManager()
-{
-	gVideo_MemoryManager = std::make_unique<CVideoMemoryManager>();
-	return true;
-}
-
-
-void Destroy_PSP_VideoMemoryManager()
-{
-	if (gVideo_MemoryManager)
-	{
-		gVideo_MemoryManager.reset();
-	}
-}
-
-std::unique_ptr<CVideoMemoryManager> gVideo_MemoryManager;
-
 
 CVideoMemoryManager::CVideoMemoryManager()
 :	mVideoMemoryHeap( std::unique_ptr<CMemoryHeap>(CMemoryHeap::Create( make_uncached_ptr( sceGeEdramGetAddr() ), sceGeEdramGetSize() )))

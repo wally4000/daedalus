@@ -46,14 +46,4 @@ extern u32	gCheckTextureHashFrequency;
 //ToDo: Needs moving to Input plugin config
 extern u32	gControllerIndex;
 
-//ToDo: Need moving to Audio plugin config
-enum EAudioPluginMode
-{
-	APM_DISABLED,
-	APM_ENABLED_ASYNC,
-	APM_ENABLED_SYNC,
-};
-
-extern EAudioPluginMode gAudioPluginEnabled;
-
 #endif // CONFIG_CONFIGOPTIONS_H_

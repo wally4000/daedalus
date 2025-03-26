@@ -67,10 +67,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
 SystemContext ctx; 
-SystemContext* g_SystemContext = &ctx;
 
 std::unique_ptr<CRomDB> gRomDB;
 
+// Completed
  bool Init_Audio(SystemContext& ctx)
 {
 	std::unique_ptr<CAudioPlugin> audio_plugin = CreateAudioPlugin();
@@ -92,17 +92,20 @@ std::unique_ptr<CRomDB> gRomDB;
 	}
 }
 
-bool Init_LegacyInputManager(SystemContext& ctx)
+bool Init_InputManager(SystemContext& ctx)
 {
 	ctx.gInputManager = std::make_unique<IInputManager>();
 	return ctx.gInputManager->Initialise();
 }
 
- void Destroy_LegacyInputManager(SystemContext& ctx)
+ void Destroy_InputManager(SystemContext& ctx)
 {
-	ctx.gInputManager->Finalise();
+	if (ctx.gInputManager)
+	{
+		ctx.gInputManager->Finalise();
+		ctx.gInputManager.reset();
+	}
 }
-
 
 bool Init_GraphicsPlugin(SystemContext& ctx)
 {
@@ -116,7 +119,7 @@ bool Init_GraphicsPlugin(SystemContext& ctx)
 	}
 	return false;
 }
-void Cleanup_GraphicsPlugin(SystemContext& ctx)
+void Destroy_GraphicsPlugin(SystemContext& ctx)
 {
 	if (ctx.graphicsPlugin)
 	{
@@ -125,16 +128,16 @@ void Cleanup_GraphicsPlugin(SystemContext& ctx)
 	}
 }
 
-
-static bool Init_LegacyRomPreferences(SystemContext& ctx)
+// WIP
+static bool Init_RomPreferences(SystemContext& ctx)
 {
-	gPreferences = std::make_unique<CPreferences>();
+	ctx.preferences = std::make_unique<CPreferences>();
 	return true;
 }
 
-static void Destroy_LegacyRomPreferences(SystemContext& ctx)
+static void Destroy_RomPreferences(SystemContext& ctx)
 {
-	gPreferences.reset();
+	ctx.preferences.reset();
 }
 
 static bool Init_LegacyRomDB(SystemContext& ctx)
@@ -264,11 +267,6 @@ static void Dispose_OldDebug(SystemContext& ctx)           { Legacy_Debug_Destro
 // Debug Logger
 static bool Init_OldDebugLog(SystemContext& ctx)           { return Legacy_DebugLog_Init(ctx); }
 #endif
-
-// Input Manager
-static bool Init_OldInputManager(SystemContext& ctx)       { return Init_LegacyInputManager(ctx); }
-static void Destroy_OldInputManager(SystemContext& ctx)    { Destroy_LegacyInputManager(ctx); }
-
 // ROM DB
 static bool Init_OldRomDB(SystemContext& ctx)              { return Init_LegacyRomDB(ctx); }
 static void Destroy_OldRomDB(SystemContext& ctx)            { Destroy_LegacyRomDB(ctx); }
@@ -277,13 +275,6 @@ static void Destroy_OldRomDB(SystemContext& ctx)            { Destroy_LegacyRomD
 static bool Init_OldRomSettingsDB(SystemContext& ctx)      { return Init_LegacyRomSettingsDB(ctx); }
 static void Destroy_OldRomSettingsDB(SystemContext& ctx)   { Destroy_LegacyRomSettingsDB(ctx); }
 
-// Preferences
-static bool Init_OldRomPreferences(SystemContext& ctx)     { return Init_LegacyRomPreferences(ctx); }
-static void Destroy_OldRomPreferences(SystemContext& ctx)  { Destroy_LegacyRomPreferences(ctx); }
-
-// Graphics Plugin
-static bool Init_OldGraphics(SystemContext& ctx)           { return Init_GraphicsPlugin(ctx); }
-static void Destroy_OldGraphics(SystemContext& ctx)        { Cleanup_GraphicsPlugin(ctx); }
 
 // Controller
 static bool Init_OldController(SystemContext& ctx)         { return Init_LegacyController(ctx); }
@@ -312,15 +303,15 @@ const std::vector<SysEntityEntry> gSysInitTable =
 #endif
 	{"ROM Database",         Init_OldRomDB,              Destroy_OldRomDB},
 	{"ROM Settings",         Init_OldRomSettingsDB,      Destroy_OldRomSettingsDB},
-	{"InputManager",         Init_OldInputManager,       Destroy_OldInputManager},
+	{"InputManager",         Init_InputManager,       	 Destroy_InputManager},
 #ifndef DAEDALUS_CTR
 	{"Language",             Init_Translate,             nullptr},
 #endif
 #ifdef DAEDALUS_PSP
 	{"VideoMemory",          Init_PSPVideoMemoryManager, Destroy_PSPVideoMemoryManager},
 #endif
-	{"GraphicsContext",		 Init_OldGraphicsContext,  	  Destroy_OldGraphicsContext},
-	{"Preference",           Init_OldRomPreferences,     Destroy_OldRomPreferences},
+	{"GraphicsContext",		 Init_OldGraphicsContext,  	 Destroy_OldGraphicsContext},
+	{"Preference",           Init_RomPreferences,     	 Destroy_RomPreferences},
 	{"Memory",               Init_Memory,                Destroy_Memory},
 	{"Controller",           Init_OldController,         Destroy_OldController},
 	{"RomBuffer",            Init_OldRomBuffer,          Destroy_OldRomBuffer},
@@ -435,10 +426,9 @@ static const std::vector<RomEntityEntry> gRomInitTable =
 {
 	{"RomBuffer",           Init_OldRomBufferOpen,      Destroy_OldRomBufferOpen},
 	{"Settings",            Init_OldRomFile,            Destroy_OldRomFile},
-	{"InputManager",        Init_OldInputManager,       Destroy_OldInputManager},
 	{"Memory",              Init_OldMemoryReset,        Destroy_OldMemoryReset},
 	{"Audio",               Init_Audio,                 Dispose_Audio},
-	{"Graphics",            Init_OldGraphics,           Destroy_OldGraphics},
+	{"Graphics",            Init_GraphicsPlugin,        Destroy_GraphicsPlugin},
 	{"FramerateLimiter",    Init_OldFramerateLimiter,   nullptr},
 	{"CPU",                 Init_OldCPU,                Destroy_OldCPU},
 	{"ROM",                 Init_OldROM,                Destroy_OldROM},

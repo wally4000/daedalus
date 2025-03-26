@@ -36,6 +36,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Input/InputManager.h"
 #include "DrawTextUtilities.h"
 #include "Interface/Preferences.h"
+#include "System/SystemInit.h"
 
 
 
@@ -82,7 +83,7 @@ IAdvancedOptionsScreen::IAdvancedOptionsScreen( CUIContext * p_context, const Ro
 ,	mRomName( "?" )
 ,	mIsFinished( false )
 {
-	gPreferences->GetRomPreferences( mRomID, &mRomPreferences );
+	ctx.preferences->GetRomPreferences( mRomID, &mRomPreferences );
 
 	RomSettings			settings;
 	if ( gRomSettingsDB->GetSettings( rom_id, &settings ) )
@@ -184,9 +185,9 @@ void	IAdvancedOptionsScreen::Run()
 
 void	IAdvancedOptionsScreen::OnConfirm()
 {
-	gPreferences->SetRomPreferences( mRomID, mRomPreferences );
-	gPreferences->Commit();
-	mRomPreferences.Apply();
+	ctx.preferences->SetRomPreferences( mRomID, mRomPreferences );
+	ctx.preferences->Commit();
+	mRomPreferences.Apply(ctx);
 	mIsFinished = true;
 }
 

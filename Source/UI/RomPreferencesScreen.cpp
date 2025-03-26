@@ -226,7 +226,7 @@ IRomPreferencesScreen::IRomPreferencesScreen( CUIContext * p_context, const RomI
 ,	mRomName( "?" )
 ,	mIsFinished( false )
 {
-	gPreferences->GetRomPreferences( mRomID, &mRomPreferences );
+	ctx.preferences->GetRomPreferences( mRomID, &mRomPreferences );
 
 	RomSettings			settings;
 	if ( gRomSettingsDB->GetSettings( rom_id, &settings ) )
@@ -334,11 +334,11 @@ void	IRomPreferencesScreen::Run()
 
 void	IRomPreferencesScreen::OnConfirm()
 {
-	gPreferences->SetRomPreferences( mRomID, mRomPreferences );
+	ctx.preferences->SetRomPreferences( mRomID, mRomPreferences );
 
-	gPreferences->Commit();
+	ctx.preferences->Commit();
 
-	mRomPreferences.Apply();
+	mRomPreferences.Apply(ctx);
 
 	mIsFinished = true;
 }

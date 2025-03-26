@@ -290,19 +290,6 @@ class IInputManager : public CInputManager
 		std::vector<CControllerConfig*>		mControllerConfigs;
 };
 
-std::unique_ptr<CInputManager> gInputManager = std::make_unique<IInputManager>();
-
- bool Init_InputManager()
-{
-	ctx.gInputManager = std::make_unique<IInputManager>();
-	return ctx.gInputManager->Initialise();
-}
-
- void Destroy_InputManager()
-{
-	ctx.gInputManager->Finalise();
-}
-
 
 IInputManager::IInputManager() : mpControllerConfig( NULL )
 {

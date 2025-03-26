@@ -69,8 +69,6 @@ class CPreferences
 	 std::filesystem::path	mFilename;
 };
 
-extern std::unique_ptr<CPreferences> gPreferences;
-
 const char* Preferences_GetTextureHashFrequencyDescription(ETextureHashFrequency thf);
 const char* Preferences_GetFrameskipDescription(EFrameskipValue value);
 

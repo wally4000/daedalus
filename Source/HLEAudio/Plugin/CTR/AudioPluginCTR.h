@@ -41,11 +41,14 @@ public:
 	virtual void			LenChanged();
 	virtual u32				ReadLength();
 	virtual EProcessResult	ProcessAList();
+	void SetMode(EAudioPluginMode mode) override { audioPluginmode = mode; }
+	EAudioPluginMode GetMode() const override { return audioPluginmode; }	
 
 //			void			SetAdaptFrequecy( bool adapt );
 
 private:
 	AudioOutput *			mAudioOutput;
+	EAudioPluginMode audioPluginmode = APM_ENABLED_ASYNC;
 };
 
 

@@ -53,7 +53,6 @@ struct SystemContext {
     #endif
 };
 
-
 extern SystemContext ctx;
 
 // Initialize the whole system

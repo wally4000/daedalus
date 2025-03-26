@@ -23,6 +23,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define UTILITY_ROM_PREFERENCES_H_
 
 #include "Interface/ConfigOptions.h"
+#include "System/SystemInit.h"
+#include "HLEAudio/AudioPlugin.h"
 
 
 enum ETextureHashFrequency
@@ -99,7 +101,7 @@ struct SRomPreferences
 	SRomPreferences();
 
 	void		Reset();
-	void		Apply() const;
+	void		Apply(SystemContext& ctx) const;
 };
 
 #endif //INTERFACE_ROM_PREFERENCES

@@ -25,6 +25,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Core/RSP_HLE.h"
 #include <memory>
 
+enum EAudioPluginMode
+{
+	APM_DISABLED,
+	APM_ENABLED_ASYNC,
+	APM_ENABLED_SYNC,
+};
+
 class CAudioPlugin {
 public:
   virtual ~CAudioPlugin() {}
@@ -42,6 +49,8 @@ public:
   virtual void LenChanged() = 0;
   virtual u32 ReadLength() = 0;
   virtual EProcessResult ProcessAList() = 0;
+  virtual void SetMode(EAudioPluginMode mode) = 0;
+  virtual EAudioPluginMode GetMode() const = 0;
 
 };
 

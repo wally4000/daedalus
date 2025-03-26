@@ -179,7 +179,7 @@ static SRomPreferences romPreferences;
 
 void UI::LoadRomPreferences(RomID mRomID)
 {
-	gPreferences->GetRomPreferences( mRomID, &romPreferences );
+	ctx.preferences->GetRomPreferences( mRomID, &romPreferences );
 }
 
 bool UI::DrawOptionsPage(RomID mRomID)
@@ -324,8 +324,8 @@ bool UI::DrawOptionsPage(RomID mRomID)
 
 	if( ImGui::Button("Save", ImVec2(buttonWidth, 30)) )
 	{
-		gPreferences->SetRomPreferences( mRomID, romPreferences );
-		gPreferences->Commit();
+		ctx.preferences->SetRomPreferences( mRomID, romPreferences );
+		ctx.preferences->Commit();
 	
 		currentPage = 0;
 	}
@@ -336,7 +336,7 @@ bool UI::DrawOptionsPage(RomID mRomID)
 
 	ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
 	
-	romPreferences.Apply();
+	romPreferences.Apply(ctx);
 
 	return currentPage == 3;
 }

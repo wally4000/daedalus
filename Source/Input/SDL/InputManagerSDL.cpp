@@ -38,19 +38,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 SDL_GameController *controller;
 
 
-std::unique_ptr<CInputManager> gInputManager;
-
- bool Init_InputManager()
-{
-	ctx.gInputManager = std::make_unique<IInputManager>();
-	return ctx.gInputManager->Initialise();
-}
-
- void Destroy_InputManager()
-{
-	ctx.gInputManager->Finalise();
-}
-
 IInputManager::~IInputManager()
 {
 }

@@ -54,13 +54,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "SysPSP/PRX/MediaEngine/me.h"
 #include "SysPSP/Utility/ModulePSP.h"
 
-bool gLoadedMediaEnginePRX {false};
-
 volatile me_struct *mei;
 
 bool InitialiseMediaEngine()
 {
-	if ( gLoadedMediaEnginePRX == false)
+	static bool mePRXloaded = false;
+
+	if ( mePRXloaded == false)
 	{
 		if( CModule::Load("Plugins/mediaengine.prx") < 0 )	return false;
 
@@ -70,7 +70,7 @@ bool InitialiseMediaEngine()
 
 		if (InitME(mei) == 0)
 		{
-			gLoadedMediaEnginePRX = true;
+			mePRXloaded = true;
 			return true;
 		}
 		else
@@ -97,7 +97,7 @@ static const u32	kOutputFrequency = 44100;
 static const u32	MAX_OUTPUT_FREQUENCY = kOutputFrequency * 4;
 
 
-static bool audio_open = false;
+
 
 
 // Large kAudioBufferSize creates huge delay on sound //Corn
@@ -136,9 +136,10 @@ private:
 	s32 mAudioThread;
 	s32 mSemaphore;
 //	u32 mBufferLenMs;
+	bool audio_open = false;
+	EAudioPluginMode audioPluginmode = APM_DISABLED;
 };
 
-static AudioPluginPSP * ac;
 
 void AudioPluginPSP::FillBuffer(Sample * buffer, u32 num_samples)
 {
@@ -148,9 +149,6 @@ void AudioPluginPSP::FillBuffer(Sample * buffer, u32 num_samples)
 
 	sceKernelSignalSema( mSemaphore, 1 );
 }
-
-
-EAudioPluginMode gAudioPluginEnabled( APM_DISABLED );
 
 
 AudioPluginPSP::AudioPluginPSP()
@@ -215,7 +213,7 @@ mFrequency = frequency;
 
 void	AudioPluginPSP::LenChanged()
 {
-	if( gAudioPluginEnabled > APM_DISABLED )
+	if( audioPluginmode > APM_DISABLED )
 	{
 		u32 address = Memory_AI_GetRegister(AI_DRAM_ADDR_REG) & 0xFFFFFF;
 		u32	length = Memory_AI_GetRegister(AI_LEN_REG);
@@ -283,11 +281,9 @@ void AudioPluginPSP::StartAudio()
 
 	mKeepRunning = true;
 
-	ac = this;
 
-
-pspAudioInit();
-pspAudioSetChannelCallback( 0, audioCallback, this );
+	pspAudioInit();
+	pspAudioSetChannelCallback( 0, audioCallback, this );
 
 	// Everything OK
 	audio_open = true;

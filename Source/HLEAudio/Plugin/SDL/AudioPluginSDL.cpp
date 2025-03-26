@@ -46,10 +46,14 @@ public:
     static void             AudioSyncFunction(void * arg);
     static int              AudioThread(void * arg);
 
+    void SetMode(EAudioPluginMode mode) override { audioPluginmode = mode; }
+    EAudioPluginMode GetMode() const override { return audioPluginmode; }
+
 private:
     u32                     mFrequency;
     SDL_Thread*             mAudioThread;
     SDL_AudioDeviceID       mAudioDevice;
+    EAudioPluginMode audioPluginmode = APM_DISABLED;
 };
 
 AudioPluginSDL::AudioPluginSDL()

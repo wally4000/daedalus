@@ -49,6 +49,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "RomFile/RomFile.h"
 #include "Utility/Stream.h"
 #include "Debug/Synchroniser.h"
+#include "System/SystemInit.h"
 
 #if defined(DAEDALUS_ENABLE_DYNAREC_PROFILE)
 // This isn't really the most appropriate place. Need to check with
@@ -475,18 +476,18 @@ bool ROM_LoadFile()
 	if (ROM_GetRomDetailsByFilename(g_ROM.mFileName, &rom_id, &rom_size, &boot_type ))
 	{
 		RomSettings			settings;
-		SRomPreferences		preferences;
+		SRomPreferences		ROMpreferences;
 
 		if (!gRomSettingsDB->GetSettings( rom_id, &settings ))
 		{
 			settings.Reset();
 		}
-		if (!gPreferences->GetRomPreferences( rom_id, &preferences ))
+		if (!ctx.preferences->GetRomPreferences( rom_id, &ROMpreferences ))
 		{
-			preferences.Reset();
+			ROMpreferences.Reset();
 		}
 
-		return ROM_LoadFile( rom_id, settings, preferences );
+		return ROM_LoadFile( rom_id, settings, ROMpreferences );
 	}
 
 	return false;
@@ -499,7 +500,7 @@ void ROM_UnloadFile()
 	g_ROM.settings = RomSettings();
 }
 
-bool ROM_LoadFile(const RomID & rom_id, const RomSettings & settings, const SRomPreferences & preferences )
+bool ROM_LoadFile(const RomID & rom_id, const RomSettings & settings, const SRomPreferences & ROMpreferences )
 {
 	DBGConsole_Msg(0, "Reading rom image: [C%s]", g_ROM.mFileName.string().c_str());
 
@@ -523,7 +524,7 @@ bool ROM_LoadFile(const RomID & rom_id, const RomSettings & settings, const SRom
 	DumpROMInfo( g_ROM.rh );
 
 	// Read and apply preferences from preferences.ini
-	preferences.Apply();
+	ROMpreferences.Apply(ctx);
 
 	// Parse cheat file this rom, if cheat feature is enabled
 	// This is also done when accessing the cheat menu

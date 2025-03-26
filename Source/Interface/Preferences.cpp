@@ -22,6 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Base/Types.h"
 #include "Interface/Preferences.h"
 #include "System/SystemInit.h"
+#include "HLEAudio/AudioPlugin.h"
 template <typename T>
 void OutputValue(std::ofstream& fh, const std::string& name, const T& value) {
     fh << name << "=" << value << "\n";
@@ -67,8 +68,6 @@ extern f32 						gZoomX;
 
 SGlobalPreferences				gGlobalPreferences;
 
-
-std::unique_ptr<CPreferences> gPreferences;
 
 CPreferences::CPreferences()
 :	mDirty( false )
@@ -382,10 +381,6 @@ SGlobalPreferences::SGlobalPreferences()
 {
 }
 
-void SGlobalPreferences::Apply() const
-{
-
-}
 
 SRomPreferences::SRomPreferences()
 	:	PatchesEnabled( true )
@@ -433,7 +428,7 @@ void SRomPreferences::Reset()
 	ControllerIndex            = 0;
 }
 
-void SRomPreferences::Apply() const
+void SRomPreferences::Apply(SystemContext& ctx) const
 {
 	gOSHooksEnabled             = PatchesEnabled;
 	gSpeedSyncEnabled           = SpeedSyncEnabled;
@@ -451,7 +446,12 @@ void SRomPreferences::Apply() const
 	gFrameskipValue             = Frameskip;
 	gZoomX                      = ZoomX;
 	gCheatsEnabled              = g_ROM.settings.CheatsEnabled || CheatsEnabled;
-	gAudioPluginEnabled         = AudioEnabled;
+
+	if (ctx.audioPlugin)
+	{
+	ctx.audioPlugin->SetMode(AudioEnabled);
+	}
+
 //	gAdaptFrequency             = AudioAdaptFrequency;
 	gControllerIndex            = ControllerIndex;							//Used during ROM initialization
 

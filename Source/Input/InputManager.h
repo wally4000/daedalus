@@ -7,9 +7,6 @@
 #include <glm/glm.hpp>
 #include <memory>
 
-bool Init_InputManager();
-void Destroy_InputManager();
-
 class CInputManager
 {
 	public:
@@ -28,7 +25,7 @@ class CInputManager
 		virtual void GetState( OSContPad pPad[4] ) = 0;
 
 };
-extern std::unique_ptr<CInputManager> gInputManager;
+
 glm::vec2	ApplyDeadzone( const glm::vec2 & in, f32 min_deadzone, f32 max_deadzone );
 
 #endif // INPUT_INPUTMANAGER_H_

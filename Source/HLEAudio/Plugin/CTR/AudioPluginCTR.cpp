@@ -39,6 +39,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Core/Memory.h"
 #include "Core/ROM.h"
 #include "Core/RSP_HLE.h"
+#include "System/SystemInit.h"
 
 #define RSP_AUDIO_INTR_CYCLES     1
 
@@ -64,7 +65,6 @@ static void asyncProcess(void *arg)
 //*****************************************************************************
 //
 //*****************************************************************************
-EAudioPluginMode gAudioPluginEnabled( APM_DISABLED );
 //bool gAdaptFrequency( false );
 
 //*****************************************************************************
@@ -149,7 +149,7 @@ void	CAudioPluginCTR::DacrateChanged( int SystemType )
 //*****************************************************************************
 void	CAudioPluginCTR::LenChanged()
 {
-	if( gAudioPluginEnabled > APM_DISABLED )
+	if( ctx.audioPlugin && ctx.audioPlugin->GetMode() > APM_DISABLED )
 	{
 		//mAudioOutput->SetAdaptFrequency( gAdaptFrequency );
 
@@ -181,7 +181,7 @@ EProcessResult	CAudioPluginCTR::ProcessAList()
 
 	EProcessResult	result( PR_NOT_STARTED );
 
-	switch( gAudioPluginEnabled )
+	switch( GetMode() )
 	{
 		case APM_DISABLED:
 			result = PR_COMPLETED;

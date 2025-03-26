@@ -239,7 +239,7 @@ bool CPreferences::OpenPreferencesFile( const std::filesystem::path  &filename )
 
 		if( section->FindProperty( "Controller", &property ) )
 		{
-			preferences.ControllerIndex = ctx.gInputManager->GetConfigurationFromName( property->GetValue() );
+			preferences.ControllerIndex = ctx.inputManager->GetConfigurationFromName( property->GetValue() );
 		}
 		if( section->FindProperty( "MemoryAccessOptimisation", &property ) )
 		{
@@ -261,7 +261,7 @@ void CPreferences::OutputSectionDetails( const RomID & id, const SRomPreferences
 {
 	// Generate the CRC-ID for this rom:
 	RomSettings		settings;
-	gRomSettingsDB->GetSettings( id, &settings );
+	ctx.romSettingsDB->GetSettings( id, &settings );
 
 fh << std::hex << std::setfill('0');
 fh << "{" << std::setw(8) << id.CRC[0] << std::setw(8) << id.CRC[1] << "-" << std::setw(2) << static_cast<int>(id.CountryID) << "}\t// " << settings.GameName << "\n";
@@ -282,7 +282,7 @@ fh << "AudioEnabled=" << preferences.AudioEnabled << "\n";
 fh << "ZoomX=" << preferences.ZoomX << "\n";
 fh << "MemoryAccessOptimisation=" << preferences.MemoryAccessOptimisation << "\n";
 fh << "CheatsEnabled=" << preferences.CheatsEnabled << "\n";
-fh << "Controller=" << ctx.gInputManager->GetConfigurationName(preferences.ControllerIndex) << "\n";
+fh << "Controller=" << ctx.inputManager->GetConfigurationName(preferences.ControllerIndex) << "\n";
 fh << "\n"; // Spacer
 }
 
@@ -455,7 +455,7 @@ void SRomPreferences::Apply(SystemContext& ctx) const
 //	gAdaptFrequency             = AudioAdaptFrequency;
 	gControllerIndex            = ControllerIndex;							//Used during ROM initialization
 
-	ctx.gInputManager->SetConfiguration( ControllerIndex );  //Used after initialization
+	ctx.inputManager->SetConfiguration( ControllerIndex );  //Used after initialization
 }
 
 

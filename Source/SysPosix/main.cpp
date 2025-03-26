@@ -148,7 +148,7 @@ int main(int argc, char **argv)
 						try 
 						{ 
 							std::filesystem::path dir = std::filesystem::absolute(relative_path);
-							gRomDB->AddRomDirectory(dir.string().c_str());
+							ctx.romDB->AddRomDirectory(dir.string().c_str());
 						}
 						catch (const std::filesystem::filesystem_error& e) 
 						{
@@ -178,7 +178,7 @@ int main(int argc, char **argv)
 			//
 			// Commit the preferences and roms databases before starting to run
 			//
-			gRomDB->Commit();
+			ctx.romDB->Commit();
 			ctx.preferences->Commit();
 
 			CPU_Run();

@@ -68,14 +68,39 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 SystemContext ctx; 
 
-std::unique_ptr<CRomDB> gRomDB;
+struct SysEntityEntry
+{
+	const char *name;
+	std::function<bool(SystemContext&)> init;
+	std::function<void(SystemContext&)> final;	
+};
+
+
 
 // Completed
- bool Init_Audio(SystemContext& ctx)
+bool Init_Audio(SystemContext& ctx)
 {
 	std::unique_ptr<CAudioPlugin> audio_plugin = CreateAudioPlugin();
-	if(audio_plugin)
+	if (audio_plugin)
 	{
+		// Apply audio mode from preferences (if available)
+		if (ctx.preferences)
+		{
+			SRomPreferences rom_prefs;
+			if (ctx.preferences->GetRomPreferences(g_ROM.mRomID, &rom_prefs))
+			{
+				audio_plugin->SetMode(rom_prefs.AudioEnabled);
+			}
+			else
+			{
+				audio_plugin->SetMode(APM_DISABLED);
+			}
+		}
+		else
+		{
+			audio_plugin->SetMode(APM_DISABLED);
+		}
+
 		ctx.audioPlugin = std::move(audio_plugin);
 		ctx.audioPlugin->StartEmulation();
 		return true;
@@ -94,16 +119,16 @@ std::unique_ptr<CRomDB> gRomDB;
 
 bool Init_InputManager(SystemContext& ctx)
 {
-	ctx.gInputManager = std::make_unique<IInputManager>();
-	return ctx.gInputManager->Initialise();
+	ctx.inputManager = std::make_unique<IInputManager>();
+	return ctx.inputManager->Initialise();
 }
 
  void Destroy_InputManager(SystemContext& ctx)
 {
-	if (ctx.gInputManager)
+	if (ctx.inputManager)
 	{
-		ctx.gInputManager->Finalise();
-		ctx.gInputManager.reset();
+		ctx.inputManager->Finalise();
+		ctx.inputManager.reset();
 	}
 }
 
@@ -128,7 +153,6 @@ void Destroy_GraphicsPlugin(SystemContext& ctx)
 	}
 }
 
-// WIP
 static bool Init_RomPreferences(SystemContext& ctx)
 {
 	ctx.preferences = std::make_unique<CPreferences>();
@@ -140,32 +164,27 @@ static void Destroy_RomPreferences(SystemContext& ctx)
 	ctx.preferences.reset();
 }
 
-static bool Init_LegacyRomDB(SystemContext& ctx)
+static bool Init_RomDB(SystemContext& ctx)
 {
-	gRomDB = std::make_unique<CRomDB>();
-	return gRomDB->OpenDB(setBasePath("rom.db"));
+	ctx.romDB = std::make_unique<CRomDB>();
+	return ctx.romDB->OpenDB(setBasePath("rom.db"));
 }
 
-static void Destroy_LegacyRomDB(SystemContext& ctx)
+static void Destroy_RomDB(SystemContext& ctx)
 {
-	gRomDB.reset();
+	ctx.romDB.reset();
 }
-struct SysEntityEntry
-{
-	const char *name;
-	std::function<bool(SystemContext&)> init;
-	std::function<void(SystemContext&)> final;	
-};
 
+// WIP
 
-static bool Init_LegacyRomSettingsDB(SystemContext& ctx)
+static bool Init_RomSettingsDB(SystemContext& ctx)
 {
-	gRomSettingsDB = std::make_unique<CRomSettingsDB>();
-	return gRomSettingsDB->OpenSettingsFile(setBasePath("roms.ini"));
+	ctx.romSettingsDB = std::make_unique<CRomSettingsDB>();
+	return ctx.romSettingsDB->OpenSettingsFile(setBasePath("roms.ini"));
 }
-static void Destroy_LegacyRomSettingsDB(SystemContext& ctx)
+static void Destroy_RomSettingsDB(SystemContext& ctx)
 {
-	gRomSettingsDB.reset();
+	ctx.romSettingsDB.reset();
 }
 
 
@@ -191,15 +210,16 @@ static void Profiler_Fini(SystemContext& ctx)
 	gProfiler.reset();
 }
 #endif
-static bool Init_Translate(SystemContext& ctx) {
+
+static bool Init_Translate(SystemContext& ctx) { // should be a class and unique_ptr
 	return Translate_Init();
 }
 
-static bool Init_Memory(SystemContext& ctx) {
+static bool Init_Memory(SystemContext& ctx) { // should be a class and unique_ptr
 	return Memory_Init();
 }
 
-static void Destroy_Memory(SystemContext& ctx) {
+static void Destroy_Memory(SystemContext& ctx) { // should be a class and unique_ptr
 	 Memory_Fini();
 }
 
@@ -267,13 +287,6 @@ static void Dispose_OldDebug(SystemContext& ctx)           { Legacy_Debug_Destro
 // Debug Logger
 static bool Init_OldDebugLog(SystemContext& ctx)           { return Legacy_DebugLog_Init(ctx); }
 #endif
-// ROM DB
-static bool Init_OldRomDB(SystemContext& ctx)              { return Init_LegacyRomDB(ctx); }
-static void Destroy_OldRomDB(SystemContext& ctx)            { Destroy_LegacyRomDB(ctx); }
-
-// ROM Settings DB
-static bool Init_OldRomSettingsDB(SystemContext& ctx)      { return Init_LegacyRomSettingsDB(ctx); }
-static void Destroy_OldRomSettingsDB(SystemContext& ctx)   { Destroy_LegacyRomSettingsDB(ctx); }
 
 
 // Controller
@@ -301,8 +314,8 @@ const std::vector<SysEntityEntry> gSysInitTable =
 #ifdef DAEDALUS_ENABLE_PROFILING
 	{"Profiler",             Profiler_Init,              Profiler_Fini},
 #endif
-	{"ROM Database",         Init_OldRomDB,              Destroy_OldRomDB},
-	{"ROM Settings",         Init_OldRomSettingsDB,      Destroy_OldRomSettingsDB},
+	{"ROM Database",         Init_RomDB,              	 Destroy_RomDB},
+	{"ROM Settings",         Init_RomSettingsDB,     	 Destroy_RomSettingsDB},
 	{"InputManager",         Init_InputManager,       	 Destroy_InputManager},
 #ifndef DAEDALUS_CTR
 	{"Language",             Init_Translate,             nullptr},

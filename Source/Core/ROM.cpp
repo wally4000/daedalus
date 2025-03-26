@@ -478,7 +478,7 @@ bool ROM_LoadFile()
 		RomSettings			settings;
 		SRomPreferences		ROMpreferences;
 
-		if (!gRomSettingsDB->GetSettings( rom_id, &settings ))
+		if (!ctx.romSettingsDB->GetSettings( rom_id, &settings ))
 		{
 			settings.Reset();
 		}
@@ -590,12 +590,12 @@ bool ROM_GetRomName( const std::filesystem::path &filename, std::string & game_n
 
 bool ROM_GetRomDetailsByFilename( const std::filesystem::path &filename, RomID * id, u32 * rom_size, ECicType * boot_type )
 {
-	return gRomDB->QueryByFilename( filename.c_str(), id, rom_size, boot_type );
+	return ctx.romDB->QueryByFilename( filename.c_str(), id, rom_size, boot_type );
 }
 
 bool ROM_GetRomDetailsByID( const RomID & id, u32 * rom_size, ECicType * boot_type )
 {
-	return gRomDB->QueryByID( id, rom_size, boot_type );
+	return ctx.romDB->QueryByID( id, rom_size, boot_type );
 }
 
 // Association between a country id value, tv type and name

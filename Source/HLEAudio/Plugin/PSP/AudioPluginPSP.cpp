@@ -97,9 +97,6 @@ static const u32	kOutputFrequency = 44100;
 static const u32	MAX_OUTPUT_FREQUENCY = kOutputFrequency * 4;
 
 
-
-
-
 // Large kAudioBufferSize creates huge delay on sound //Corn
 static const u32	kAudioBufferSize = 1024 * 2; // OSX uses a circular buffer length, 1024 * 1024
 
@@ -124,7 +121,8 @@ public:
 
 	virtual void StopAudio();
 	virtual void StartAudio();
-
+	virtual void SetMode(EAudioPluginMode mode) override;
+	virtual EAudioPluginMode GetMode() const override;
 public:
   CAudioBuffer *		mAudioBufferUncached;
 
@@ -140,6 +138,15 @@ private:
 	EAudioPluginMode audioPluginmode = APM_DISABLED;
 };
 
+void AudioPluginPSP::SetMode(EAudioPluginMode mode)
+{
+	audioPluginmode = mode;
+}
+
+EAudioPluginMode AudioPluginPSP::GetMode() const
+{
+	return audioPluginmode;
+}
 
 void AudioPluginPSP::FillBuffer(Sample * buffer, u32 num_samples)
 {
@@ -213,7 +220,7 @@ mFrequency = frequency;
 
 void	AudioPluginPSP::LenChanged()
 {
-	if( audioPluginmode > APM_DISABLED )
+	if( GetMode() > APM_DISABLED )
 	{
 		u32 address = Memory_AI_GetRegister(AI_DRAM_ADDR_REG) & 0xFFFFFF;
 		u32	length = Memory_AI_GetRegister(AI_LEN_REG);
@@ -233,7 +240,7 @@ EProcessResult	AudioPluginPSP::ProcessAList()
 
 	EProcessResult	result = PR_NOT_STARTED;
 
-	switch( gAudioPluginEnabled )
+	switch( GetMode() )
 	{
 		case APM_DISABLED:
 			result = PR_COMPLETED;
@@ -299,7 +306,7 @@ void AudioPluginPSP::AddBuffer( u8 *start, u32 length )
 
 	u32 num_samples = length / sizeof( Sample );
 
-	switch( gAudioPluginEnabled )
+	switch( GetMode() )
 	{
 	case APM_DISABLED:
 		break;

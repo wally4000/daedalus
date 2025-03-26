@@ -116,6 +116,4 @@ class CRomSettingsDB
 const char * ROM_GetExpansionPakUsageName( EExpansionPakUsage pak_usage );
 const char *	ROM_GetSaveTypeName( ESaveType save_type );
 
-extern std::unique_ptr<CRomSettingsDB> gRomSettingsDB;
-
 #endif // CORE_ROMSETTINGS_H_

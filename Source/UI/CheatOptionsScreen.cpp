@@ -150,7 +150,7 @@ ICheatOptionsScreen::ICheatOptionsScreen( CUIContext * p_context, const RomID & 
 	ctx.preferences->GetRomPreferences( mRomID, &mRomPreferences );
 
 	RomSettings			settings;
-	if ( gRomSettingsDB->GetSettings( rom_id, &settings ) )
+	if ( ctx.romSettingsDB->GetSettings( rom_id, &settings ) )
 	{
  		mRomName = settings.GameName;
 	}

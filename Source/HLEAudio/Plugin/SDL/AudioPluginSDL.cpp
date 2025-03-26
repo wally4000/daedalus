@@ -9,7 +9,7 @@
 #include "HLEAudio/HLEAudioInternal.h"
 #include "System/Timing.h"
 
-EAudioPluginMode gAudioPluginEnabled = APM_ENABLED_ASYNC;
+// EAudioPluginMode gAudioPluginEnabled = APM_ENABLED_ASYNC;
 
 SDL_Thread* Asyncthread = nullptr;
 int Asyncthreadreturn;
@@ -46,7 +46,10 @@ public:
     static void             AudioSyncFunction(void * arg);
     static int              AudioThread(void * arg);
 
-    void SetMode(EAudioPluginMode mode) override { audioPluginmode = mode; }
+    void SetMode(EAudioPluginMode mode) override {
+        DBGConsole_Msg(0, "[AudioPluginSDL] SetMode: %d", mode);
+        audioPluginmode = mode;
+    }
     EAudioPluginMode GetMode() const override { return audioPluginmode; }
 
 private:
@@ -55,6 +58,7 @@ private:
     SDL_AudioDeviceID       mAudioDevice;
     EAudioPluginMode audioPluginmode = APM_DISABLED;
 };
+
 
 AudioPluginSDL::AudioPluginSDL()
 :   mFrequency(44100), mAudioThread(nullptr)
@@ -87,7 +91,7 @@ void AudioPluginSDL::DacrateChanged(int system_type)
 
 void AudioPluginSDL::LenChanged()
 {
-    if (gAudioPluginEnabled > APM_DISABLED)
+    if (GetMode() > APM_DISABLED)
     {
         u32 address = Memory_AI_GetRegister(AI_DRAM_ADDR_REG) & 0xFFFFFF;
         u32 length  = Memory_AI_GetRegister(AI_LEN_REG);
@@ -102,7 +106,7 @@ EProcessResult AudioPluginSDL::ProcessAList()
 
     EProcessResult result = PR_NOT_STARTED;
 
-    switch (gAudioPluginEnabled)
+    switch (audioPluginmode > APM_DISABLED)
     {
         case APM_DISABLED:
             result = PR_COMPLETED;

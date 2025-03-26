@@ -34,6 +34,7 @@ class CGraphicsPlugin;
 class CROMFileMemory;
 class CROMBuffer;
 class CDebugConsole;
+class CController;
 struct SystemContext {
 
     std::unique_ptr<CGraphicsPlugin> graphicsPlugin;
@@ -41,8 +42,9 @@ struct SystemContext {
     std::unique_ptr<CPreferences> preferences;
     std::unique_ptr<CRomDB> romDB;
     std::unique_ptr<CRomSettingsDB> romSettingsDB;
-    std::unique_ptr<CInputManager> gInputManager;
+    std::unique_ptr<CInputManager> inputManager;
     std::unique_ptr<CROMFileMemory> gROMFileMemory;
+    std::unique_ptr<CController> pifController;
 
     #ifdef DAEDALUS_PSP
     std::unique_ptr<CVideoMemoryManager> videoMemoryManager;

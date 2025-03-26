@@ -63,7 +63,7 @@ static std::vector<SRomInfo> PopulateRomList()
 
                     if (ROM_GetRomDetailsByFilename(full_path.c_str(), &info.mRomID, &info.mRomSize, &info.mCicType))
                     {
-                        if (!gRomSettingsDB->GetSettings(info.mRomID, &info.mSettings))
+                        if (!ctx.romSettingsDB->GetSettings(info.mRomID, &info.mSettings))
                         {
                             std::string game_name;
 
@@ -74,7 +74,7 @@ static std::vector<SRomInfo> PopulateRomList()
 
                             game_name = game_name.substr(0, 63);
                             info.mSettings.GameName = game_name;
-                            gRomSettingsDB->SetSettings(info.mRomID, info.mSettings);
+                            ctx.romSettingsDB->SetSettings(info.mRomID, info.mSettings);
                         }
                     }
                     else

@@ -244,7 +244,7 @@ int main(int argc, char* argv[])
 			DisplayRomsAndChoose( show_splash );
 			show_splash = false;
 
-			gRomDB->Commit();
+			ctx.romDB->Commit();
 			ctx.preferences->Commit();
 
 			CPU_Run();

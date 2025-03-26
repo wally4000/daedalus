@@ -238,7 +238,7 @@ void CController::Process()
 	}
 
 	// Read controller data here (here gets called fewer times than CONT_READ_CONTROLLER)
-	ctx.gInputManager->GetState( mContPads );
+	ctx.inputManager->GetState( mContPads );
 
 	bool stop = false;
 

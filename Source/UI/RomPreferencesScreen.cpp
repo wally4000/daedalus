@@ -72,11 +72,11 @@ namespace
 		{
 		}
 
-		virtual	void			OnNext()				{ *mSetting = (*mSetting + 1) % ctx.gInputManager->GetNumConfigurations(); }
-		virtual	void			OnPrevious()			{ *mSetting = (*mSetting + ctx.gInputManager->GetNumConfigurations() - 1) % ctx.gInputManager->GetNumConfigurations(); }
+		virtual	void			OnNext()				{ *mSetting = (*mSetting + 1) % ctx.inputManager->GetNumConfigurations(); }
+		virtual	void			OnPrevious()			{ *mSetting = (*mSetting + ctx.inputManager->GetNumConfigurations() - 1) % ctx.inputManager->GetNumConfigurations(); }
 
-		virtual const char *	GetSettingName() const	{ return ctx.gInputManager->GetConfigurationName( *mSetting ); }
-		virtual const std::string	GetDescription() const	{ return ctx.gInputManager->GetConfigurationDescription( *mSetting ); }
+		virtual const char *	GetSettingName() const	{ return ctx.inputManager->GetConfigurationName( *mSetting ); }
+		virtual const std::string	GetDescription() const	{ return ctx.inputManager->GetConfigurationDescription( *mSetting ); }
 
 	private:
 		u32 *					mSetting;
@@ -229,7 +229,7 @@ IRomPreferencesScreen::IRomPreferencesScreen( CUIContext * p_context, const RomI
 	ctx.preferences->GetRomPreferences( mRomID, &mRomPreferences );
 
 	RomSettings			settings;
-	if ( gRomSettingsDB->GetSettings( rom_id, &settings ) )
+	if ( ctx.romSettingsDB->GetSettings( rom_id, &settings ) )
 	{
  		mRomName = settings.GameName;
 	}

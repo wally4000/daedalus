@@ -160,6 +160,5 @@ DetailsVec						mRomDetails;
 bool							mDirty;
 };
 
-extern std::unique_ptr<CRomDB> gRomDB;
 
 #endif // INTERFACE_ROMDB_H_

@@ -281,20 +281,20 @@ bool UI::DrawOptionsPage(RomID mRomID)
 
 	if (ImGui::BeginTabItem("Input"))
 	{
-		if(ImGui::BeginCombo("Configuration", ctx.gInputManager->GetConfigurationName(romPreferences.ControllerIndex)) )
+		if(ImGui::BeginCombo("Configuration", ctx.inputManager->GetConfigurationName(romPreferences.ControllerIndex)) )
 		{
-			for( unsigned i = 0; i < ctx.gInputManager->GetNumConfigurations(); i++ )
+			for( unsigned i = 0; i < ctx.inputManager->GetNumConfigurations(); i++ )
 			{
 				const bool isSelected = (romPreferences.ControllerIndex == i);
 
-				if( ImGui::Selectable(ctx.gInputManager->GetConfigurationName(i), isSelected) )
+				if( ImGui::Selectable(ctx.inputManager->GetConfigurationName(i), isSelected) )
                     romPreferences.ControllerIndex = i;
 			}
 
 			ImGui::EndCombo();
 		}
 
-		ImGui::Text(ctx.gInputManager->GetConfigurationDescription(romPreferences.ControllerIndex) );
+		ImGui::Text(ctx.inputManager->GetConfigurationDescription(romPreferences.ControllerIndex) );
 
 		ImGui::EndTabItem();
 	}

@@ -126,8 +126,6 @@ bool has_rumblepak[4] = {false, false, false, false};
 
 
 
-std::unique_ptr<CController> gController;
-
 // Constructor
 
 CController::CController() :

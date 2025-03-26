@@ -34,7 +34,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Ultra/ultra_os.h"
 #include "Interface/Preferences.h"
 class CController; 
-extern std::unique_ptr<CController> gController;
 
 
 // XXXX GCC
@@ -58,8 +57,8 @@ class CController
 		void			OnRomClose();
 
 		void			Process();
-		static bool				Reset() { return gController->OnRomOpen(); }
-		static void				RomClose() { gController->OnRomClose(); }
+		static bool				Reset() { return ctx.pifController->OnRomOpen(); }
+		static void				RomClose() { ctx.pifController->OnRomClose(); }
 	private:
 		//
 		//

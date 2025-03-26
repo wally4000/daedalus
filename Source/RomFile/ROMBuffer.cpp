@@ -55,7 +55,6 @@ namespace
 	bool			sRomFixed	= false;
 	bool			sRomWritten	= false;
 	u32				sRomValue	= 0;
-	std::unique_ptr<ROMFileCache> spRomFileCache	= nullptr;
 
 #ifdef DAEDALUS_COMPRESSED_ROM_SUPPORT
 	static bool		DECOMPRESS_ROMS	= true;
@@ -166,22 +165,6 @@ namespace
 		return p_new_file;
 	}
 #endif
-}
-
-
-bool RomBuffer::Create()
-{
-	// Create memory heap used for either ROM Cache or ROM buffer
-	// We do this to avoid memory fragmentation
-	gROMFileMemory = std::make_unique<CROMFileMemory>();
-	return true;
-}
-
-
-void RomBuffer::Destroy()
-{
-		spRomFileCache->Close();
-		spRomFileCache.reset(); // optional but clean
 }
 
 
@@ -306,8 +289,7 @@ bool RomBuffer::Open()
 			}
 		}
 #endif
-		spRomFileCache = std::make_unique<ROMFileCache>();
-		spRomFileCache->Open(std::move(p_rom_file ));
+		ctx.romFileCache->Open(std::move(p_rom_file ));
 		sRomFixed = false;
 	}
 
@@ -325,9 +307,9 @@ void	RomBuffer::Close()
 		spRomData = nullptr;
 	}
 
-	if (spRomFileCache)
+	if (ctx.romFileCache)
 	{
-		spRomFileCache->Close();
+		ctx.romFileCache->Close();
 	}
 
 	sRomSize   = 0;
@@ -388,9 +370,9 @@ void	RomBuffer::GetRomBytesRaw( void * p_dst, u32 rom_start, u32 length )
 	}
 	else
 	{
-		DAEDALUS_ASSERT( spRomFileCache != nullptr, "How come we have no file cache?" );
+		DAEDALUS_ASSERT( ctx.romFileCache != nullptr, "How come we have no file cache?" );
 
-		CopyBytesRaw( *spRomFileCache, reinterpret_cast< u8 * >( p_dst ), rom_start, length );
+		CopyBytesRaw( *ctx.romFileCache, reinterpret_cast< u8 * >( p_dst ), rom_start, length );
 	}
 }
 
@@ -427,8 +409,8 @@ void * RomBuffer::GetAddressRaw( u32 rom_start )
 		else
 		{
 			// Read the cached bytes into our scratch buffer, and return that
-			DAEDALUS_ASSERT( spRomFileCache != nullptr, "How come we have no file cache?" );
-			CopyBytesRaw( *spRomFileCache, sScratchBuffer, rom_start, SCRATCH_BUFFER_LENGTH );
+			DAEDALUS_ASSERT( ctx.romFileCache != nullptr, "How come we have no file cache?" );
+			CopyBytesRaw( *ctx.romFileCache, sScratchBuffer, rom_start, SCRATCH_BUFFER_LENGTH );
 
 			return sScratchBuffer;
 		}
@@ -455,7 +437,7 @@ bool RomBuffer::CopyToRam( u8 * p_dst, u32 dst_offset, u32 dst_size, u32 src_off
 			u32		chunk_offset = 0;
 			u32		chunk_size = 0;
 
-			if( !spRomFileCache->GetChunk( src_offset, &p_chunk_base, &chunk_offset, &chunk_size ) )
+			if( !ctx.romFileCache->GetChunk( src_offset, &p_chunk_base, &chunk_offset, &chunk_size ) )
 			{
 				// Out of range
 				break;

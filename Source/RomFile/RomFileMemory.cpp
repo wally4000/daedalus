@@ -32,8 +32,6 @@ std::unique_ptr<CROMFileMemory> gROMFileMemory;
 CROMFileMemory::~CROMFileMemory() {}
 
 
-
-
 CROMFileMemory::CROMFileMemory()
 {
 #ifdef DAEDALUS_PSP

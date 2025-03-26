@@ -75,7 +75,12 @@ struct SysEntityEntry
 	std::function<void(SystemContext&)> final;	
 };
 
-
+struct RomEntityEntry
+{
+	const char *name;
+	std::function<bool(SystemContext&)> open;
+	std::function<void(SystemContext&)> close;
+};
 
 // Completed
 bool Init_Audio(SystemContext& ctx)
@@ -223,18 +228,18 @@ static void Destroy_Memory(SystemContext& ctx) { // should be a class and unique
 	 Memory_Fini();
 }
 
-bool Init_LegacyController(SystemContext& ctx)
+bool Init_pifController(SystemContext& ctx)
 {
-	gController = std::make_unique<CController>();
+	ctx.pifController = std::make_unique<CController>();
 	return true;
 }
 
-void Destroy_LegacyController(SystemContext& ctx)
+void Destroy_pifController(SystemContext& ctx)
 {
-	if (gController)
+	if (ctx.pifController)
 	{
-		gController->OnRomClose();
-		gController.reset();
+		ctx.pifController->OnRomClose(); // Does nothing 
+		ctx.pifController.reset();
 	}
 }
 
@@ -246,15 +251,19 @@ void Destroy_LegacyController(SystemContext& ctx)
     mGraphicsContext->Destroy(); 
 }
 
-bool Legacy_RomBuffer_Init(SystemContext& ctx)
+bool Init_ROMBuffer(SystemContext& ctx)
 {
 	// Create memory heap used for either ROM Cache or ROM buffer
 	// We do this to avoid memory fragmentation
-	return RomBuffer::Create();
+	 ctx.gROMFileMemory = std::make_unique<CROMFileMemory>();
+	 ctx.romFileCache = std::make_unique<ROMFileCache>();
+
+	return true;
 }
 
-static void Legacy_RomBuffer_Destroy(SystemContext& ctx) {
-	return RomBuffer::Destroy();
+static void Destroy_ROMBuffer(SystemContext& ctx) {
+	ctx.romFileCache->Close(); // Needed?
+	ctx.romFileCache.reset(); 
 }
 #ifdef DAEDALUS_PSP
 bool Init_PSPVideoMemoryManager(SystemContext& ctx)
@@ -289,13 +298,6 @@ static bool Init_OldDebugLog(SystemContext& ctx)           { return Legacy_Debug
 #endif
 
 
-// Controller
-static bool Init_OldController(SystemContext& ctx)         { return Init_LegacyController(ctx); }
-static void Destroy_OldController(SystemContext& ctx)      { Destroy_LegacyController(ctx); }
-
-// RomBuffer Init
-static bool Init_OldRomBuffer(SystemContext& ctx)          { return Legacy_RomBuffer_Init(ctx); }
-static void Destroy_OldRomBuffer(SystemContext& ctx)       { Legacy_RomBuffer_Destroy(ctx); }
 
 static bool Init_OldGraphicsContext(SystemContext& ctx)          { return Legacy_GraphicsContextInit(ctx); }
 static void Destroy_OldGraphicsContext(SystemContext& ctx)       { Legacy_GraphicsContextDestroy(ctx); }
@@ -326,8 +328,8 @@ const std::vector<SysEntityEntry> gSysInitTable =
 	{"GraphicsContext",		 Init_OldGraphicsContext,  	 Destroy_OldGraphicsContext},
 	{"Preference",           Init_RomPreferences,     	 Destroy_RomPreferences},
 	{"Memory",               Init_Memory,                Destroy_Memory},
-	{"Controller",           Init_OldController,         Destroy_OldController},
-	{"RomBuffer",            Init_OldRomBuffer,          Destroy_OldRomBuffer},
+	{"Controller",           Init_pifController,         Destroy_pifController},
+	{"RomBuffer",            Init_ROMBuffer,          	Destroy_ROMBuffer},
 
 #if defined(DAEDALUS_POSIX) || defined(DAEDALUS_W32)
 #ifdef DAEDALUS_DEBUG_DISPLAYLIST
@@ -338,75 +340,69 @@ const std::vector<SysEntityEntry> gSysInitTable =
 #endif
 };
 
-struct RomEntityEntry
-{
-	const char *name;
-	std::function<bool(SystemContext&)> open;
-	std::function<void(SystemContext&)> close;
-};
 
 bool Legacy_RomBuffer_Open(SystemContext& ctx)
 {
 	// Create memory heap used for either ROM Cache or ROM buffer
 	// We do this to avoid memory fragmentation
-	return RomBuffer::Open();
+	return RomBuffer::Open(); // Not a class
 }
 
 void Legacy_RomBuffer_Close(SystemContext& ctx)
 {
-	return RomBuffer::Close();
+	return RomBuffer::Close(); // Not a class
 }
 
 static bool Legacy_RomFile_Open(SystemContext& ctx) {
-	return ROM_LoadFile();
+	return ROM_LoadFile(); // Not a class
 }
 
 static void Legacy_RomFile_Close(SystemContext& ctx) {
-	return ROM_UnloadFile();
+	return ROM_UnloadFile(); // not a class
 }
 
 static bool Legacy_Memory_Reset(SystemContext& ctx) {
-	return Memory_Reset();
+	return Memory_Reset(); // Not a class
 }
 
 static void Legacy_Memory_Cleanup(SystemContext& ctx) {
-	return Memory_Cleanup();
+	return Memory_Cleanup(); // Not a class
 }
 
 static bool Legacy_FramerateLimiter_Reset(SystemContext& ctx) {
-	return FramerateLimiter_Reset();
+	return FramerateLimiter_Reset(); // not a class
 }
 
 static bool Legacy_CPU_RomOpen(SystemContext& ctx) {
-	return CPU_RomOpen();
-}
+	return CPU_RomOpen(); // not a class
+} 
 
 static void Legacy_CPU_RomClose(SystemContext& ctx) {
-	return CPU_RomClose();
+	// Does nothing, supposedly dumps the fragment cache.
 }
 
-static bool Legacy_Controller_Reset(SystemContext& ctx) {
-	return CController::Reset();
+static bool Controller_Reset(SystemContext& ctx) {
+	return ctx.pifController->OnRomOpen(); 
 }
 
-static void Legacy_Controller_RomClose(SystemContext& ctx) {
-	CController::RomClose();
+static void Controller_RomClose(SystemContext& ctx) {
+	ctx.pifController.reset(); // Does nothing othewise
 }
 
 static bool Legacy_Save_Reset(SystemContext& ctx) {
-	return Save_Reset();
+	return Save_Reset(); // Not a class
 }
 
 static void Legacy_Save_Fini(SystemContext& ctx) {
-	return Save_Fini();
+	return Save_Fini(); // Not a class
 }
 
 static bool Legacy_CPU_RomReboot(SystemContext& ctx) {
-	return ROM_ReBoot();
+	return ROM_ReBoot(); // Not a class
 }
 
 static void Legacy_CPU_RomUnload(SystemContext& ctx) {
-	return ROM_Unload();
+	return ROM_Unload(); // Not a class
 }
 // RomBuffer
 static bool Init_OldRomBufferOpen(SystemContext&)         { return Legacy_RomBuffer_Open(ctx); }
@@ -428,10 +424,6 @@ static void Destroy_OldCPU(SystemContext&)                { Legacy_CPU_RomClose(
 static bool Init_OldROM(SystemContext&)                   { return Legacy_CPU_RomReboot(ctx); }
 static void Destroy_OldROM(SystemContext&)                { Legacy_CPU_RomUnload(ctx); }
 
-// Controller
-static bool Init_OldControllerReset(SystemContext&)       { return Legacy_Controller_Reset(ctx); }
-static void Destroy_OldControllerReset(SystemContext&)    { Legacy_Controller_RomClose(ctx); }
-
 // Save
 static bool Init_OldSave(SystemContext&)                  { return Legacy_Save_Reset(ctx); }
 static void Destroy_OldSave(SystemContext&)               { Legacy_Save_Fini(ctx); }
@@ -445,7 +437,7 @@ static const std::vector<RomEntityEntry> gRomInitTable =
 	{"FramerateLimiter",    Init_OldFramerateLimiter,   nullptr},
 	{"CPU",                 Init_OldCPU,                Destroy_OldCPU},
 	{"ROM",                 Init_OldROM,                Destroy_OldROM},
-	{"Controller",          Init_OldControllerReset,    Destroy_OldControllerReset},
+	{"Controller",          Controller_Reset,   		Controller_RomClose},
 	{"Save",                Init_OldSave,               Destroy_OldSave}
 // #ifdef DAEDALUS_ENABLE_SYNCHRONISATION
 // 	{"CSynchroniser",       CSynchroniser::InitialiseSynchroniser, CSynchroniser::Destroy},

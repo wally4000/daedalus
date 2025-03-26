@@ -164,13 +164,9 @@ void DMA_SI_CopyFromDRAM( )
 void DMA_SI_CopyToDRAM( )
 {
 	// Check controller status!
-	if (gController != nullptr)
+	if (ctx.pifController)
 	{
-	gController->Process();
-	}
-	else
-	{
-		std::cout << "gController is null" << std::endl;
+		ctx.pifController->Process();
 	}
 	u32 mem = Memory_SI_GetRegister(SI_DRAM_ADDR_REG) & 0x1fffffff;
 	u32 * src = (u32 *)g_pMemoryBuffers[MEM_PIF_RAM];

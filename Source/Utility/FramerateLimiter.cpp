@@ -23,9 +23,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "System/Timing.h"
 #include "System/Thread.h"
-
+#include "System/SystemInit.h"
 #include "Core/Memory.h"
 #include "Core/ROM.h"
+
 
 static u32				gTicksBetweenVbls = 0;			// How many ticks we want to delay between vertical blanks
 static u32				gTicksPerSecond = 0;			// How many ticks there are per second
@@ -63,10 +64,10 @@ bool FramerateLimiter_Reset()
 	if(NTiming::GetPreciseFrequency(&frequency))
 	{
 		#ifdef DAEDALUS_ENABLE_ASSERTS
-		DAEDALUS_ASSERT(g_ROM.TvType <= sizeof(gTvFrequencies) / sizeof(u32), "Unknown TV type: %d", g_ROM.TvType);
+		DAEDALUS_ASSERT(ctx.romInfo->TvType <= sizeof(gTvFrequencies) / sizeof(u32), "Unknown TV type: %d", ctx.romInfo->TvType);
 		#endif
 
-		gTicksBetweenVbls = (u32)(frequency / (u64)gTvFrequencies[ g_ROM.TvType ]);
+		gTicksBetweenVbls = (u32)(frequency / (u64)gTvFrequencies[ ctx.romInfo->TvType ]);
 		gTicksPerSecond = (u32)frequency;
 	}
 	else
@@ -144,5 +145,5 @@ f32	FramerateLimiter_GetSync()
 
 u32 FramerateLimiter_GetTvFrequencyHz()
 {
-	return gTvFrequencies[ g_ROM.TvType ];
+	return gTvFrequencies[ ctx.romInfo->TvType ];
 }

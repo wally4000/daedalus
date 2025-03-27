@@ -31,7 +31,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Utility/MathUtil.h"
 #include "Ultra/ultra_gbi.h"
 #include <cmath>
-
+#include "System/SystemInit.h"
 
 extern SImageDescriptor g_TI;		//Texture data from Timg ucode
 
@@ -414,7 +414,7 @@ const TextureInfo & CRDPStateManager::GetUpdatedTextureDescriptor( u32 idx )
 		u32	tlut_base = gTlutLoadAddresses[0];
 		if(rdp_tile.size == G_IM_SIZ_4b)
 		{
-			const u32 tlut_idx0 = g_ROM.TLUT_HACK << 1;
+			const u32 tlut_idx0 = ctx.romInfo->TLUT_HACK << 1;
 			const u32 tlut_idx1 = gTlutLoadAddresses[ rdp_tile.palette << tlut_idx0 ];
 
 			//If pointer == nullptr(=invalid entry) add offset to base address (TMEM[0] + offset)

@@ -112,7 +112,6 @@ class IMainMenuScreen : public CMainMenuScreen, public CUIScreen
 		CUIComponent *				mOptionComponents[ NUM_MENU_OPTIONS ];
 		CSelectedRomComponent *		mSelectedRomComponent;
 
-		std::string					mRomFilename;
 		RomID						mRomID;
 };
 
@@ -210,10 +209,8 @@ bool	IMainMenuScreen::IsOptionValid( EMenuOption option ) const
 	// Rom Settings is only valid if a rom has already been selected
 	if( option == MO_SELECTED_ROM )
 	{
-		return !mRomFilename.empty();
+		return !ctx.romInfo->mFileName.empty();
 	}
-
-	return true;
 }
 
 
@@ -301,22 +298,22 @@ void	IMainMenuScreen::Run()
 	mGraphicsContext->ClearAllSurfaces();
 }
 
-void	IMainMenuScreen::OnRomSelected( const char * rom_filename )
+void IMainMenuScreen::OnRomSelected(const char * rom_filename)
 {
 	u32			rom_size;
 	ECicType	boot_type;
 
-	if(ROM_GetRomDetailsByFilename( rom_filename, &mRomID, &rom_size, &boot_type ))
+	if (ROM_GetRomDetailsByFilename(rom_filename, &mRomID, &rom_size, &boot_type))
 	{
-		mRomFilename = rom_filename;
-		mSelectedRomComponent->SetRomID( mRomID );
+		ctx.romInfo->mFileName = rom_filename;
+		mSelectedRomComponent->SetRomID(mRomID);
 		mCurrentOption = MO_SELECTED_ROM;
-		mCurrentDisplayOption = float( mCurrentOption );		// Snap to this
+		mCurrentDisplayOption = float(mCurrentOption);	// Snap to this
 	}
 	else
 	{
-		// XXXX Problem retrieving rom info- should report this!
-		mRomFilename = "";
+		// Problem retrieving rom info - should report this!
+		ctx.romInfo->mFileName.clear();
 	}
 }
 
@@ -355,8 +352,8 @@ void	IMainMenuScreen::OnSavestateSelected( const char * savestate_filename )
 
 
 void	IMainMenuScreen::OnStartEmulation()
-{
-	System_Open(mRomFilename.c_str());
+{	
+	System_Open(ctx.romInfo->mFileName );
 	mIsFinished = true;
 }
 
@@ -365,7 +362,7 @@ void DisplayRomsAndChoose(bool show_splash)
 	// switch back to the LCD display
 	mGraphicsContext->SwitchToLcdDisplay();
 
-	auto	p_context =  CUIContext::Create();
+	auto p_context =  CUIContext::Create();
 
 	if(p_context != NULL)
 	{

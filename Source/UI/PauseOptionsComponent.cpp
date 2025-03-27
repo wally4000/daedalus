@@ -213,20 +213,20 @@ void IPauseOptionsComponent::OnReset()
 
 void	IPauseOptionsComponent::EditPreferences()
 {
-	auto	edit_preferences = CRomPreferencesScreen::Create( mpContext, g_ROM.mRomID );
+	auto	edit_preferences = CRomPreferencesScreen::Create( mpContext, ctx.romInfo->mRomID );
 	edit_preferences->Run();
 }
 
 
 void	IPauseOptionsComponent::AdvancedOptions()
 {
-	auto advanced_options = CAdvancedOptionsScreen::Create( mpContext, g_ROM.mRomID );
+	auto advanced_options = CAdvancedOptionsScreen::Create( mpContext, ctx.romInfo->mRomID );
 	advanced_options->Run();
 }
 
 void	IPauseOptionsComponent::CheatOptions()
 {
-	auto cheat_options = CCheatOptionsScreen::Create( mpContext, g_ROM.mRomID );
+	auto cheat_options = CCheatOptionsScreen::Create( mpContext, ctx.romInfo->mRomID );
 	cheat_options->Run();
 }
 
@@ -236,7 +236,7 @@ void	IPauseOptionsComponent::SaveState()
 auto onSaveStateSlotSelected = [this](const std::filesystem::path slot) { this->OnSaveStateSlotSelected(slot);
 };
 
-auto component = CSavestateSelectorComponent::Create(mpContext, CSavestateSelectorComponent::AT_SAVING, onSaveStateSlotSelected, g_ROM.settings.GameName.c_str());
+auto component = CSavestateSelectorComponent::Create(mpContext, CSavestateSelectorComponent::AT_SAVING, onSaveStateSlotSelected, ctx.romInfo->settings.GameName.c_str());
 
 	auto screen( CUIComponentScreen::Create( mpContext, component, SAVING_TITLE_TEXT ) );
 	screen->Run();
@@ -250,7 +250,7 @@ auto onLoadStateSlotSelected = [this](const std::filesystem::path slot) {
     this->OnLoadStateSlotSelected(slot);
 };
 
-auto component = CSavestateSelectorComponent::Create(mpContext, CSavestateSelectorComponent::AT_LOADING, onLoadStateSlotSelected, g_ROM.settings.GameName.c_str());
+auto component = CSavestateSelectorComponent::Create(mpContext, CSavestateSelectorComponent::AT_LOADING, onLoadStateSlotSelected, ctx.romInfo->settings.GameName.c_str());
 
 	auto screen =  CUIComponentScreen::Create( mpContext, component, LOADING_TITLE_TEXT );
 	screen->Run();

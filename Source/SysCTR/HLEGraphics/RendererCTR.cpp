@@ -383,7 +383,7 @@ void RendererCTR::RenderUsingRenderSettings( const CBlendStates * states, Daedal
 			
 			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, tfx);
 
-			if( g_ROM.T1_HACK )
+			if( ctx.romInfo->T1_HACK )
 			{
 				// NB if install_texture0 and install_texture1 are both set, 1 wins out
 				texture_idx = install_texture1;
@@ -527,7 +527,7 @@ void RendererCTR::RenderUsingCurrentBlendMode(const float* mat_project, Daedalus
 	if( (gRDPOtherMode.alpha_compare == G_AC_THRESHOLD) && !gRDPOtherMode.alpha_cvg_sel )
 	{
 		u8 alpha_threshold = mBlendColour.GetA();
-		glAlphaFunc((alpha_threshold || g_ROM.ALPHA_HACK) ? GL_GEQUAL : GL_GREATER, mBlendColour.GetAf());
+		glAlphaFunc((alpha_threshold || ctx.romInfo->ALPHA_HACK) ? GL_GEQUAL : GL_GREATER, mBlendColour.GetAf());
 		glEnable(GL_ALPHA_TEST);
 	}
 	else if (gRDPOtherMode.cvg_x_alpha)
@@ -566,7 +566,7 @@ void RendererCTR::RenderUsingCurrentBlendMode(const float* mat_project, Daedalus
 
 		if( details.InstallTexture )
 		{
-			int texture_idx = g_ROM.T1_HACK ? 1 : 0;
+			int texture_idx = ctx.romInfo->T1_HACK ? 1 : 0;
 
 			if( mBoundTexture[ texture_idx ] )
 			{
@@ -618,7 +618,7 @@ void RendererCTR::RenderTriangles(DaedalusVtx *p_vertices, u32 num_vertices, boo
 			float scale_y = texture->GetScaleY();
 				
 			// Hack to fix the sun in Zelda OOT/MM
-			if( g_ROM.ZELDA_HACK && (gRDPOtherMode.L == 0x0c184241) )
+			if( ctx.romInfo->ZELDA_HACK && (gRDPOtherMode.L == 0x0c184241) )
 			{
 				scale_x *= 0.5f;
 				scale_y *= 0.5f;

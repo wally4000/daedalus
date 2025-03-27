@@ -171,7 +171,7 @@ namespace
 bool RomBuffer::Open()
 {
 	CNullOutputStream messages;
-	const std::filesystem::path &filename   = g_ROM.mFileName;
+	const std::filesystem::path &filename = ctx.romInfo->mFileName;
 	auto p_rom_file = ROMFile::Create( filename.c_str() );
 	if(p_rom_file == nullptr)
 	{

@@ -312,7 +312,7 @@ static void WriteValue_8450_845F( u32 address, u32 value )
 		{
 			//When we set PAL mode for PAL games it corrects the sound pitch to the same as
 			//NTSC games but it will also limit FPS 2% higher as well //Corn
-			ctx.audioPlugin->DacrateChanged( g_ROM.TvType ? CAudioPlugin::ST_NTSC : CAudioPlugin::ST_PAL );
+			ctx.audioPlugin->DacrateChanged( ctx.romInfo->TvType ? CAudioPlugin::ST_NTSC : CAudioPlugin::ST_PAL );
 		}
 		break;
 	default:
@@ -425,7 +425,7 @@ static void WriteValue_9FC0_9FCF( u32 address, u32 value )
 
 static void WriteValue_FlashRam( u32 address, u32 value )
 {
-	if (g_ROM.settings.SaveType == SAVE_TYPE_FLASH)
+	if (ctx.romInfo->settings.SaveType == SAVE_TYPE_FLASH)
 	{
 		if ((address&0x1FFFFFFF) == FLASHRAM_WRITE_ADDR)
 		{

@@ -133,6 +133,7 @@ extern u32 __ctru_heap_size;
 
 int main(int argc, char* argv[])
 {
+	ctx.romInfo = std::make_unique<RomInfo>(); 
 	    // File stream for logging
     std::ofstream logFile;
 

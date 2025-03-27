@@ -329,7 +329,7 @@ void DLParser_GBI2_GeometryMode( MicroCodeCommand command )
 	TnL.TexGen		= gGeometryMode.GBI2_TexGen;
 	TnL.TexGenLin	= gGeometryMode.GBI2_TexGenLin;
 	TnL.Fog			= gGeometryMode.GBI2_Fog;// && (gRDPOtherMode.c1_m1a==3 || gRDPOtherMode.c1_m2a==3 || gRDPOtherMode.c2_m1a==3 || gRDPOtherMode.c2_m2a==3);
-	TnL.Shade		= !(gGeometryMode.GBI2_TexGenLin/* & (g_ROM.GameHacks != TIGERS_HONEY_HUNT)*/);
+	TnL.Shade		= !(gGeometryMode.GBI2_TexGenLin/* & (ctx.romInfo->GameHacks != TIGERS_HONEY_HUNT)*/);
 	TnL.Zbuffer		= gGeometryMode.GBI2_Zbuffer;
 	TnL.TriCull		= gGeometryMode.GBI2_CullFront | gGeometryMode.GBI2_CullBack;
 	TnL.CullBack	= gGeometryMode.GBI2_CullBack;

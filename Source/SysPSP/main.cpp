@@ -216,6 +216,7 @@ void HandleEndOfFrame()
 
 int main(int argc, char* argv[])
 {
+	ctx.romInfo = std::make_unique<RomInfo>(); 
 	if( Initialize() )
 	{
 #ifdef DAEDALUS_BATCH_TEST_ENABLED

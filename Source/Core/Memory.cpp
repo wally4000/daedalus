@@ -40,6 +40,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Ultra/ultra_R4300.h"
 #include "HLEAudio/AudioPlugin.h"
 #include "HLEGraphics/GraphicsPlugin.h"
+#include "System/SystemInit.h"
 
 #ifdef DAEDALUS_W32
 #include <windows.h>
@@ -228,7 +229,7 @@ void Memory_Fini(void)
 
 bool Memory_Reset()
 {
-	u32 main_mem = g_ROM.settings.ExpansionPakUsage != PAK_UNUSED ? MEMORY_8_MEG : MEMORY_4_MEG;
+	u32 main_mem = ctx.romInfo->settings.ExpansionPakUsage != PAK_UNUSED ? MEMORY_8_MEG : MEMORY_4_MEG;
 	#ifdef DAEDALUS_DEBUG_CONSOLE
 	DBGConsole_Msg(0, "Reseting Memory - %d MB", main_mem/(1024*1024));
 #endif
@@ -273,7 +274,7 @@ static void Memory_Tlb_Hack()
 	if (rom_address != nullptr)
 	{
 	   u32 offset = 0;
-	   switch(g_ROM.rh.CountryID)
+	   switch(ctx.romInfo->rh.CountryID)
 	   {
 	   case 0x45: offset = 0x34b30; break;
 	   case 0x4A: offset = 0x34b70; break;
@@ -581,7 +582,7 @@ void Memory_InitTables()
 	);
 
 	// Hack the TLB Map per game
-	if (g_ROM.GameHacks == GOLDEN_EYE)
+	if (ctx.romInfo->GameHacks == GOLDEN_EYE)
 	{
 		Memory_Tlb_Hack();
 	}

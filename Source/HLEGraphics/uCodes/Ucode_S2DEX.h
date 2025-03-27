@@ -640,7 +640,7 @@ void DLParser_S2DEX_RDPHalf_0( MicroCodeCommand command )
 	//0x001d3c90: b4000000 00000000 RSP_RDPHALF_1
 	//0x001d3c98: b3000000 04000400 RSP_RDPHALF_2
 
-	if( g_ROM.GameHacks == YOSHI )
+	if( ctx.romInfo->GameHacks == YOSHI )
 		DLParser_Yoshi_MemRect( command );
 	else
 		DLParser_TexRect( command );
@@ -715,7 +715,7 @@ void DLParser_S2DEX_BgCopy( MicroCodeCommand command )
 //*****************************************************************************
 void DLParser_S2DEX_Bg1cyc( MicroCodeCommand command )
 {
-	if( g_ROM.GameHacks == ZELDA_MM )
+	if( ctx.romInfo->GameHacks == ZELDA_MM )
 		return;
 
 	const uObjScaleBg *objBg = (const uObjScaleBg*)(g_pu8RamBase + RDPSegAddr(command.inst.cmd1));
@@ -755,7 +755,7 @@ void DLParser_S2DEX_Bg1cyc( MicroCodeCommand command )
 	std::shared_ptr<CNativeTexture> texture = gRenderer->LoadTextureDirectly(ti);
 
 
-	if (g_ROM.GameHacks != YOSHI)
+	if (ctx.romInfo->GameHacks != YOSHI)
 	{
 		f32 s1 = (frameW-frameX)*scaleX + imageX;
 		f32 t1 = (frameH-frameY)*scaleY + imageY;

@@ -38,6 +38,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Base/Macros.h"
 #include "Debug/PrintOpCode.h"
 #include "Utility/Profiler.h"
+#include "System/SystemInit.h"
 
 using namespace AssemblyUtils;
 
@@ -1637,7 +1638,7 @@ CJumpLocation	CCodeGeneratorPSP::GenerateOpCode( const STraceEntry& ti, bool bra
 			case Cop1OpFunc_FLOOR_W:	GenerateFLOOR_W_S( op_code.fd, op_code.fs ); handled = true; break;
 
 			case Cop1OpFunc_CVT_W:		GenerateCVT_W_S( op_code.fd, op_code.fs ); handled = true; break;
-			case Cop1OpFunc_CVT_D:		if( gDynarecDoublesOptimisation & !g_ROM.DISABLE_SIM_CVT_D_S ) GenerateCVT_D_S_Sim( op_code.fd, op_code.fs );	//Sim has issues with EWJ/Tom&Jerry/PowerPuffGirls
+			case Cop1OpFunc_CVT_D:		if( gDynarecDoublesOptimisation & !ctx.romInfo->DISABLE_SIM_CVT_D_S ) GenerateCVT_D_S_Sim( op_code.fd, op_code.fs );	//Sim has issues with EWJ/Tom&Jerry/PowerPuffGirls
 										else GenerateCVT_D_S( op_code.fd, op_code.fs );
 										handled = true;
 										break;
@@ -1659,7 +1660,7 @@ CJumpLocation	CCodeGeneratorPSP::GenerateOpCode( const STraceEntry& ti, bool bra
 			case Cop1OpFunc_CMP_NGE:	GenerateCMP_S( op_code.fs, Cop1OpFunc_CMP_NGE, op_code.ft ); handled = true; break;
 			case Cop1OpFunc_CMP_LE:		GenerateCMP_S( op_code.fs, Cop1OpFunc_CMP_LE, op_code.ft ); handled = true; break;
 			//This breaks D64, but I think is a bug somewhere else since interpreter trows fp nan exception in Cop1_S_NGT
-			case Cop1OpFunc_CMP_NGT:	if(g_ROM.GameHacks != DK64)	{GenerateCMP_S( op_code.fs, Cop1OpFunc_CMP_NGT, op_code.ft ); handled = true;} break;
+			case Cop1OpFunc_CMP_NGT:	if(ctx.romInfo->GameHacks != DK64)	{GenerateCMP_S( op_code.fs, Cop1OpFunc_CMP_NGT, op_code.ft ); handled = true;} break;
 			}
 			break;
 
@@ -4223,7 +4224,7 @@ inline void	CCodeGeneratorPSP::GenerateBGTZ( EN64Reg rs, const SBranchDetails * 
 	EPspReg		reg_lo( GetRegisterAndLoadLo( rs, PspReg_V0 ) );
 
 	//64bit compare is needed for DK64 or DK can walk trough walls
-	if(g_ROM.GameHacks == DK64)
+	if(ctx.romInfo->GameHacks == DK64)
 	{
 #if 0
 		//Do a full 64 bit compare //Corn

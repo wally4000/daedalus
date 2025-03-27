@@ -27,9 +27,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Core/Memory.h"
 #include "Core/ROM.h"
 #include "HLEGraphics/TextureInfo.h"
+
+#include "System/SystemInit.h"
 #include "Ultra/ultra_gbi.h"
 #include "Utility/Hash.h"
 #include "Utility/Profiler.h"
+
 
 std::array<const char * const, 8> gImageFormatNames = {"RGBA", "YUV", "CI", "IA", "I", "?1", "?2", "?3"};
 // static const char * const	gImageFormatNames[8] {"RGBA", "YUV", "CI", "IA", "I", "?1", "?2", "?3"};
@@ -64,7 +67,7 @@ u32 TextureInfo::GenerateHashValue() const
 	u32 hash_value = 0;
 	u8 *ptr_u8  = g_pu8RamBase + GetLoadAddress();
 
-	if( g_ROM.GameHacks == YOSHI )
+	if( ctx.romInfo->GameHacks == YOSHI )
 	{
 		CHK_ROW = 49;
 		if (GetFormat() == G_IM_FMT_CI)
@@ -74,7 +77,7 @@ u32 TextureInfo::GenerateHashValue() const
 			for (u32 z = 0; z < 8; z++) hash_value = ((hash_value << 1) | (hash_value >> 0x1F)) ^ *ptr_u32++;
 		}
 	}
-	else if( g_ROM.GameHacks == WORMS_ARMAGEDDON )
+	else if( ctx.romInfo->GameHacks == WORMS_ARMAGEDDON )
 	{
 		CHK_ROW = 1000;
 		if (GetFormat() == G_IM_FMT_CI)

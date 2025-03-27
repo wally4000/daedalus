@@ -372,7 +372,7 @@ void IGraphicsContext::UpdateFrame( bool wait_for_vbl )
 
 	// Hack to semi-fix XG2, it uses setprimdepth for background and also does not clear zbuffer //Corn
 	//
-	if( g_ROM.GameHacks == EXTREME_G2 ) sceGuClear(GU_DEPTH_BUFFER_BIT | GU_FAST_CLEAR_BIT);	//Clear Zbuffer
+	if( ctx.romInfo->GameHacks == EXTREME_G2 ) sceGuClear(GU_DEPTH_BUFFER_BIT | GU_FAST_CLEAR_BIT);	//Clear Zbuffer
 }
 
 //*****************************************************************************
@@ -532,7 +532,7 @@ void IGraphicsContext::DumpScreenShot()
 	std::filesystem::create_directory( "ScreenShots" );
 	std::filesystem::path dumpdir = "ScreenShots";
 
-	std::filesystem::path file_name = g_ROM.settings.GameName.c_str();
+	std::filesystem::path file_name = ctx.romInfo->settings.GameName.c_str();
 	dumpdir /= file_name;
 	std::filesystem::path unique_filename;
 	unique_filename /= dumpdir;

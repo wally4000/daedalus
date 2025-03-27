@@ -307,7 +307,7 @@ bool CheatCodes_Read(const char *rom_name, const char *file [[maybe_unused]], u8
 		return true;
 	}
 
-	// Locate the entry for current rom by searching for g_ROM.rh.Name
+	// Locate the entry for current rom by searching for ctx.romInfo->rh.Name
 	//
 	snprintf(romname,sizeof(romname), "[%s]", current_rom_name);
 

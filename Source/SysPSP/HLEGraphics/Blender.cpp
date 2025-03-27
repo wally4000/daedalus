@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "HLEGraphics/DLDebug.h"
 #include "Core/ROM.h"
-
+#include "System/SystemInit.h"
 #include <pspgu.h>
 
 
@@ -197,7 +197,7 @@ void InitBlenderMode( u32 blendmode )					// Set Alpha Blender mode
 		sceGuEnable( GU_BLEND );
 
 		// Hack for shadows in ISS64
-		if(g_ROM.GameHacks == ISS64)
+		if(ctx.romInfo->GameHacks == ISS64)
 		{
 			if (blendmode == 0xff5a)	// Actual shadow
 			{

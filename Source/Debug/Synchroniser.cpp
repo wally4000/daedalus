@@ -259,7 +259,7 @@ CSynchroniser::ESynchResult	ISynchConsumer::SynchData( void * data, u32 length )
 
 bool CSynchroniser::InitialiseSynchroniser()
 {
-	const char *name = g_ROM.mFileName;
+	const char *name = ctx.romInfo->mFileName;
 	CSynchroniser *	p_synch;
 	std::filesystem::create_directory("Sync_Results")
 	std::filesystem::path fillename = Save_As(name, ".syn", "Sync_Results")

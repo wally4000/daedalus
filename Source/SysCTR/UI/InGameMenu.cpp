@@ -32,7 +32,6 @@
 
 extern float gCurrentFramerate;
 extern EFrameskipValue gFrameskipValue;
-extern RomInfo g_ROM;
 
 static uint8_t currentPage = 0;
 
@@ -40,7 +39,7 @@ static uint8_t currentPage = 0;
 static void ExecSaveState(int slot)
 {
 	std::filesystem::path savePath = setBasePath("SaveStates");
-	std::string name = g_ROM.settings.GameName;
+	std::string name = ctx.romInfo->settings.GameName;
 	savePath /= name;
 	std::filesystem::create_directories(savePath);
 
@@ -55,7 +54,7 @@ static void ExecSaveState(int slot)
 static void LoadSaveState(int slot)
 {
 	std::filesystem::path savePath = setBasePath("SaveStates");
-	std::string name = g_ROM.settings.GameName;
+	std::string name = ctx.romInfo->settings.GameName;
 	savePath /= name;
 	std::filesystem::create_directories(savePath);
 
@@ -65,7 +64,7 @@ static void LoadSaveState(int slot)
 	savePath /= filename;
 
 	std::cout << "Load Save Slot Path" << savePath << std::endl;
-	// snprintf(full_path),sizeof(full_path), "%s%s.ss%d", "SaveStates/", g_ROM.settings.GameName.c_str(), slot);
+	// snprintf(full_path),sizeof(full_path), "%s%s.ss%d", "SaveStates/", ctx.romInfo->settings.GameName.c_str(), slot);
 
 	CPU_RequestLoadState(savePath);
 }
@@ -73,7 +72,7 @@ static void LoadSaveState(int slot)
 static bool SaveStateExists(int slot)
 {
 	std::filesystem::path savePath = setBasePath("SaveStates");
-	std::string name = g_ROM.settings.GameName;
+	std::string name = ctx.romInfo->settings.GameName;
 	savePath /= name;
 	std::filesystem::create_directories(savePath);
 
@@ -82,12 +81,12 @@ static bool SaveStateExists(int slot)
 	
 	savePath /= filename;
 
-	// std::string path = fmt::format("{}/{}{}.ss", "SaveStates", g_ROM.settings.GameName.c_str(), slot);
+	// std::string path = fmt::format("{}/{}{}.ss", "SaveStates", ctx.romInfo->settings.GameName.c_str(), slot);
 	// full_path = path;
 		std::cout << "Slot Exists Path" << savePath << std::endl;
-	// snprintf(full_path, sizeof(full_path), "%s%s.ss%d", DAEDALUS_CTR_PATH("SaveStates/"), g_ROM.settings.GameName.c_str(), slot);
+	// snprintf(full_path, sizeof(full_path), "%s%s.ss%d", DAEDALUS_CTR_PATH("SaveStates/"), ctx.romInfo->settings.GameName.c_str(), slot);
 
-	// snprintf(full_path, sizeof(full_path),  "%s%s.ss%d", "SaveStates/", g_ROM.settings.GameName.c_str(), slot);
+	// snprintf(full_path, sizeof(full_path),  "%s%s.ss%d", "SaveStates/", ctx.romInfo->settings.GameName.c_str(), slot);
 
 	return std::filesystem::exists(savePath);
 }
@@ -370,7 +369,7 @@ static void DrawMainPage()
 	ImGui::SameLine();
 	if( ImGui::ColoredButton("Options",   0.55f, ImVec2(buttonWidth, 60)) )
 	{
-		UI::LoadRomPreferences( g_ROM.mRomID );
+		UI::LoadRomPreferences( ctx.romInfo->mRomID );
 		currentPage = 3;
 	}
 
@@ -418,7 +417,7 @@ void UI::DrawInGameMenu()
 		case 0: DrawMainPage(); break;
 		case 1: DrawSaveStatePage(); break;
 		case 2: DrawLoadStatePage(); break;
-		case 3: DrawOptionsPage(g_ROM.mRomID); break;
+		case 3: DrawOptionsPage(ctx.romInfo->mRomID); break;
 	}
 
 	pglSelectScreen(GFX_TOP, GFX_LEFT);

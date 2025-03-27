@@ -1126,7 +1126,7 @@ void BlendMode_0x0026a0041ffc93e0LL( BLEND_MODE_ARGS )
 //aA1  : (Texel0       - 0           ) * Shade        + 0
 void BlendMode_0x00121824ff33ffffLL( BLEND_MODE_ARGS )
 {
-	if( g_ROM.GameHacks == TARZAN ) details.ColourAdjuster.SetAOpaque();
+	if( ctx.romInfo->GameHacks == TARZAN ) details.ColourAdjuster.SetAOpaque();
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 }
 
@@ -1357,7 +1357,7 @@ void BlendMode_0x0030fe045ffefdfeLL (BLEND_MODE_ARGS)
 //aA1  : (0            - 0           ) * 0            + Combined
 void BlendMode_0x0030b3ff5ffeda38LL (BLEND_MODE_ARGS)
 {
-	if( g_ROM.GameHacks == ZELDA_OOT )
+	if( ctx.romInfo->GameHacks == ZELDA_OOT )
 	{
 		details.ColourAdjuster.SetRGB(details.EnvColour);
 		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
@@ -1546,7 +1546,7 @@ void BlendMode_0x00176c6035d8ed76LL (BLEND_MODE_ARGS)
 //aA1  : (Combined     - 0           ) * Primitive    + 0
 void BlendMode_0x00272c60350c937fLL (BLEND_MODE_ARGS)
 {
-	if( g_ROM.GameHacks == ZELDA_OOT )
+	if( ctx.romInfo->GameHacks == ZELDA_OOT )
 	{
 		details.ColourAdjuster.SetRGB( details.EnvColour );
 		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
@@ -1653,7 +1653,7 @@ void BlendMode_0x00373c6e117b9fcfLL (BLEND_MODE_ARGS)
 void BlendMode_0x0030fe045ffef3f8LL (BLEND_MODE_ARGS)
 {
 	// details.EnvColour breaks stuff in RR64
-	if( g_ROM.GameHacks == ZELDA_OOT ) details.ColourAdjuster.SetRGB(details.EnvColour);
+	if( ctx.romInfo->GameHacks == ZELDA_OOT ) details.ColourAdjuster.SetRGB(details.EnvColour);
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 }
 
@@ -1810,7 +1810,7 @@ OverrideBlendModeFn		LookupOverrideBlendModeForced( u64 mux )
 			BLEND_MODE(0x00121824ff33ffffLL); // Tarzan (also used by Paper Mario)
 			BLEND_MODE(0x00127ffffffff438LL); // Extreme-G2
 			BLEND_MODE(0x0030986155feff79LL); // SSV electric fence
-			case(0x00327e64fffff9fcLL): return g_ROM.GameHacks==SIN_PUNISHMENT ? BlendMode_0x00327e64fffff9fcLL : nullptr; // Sin and Punishment - blinds the screen (breaks splash screen race flag in MK64)
+			case(0x00327e64fffff9fcLL): return ctx.romInfo->GameHacks==SIN_PUNISHMENT ? BlendMode_0x00327e64fffff9fcLL : nullptr; // Sin and Punishment - blinds the screen (breaks splash screen race flag in MK64)
 			BLEND_MODE(0x00457fff3ffcfe3fLL); // Pokemon Stadium 2 Arena Floor
 			BLEND_MODE(0x0050fea144fe7339LL); // Duke Nukem Menu and HUD
 			BLEND_MODE(0x0060b2c15565feffLL); // Mario Kart 64

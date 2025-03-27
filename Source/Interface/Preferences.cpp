@@ -432,20 +432,20 @@ void SRomPreferences::Apply(SystemContext& ctx) const
 {
 	gOSHooksEnabled             = PatchesEnabled;
 	gSpeedSyncEnabled           = SpeedSyncEnabled;
-	gDynarecEnabled             = g_ROM.settings.DynarecSupported && DynarecEnabled;
-	gDynarecLoopOptimisation	= DynarecLoopOptimisation;	// && g_ROM.settings.DynarecLoopOptimisation;
-	gDynarecDoublesOptimisation	= g_ROM.settings.DynarecDoublesOptimisation || DynarecDoublesOptimisation;
-	gDoubleDisplayEnabled       = g_ROM.settings.DoubleDisplayEnabled && DoubleDisplayEnabled; // I don't know why DD won't disabled if we set ||
-	gCleanSceneEnabled          = g_ROM.settings.CleanSceneEnabled || CleanSceneEnabled;
-	gClearDepthFrameBuffer      = g_ROM.settings.ClearDepthFrameBuffer || ClearDepthFrameBuffer;
-	gAudioRateMatch             = g_ROM.settings.AudioRateMatch || AudioRateMatch;
-	gVideoRateMatch             = g_ROM.settings.VideoRateMatch || VideoRateMatch;
-	gFogEnabled                 = g_ROM.settings.FogEnabled || FogEnabled;
+	gDynarecEnabled             = ctx.romInfo->settings.DynarecSupported && DynarecEnabled;
+	gDynarecLoopOptimisation	= DynarecLoopOptimisation;	// && ctx.romInfo->settings.DynarecLoopOptimisation;
+	gDynarecDoublesOptimisation	= ctx.romInfo->settings.DynarecDoublesOptimisation || DynarecDoublesOptimisation;
+	gDoubleDisplayEnabled       = ctx.romInfo->settings.DoubleDisplayEnabled && DoubleDisplayEnabled; // I don't know why DD won't disabled if we set ||
+	gCleanSceneEnabled          = ctx.romInfo->settings.CleanSceneEnabled || CleanSceneEnabled;
+	gClearDepthFrameBuffer      = ctx.romInfo->settings.ClearDepthFrameBuffer || ClearDepthFrameBuffer;
+	gAudioRateMatch             = ctx.romInfo->settings.AudioRateMatch || AudioRateMatch;
+	gVideoRateMatch             = ctx.romInfo->settings.VideoRateMatch || VideoRateMatch;
+	gFogEnabled                 = ctx.romInfo->settings.FogEnabled || FogEnabled;
 	gCheckTextureHashFrequency  = GetTexureHashFrequencyAsFrames( CheckTextureHashFrequency );
-	gMemoryAccessOptimisation   = g_ROM.settings.MemoryAccessOptimisation || MemoryAccessOptimisation;
+	gMemoryAccessOptimisation   = ctx.romInfo->settings.MemoryAccessOptimisation || MemoryAccessOptimisation;
 	gFrameskipValue             = Frameskip;
 	gZoomX                      = ZoomX;
-	gCheatsEnabled              = g_ROM.settings.CheatsEnabled || CheatsEnabled;
+	gCheatsEnabled              = ctx.romInfo->settings.CheatsEnabled || CheatsEnabled;
 
 	if (ctx.audioPlugin)
 	{

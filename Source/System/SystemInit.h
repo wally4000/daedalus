@@ -21,6 +21,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <filesystem>
 #include <memory>
  #include "RomFile/RomFileCache.h"
+ #include "Core/ROM.h" 
+
 #ifdef DAEDALUS_PSP
 class CVideoMemoryManager;
 #endif
@@ -46,6 +48,7 @@ struct SystemContext {
     std::unique_ptr<CROMFileMemory> gROMFileMemory;
     std::unique_ptr<ROMFileCache> romFileCache;
     std::unique_ptr<CController> pifController;
+    std::unique_ptr<RomInfo> romInfo;
 
 
     #ifdef DAEDALUS_PSP

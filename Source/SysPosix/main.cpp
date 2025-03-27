@@ -112,6 +112,7 @@ void HandleEndOfFrame()
 
 int main(int argc, char **argv)
 {
+	ctx.romInfo = std::make_unique<RomInfo>(); 
 	int result = 0;
 
 
@@ -173,6 +174,7 @@ int main(int argc, char **argv)
 		}
 		else if (filename)
 		{
+			ctx.romInfo = std::make_unique<RomInfo>(); 
 			System_Open(filename);
 
 			//

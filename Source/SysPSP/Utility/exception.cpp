@@ -18,6 +18,7 @@
 #include "RomFile/RomSettings.h"
 #include "Debug/Dump.h"
 #include "Debug/PrintOpCode.h"
+#include "System/SystemInit.h"
 
 
 PspDebugRegBlock *exception_regs;
@@ -105,15 +106,15 @@ static void DumpInformation(PspDebugRegBlock * regs)
 
 	fprintf(fp, "\nRom Infomation:\n");
 	{
-		fprintf(fp, "\tClockrate:       0x%08x\n", g_ROM.rh.ClockRate);
-		fprintf(fp, "\tBootAddr:        0x%08x\n", BSWAP32(g_ROM.rh.BootAddress));
-		fprintf(fp, "\tRelease:         0x%08x\n", g_ROM.rh.Release);
-		fprintf(fp, "\tCRC1:            0x%08x\n", g_ROM.rh.CRC1);
-		fprintf(fp, "\tCRC2:            0x%08x\n", g_ROM.rh.CRC2);
-		fprintf(fp, "\tImageName:       '%s'\n",   g_ROM.rh.Name);
-		fprintf(fp, "\tManufacturer:    0x%02x\n", g_ROM.rh.Manufacturer);
-		fprintf(fp, "\tCartID:          0x%04x\n", g_ROM.rh.CartID);
-		fprintf(fp, "\tCountryID:       0x%02x - '%c'\n", g_ROM.rh.CountryID, (char)g_ROM.rh.CountryID);
+		fprintf(fp, "\tClockrate:       0x%08x\n", ctx.romInfo->rh.ClockRate);
+		fprintf(fp, "\tBootAddr:        0x%08x\n", BSWAP32(ctx.romInfo->rh.BootAddress));
+		fprintf(fp, "\tRelease:         0x%08x\n", ctx.romInfo->rh.Release);
+		fprintf(fp, "\tCRC1:            0x%08x\n", ctx.romInfo->rh.CRC1);
+		fprintf(fp, "\tCRC2:            0x%08x\n", ctx.romInfo->rh.CRC2);
+		fprintf(fp, "\tImageName:       '%s'\n",   ctx.romInfo->rh.Name);
+		fprintf(fp, "\tManufacturer:    0x%02x\n", ctx.romInfo->rh.Manufacturer);
+		fprintf(fp, "\tCartID:          0x%04x\n", ctx.romInfo->rh.CartID);
+		fprintf(fp, "\tCountryID:       0x%02x - '%c'\n", ctx.romInfo->rh.CountryID, (char)ctx.romInfo->rh.CountryID);
 	}
 
 	fprintf(fp, "\nPSP Infomation:\n");
@@ -195,7 +196,7 @@ void ExceptionHandler(PspDebugRegBlock * regs)
 	{
 		pspDebugScreenClear();
 		pspDebugScreenPrintf("Exception[%s] RDRAM[%08X:%08X]\n\n", codeTxt[(regs->cause >> 2) & 31], (int)RDRAM_base, (int)RDRAM_end );
-		//pspDebugScreenPrintf("Game Name - %s\n",   g_ROM.settings.GameName.c_str());
+		//pspDebugScreenPrintf("Game Name - %s\n",   ctx.romInfo->settings.GameName.c_str());
 		//pspDebugScreenPrintf("Firmware  - %08X\n", sceKernelDevkitVersion());
 		//pspDebugScreenPrintf("Model	- %s\n", pspModel[ kuKernelGetModel() ]);
 		//pspDebugScreenPrintf("64MB	 - %s\n", PSP_IS_SLIM ? "Yes" : "No");

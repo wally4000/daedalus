@@ -528,7 +528,7 @@ void RendererGL::MakeShaderConfigFromCurrentState(ShaderConfiguration * config) 
 	if( (gRDPOtherMode.alpha_compare == G_AC_THRESHOLD) && !gRDPOtherMode.alpha_cvg_sel )
 	{
 		// G_AC_THRESHOLD || G_AC_DITHER
-		// FIXME(strmnnrmn): alpha func: (mAlphaThreshold | g_ROM.ALPHA_HACK) ? GL_GEQUAL : GL_GREATER
+		// FIXME(strmnnrmn): alpha func: (mAlphaThreshold | ctx.romInfo->ALPHA_HACK) ? GL_GEQUAL : GL_GREATER
 		config->AlphaThreshold = mBlendColour.GetA();
 	}
 	else if (gRDPOtherMode.cvg_x_alpha)
@@ -650,7 +650,7 @@ void RendererGL::RenderDaedalusVtx(int prim, const DaedalusVtx * vertices, int c
 		count = kMaxVertices;
 
 	// Hack to fix the sun in Zelda OOT/MM
-	const f32 scale = ( g_ROM.ZELDA_HACK &&(gRDPOtherMode.L == 0x0c184241) ) ? 16.f : 32.f;
+	const f32 scale = ( ctx.romInfo->ZELDA_HACK &&(gRDPOtherMode.L == 0x0c184241) ) ? 16.f : 32.f;
 
 	for (int i = 0; i < count; ++i)
 	{

@@ -179,7 +179,7 @@ static const void * Read_8480_848F( u32 address )
 
 static const void * ReadFlashRam( u32 address )
 {
-	if (g_ROM.settings.SaveType == SAVE_TYPE_FLASH)
+	if (ctx.romInfo->settings.SaveType == SAVE_TYPE_FLASH)
 	{
 		if ((address&0x1FFFFFFF) == FLASHRAM_READ_ADDR)
 		{

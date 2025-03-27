@@ -92,7 +92,7 @@ bool Init_Audio(SystemContext& ctx)
 		if (ctx.preferences)
 		{
 			SRomPreferences rom_prefs;
-			if (ctx.preferences->GetRomPreferences(g_ROM.mRomID, &rom_prefs))
+			if (ctx.preferences->GetRomPreferences(ctx.romInfo->mRomID, &rom_prefs))
 			{
 				audio_plugin->SetMode(rom_prefs.AudioEnabled);
 			}
@@ -243,6 +243,7 @@ void Destroy_pifController(SystemContext& ctx)
 	}
 }
 
+
  bool Legacy_GraphicsContextInit(SystemContext& ctx) {
     return mGraphicsContext->Create(); 
 }
@@ -316,6 +317,7 @@ const std::vector<SysEntityEntry> gSysInitTable =
 #ifdef DAEDALUS_ENABLE_PROFILING
 	{"Profiler",             Profiler_Init,              Profiler_Fini},
 #endif
+
 	{"ROM Database",         Init_RomDB,              	 Destroy_RomDB},
 	{"ROM Settings",         Init_RomSettingsDB,     	 Destroy_RomSettingsDB},
 	{"InputManager",         Init_InputManager,       	 Destroy_InputManager},
@@ -446,6 +448,7 @@ static const std::vector<RomEntityEntry> gRomInitTable =
 
 bool System_Init()
 {
+
 	for (const auto& entry : gSysInitTable)
 	{
 		if (entry.init && !entry.init(ctx))
@@ -460,7 +463,8 @@ bool System_Init()
 
 bool System_Open(const std::filesystem::path &filename)
 {
-	g_ROM.mFileName = filename;
+
+	ctx.romInfo->mFileName = filename;
 
 	for (size_t i = 0; i < gRomInitTable.size(); ++i)
 	{

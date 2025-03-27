@@ -312,7 +312,7 @@ void DLParser_GBI1_EndDL( MicroCodeCommand command [[maybe_unused]] )
 void DLParser_GBI1_BranchZ( MicroCodeCommand command [[maybe_unused]] )
 {
 	// Zelda games do W checking instead of Z
-	if (g_ROM.ZELDA_HACK) 
+	if (ctx.romInfo->ZELDA_HACK) 
 	{ 
 		//OOT: Death Mountain
 		//MM: Clock Town

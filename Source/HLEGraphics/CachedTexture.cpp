@@ -39,7 +39,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "Utility/MathUtil.h"
 #include "Ultra/ultra_gbi.h"
-
+#include "System/SystemInit.h"
 
 #include "Utility/Profiler.h"
 
@@ -103,7 +103,7 @@ std::array<const ETextureFormat, 32> TFmt_hack =
 static ETextureFormat SelectNativeFormat(const TextureInfo & ti)
 {
 	u32 idx = (ti.GetFormat() << 2) | ti.GetSize();
-	return g_ROM.LOAD_T1_HACK ? TFmt_hack[idx] : TFmt[idx];
+	return ctx.romInfo->LOAD_T1_HACK ? TFmt_hack[idx] : TFmt[idx];
 }
 #endif
 
@@ -320,13 +320,13 @@ bool CachedTexture::HasExpired() const
 		if (!IsFresh())
 		{
 			//Hack to make WONDER PROJECT J2 work (need to reload some textures every frame!) //Corn
-			if( (g_ROM.GameHacks == WONDER_PROJECTJ2) && (mTextureInfo.GetTLutFormat() == kTT_RGBA16) && (mTextureInfo.GetSize() == G_IM_SIZ_8b) ) return true;
+			if( (ctx.romInfo->GameHacks == WONDER_PROJECTJ2) && (mTextureInfo.GetTLutFormat() == kTT_RGBA16) && (mTextureInfo.GetSize() == G_IM_SIZ_8b) ) return true;
 
 			//Hack for Worms Armageddon
-			if( (g_ROM.GameHacks == WORMS_ARMAGEDDON) && (mTextureInfo.GetSize() == G_IM_SIZ_8b) && (mTextureContentsHash != mTextureInfo.GenerateHashValue()) ) return true;
+			if( (ctx.romInfo->GameHacks == WORMS_ARMAGEDDON) && (mTextureInfo.GetSize() == G_IM_SIZ_8b) && (mTextureContentsHash != mTextureInfo.GenerateHashValue()) ) return true;
 
 			//Hack for Zelda OOT & MM text (only needed if there is not a general hash check) //Corn
-			if( g_ROM.ZELDA_HACK && (mTextureInfo.GetSize() == G_IM_SIZ_4b) && mTextureContentsHash != mTextureInfo.GenerateHashValue() ) return true;
+			if( ctx.romInfo->ZELDA_HACK && (mTextureInfo.GetSize() == G_IM_SIZ_4b) && mTextureContentsHash != mTextureInfo.GenerateHashValue() ) return true;
 
 			//Check if texture has changed
 			//if( mTextureContentsHash != mTextureInfo.GenerateHashValue() ) return true;
@@ -345,7 +345,7 @@ void CachedTexture::DumpTexture( const TextureInfo & ti, const std::shared_ptr<C
 
 	if( texture != nullptr && texture->HasData() )
 	{
-		std::filesystem::path dumpdir = g_ROM.settings.GameName;
+		std::filesystem::path dumpdir = ctx.romInfo->settings.GameName;
 
 		std::string filename = FORMAT_NAMESPACE::format("{}-{}_{}bpp-{}x{}-{}x{}.png", ti.GetLoadAddress(), ti.GetFormatName(), ti.GetSizeInBits(), 0, 0, ti.GetWidth(), ti.GetHeight() );
 		std::filesystem::path filepath;

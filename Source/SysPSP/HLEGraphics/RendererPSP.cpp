@@ -334,7 +334,7 @@ void RendererPSP::RenderTriangles( DaedalusVtx * p_vertices, u32 num_vertices, b
 			float scale_y = texture->GetScaleY();
 
 			// Hack to fix the sun in Zelda OOT/MM
-			if( g_ROM.ZELDA_HACK && (gRDPOtherMode.L == 0x0c184241) )	 //&& ti.GetFormat() == G_IM_FMT_I && (ti.GetWidth() == 64)
+			if( ctx.romInfo->ZELDA_HACK && (gRDPOtherMode.L == 0x0c184241) )	 //&& ti.GetFormat() == G_IM_FMT_I && (ti.GetWidth() == 64)
 			{
 				scale_x *= 0.5f;
 				scale_y *= 0.5f;
@@ -455,7 +455,7 @@ void RendererPSP::RenderUsingCurrentBlendMode( DaedalusVtx * p_vertices, u32 num
 	if( (gRDPOtherMode.alpha_compare == G_AC_THRESHOLD) && !gRDPOtherMode.alpha_cvg_sel )
 	{
 		u8 alpha_threshold = mBlendColour.GetA();
-		sceGuAlphaFunc( (alpha_threshold | g_ROM.ALPHA_HACK) ? GU_GEQUAL : GU_GREATER, alpha_threshold, 0xff);
+		sceGuAlphaFunc( (alpha_threshold | ctx.romInfo->ALPHA_HACK) ? GU_GEQUAL : GU_GREATER, alpha_threshold, 0xff);
 		sceGuEnable(GU_ALPHA_TEST);
 	}
 	else if (gRDPOtherMode.cvg_x_alpha)
@@ -513,7 +513,7 @@ void RendererPSP::RenderUsingCurrentBlendMode( DaedalusVtx * p_vertices, u32 num
 
 		if( details.InstallTexture )
 		{
-			u32 texture_idx = g_ROM.T1_HACK ? 1 : 0;
+			u32 texture_idx = ctx.romInfo->T1_HACK ? 1 : 0;
 
 			if( mBoundTexture[ texture_idx ] )
 			{
@@ -630,7 +630,7 @@ void RendererPSP::RenderUsingRenderSettings( const CBlendStates * states, Daedal
 
 			sceGuTexFunc( tfx, out.BlendAlphaMode == PBAM_RGB ? GU_TCC_RGB :  GU_TCC_RGBA );
 
-			if( g_ROM.T1_HACK )
+			if( ctx.romInfo->T1_HACK )
 			{
 				// NB if install_texture0 and install_texture1 are both set, 1 wins out
 				texture_idx = install_texture1;
@@ -1199,9 +1199,9 @@ void RendererPSP::DebugMux( const CBlendStates * states, DaedalusVtx * p_vertice
 		if (mUnhandledCombinerStates.find( mux ) == mUnhandledCombinerStates.end())
 		{
 			std::filesystem::path filepath = setBasePath("Mux");
-			// filepath /= g_ROM.settings.GameName.c_str();
+			// filepath /= ctx.romInfo->settings.GameName.c_str();
 			
-			// Dump_GetDumpDirectory(filepath.c_str(), g_ROM.settings.GameName.c_str());
+			// Dump_GetDumpDirectory(filepath.c_str(), ctx.romInfo->settings.GameName.c_str());
 			filepath /= "missing.mux";
 
 			FILE * fh = fopen(filepath.c_str(), mUnhandledCombinerStates.empty() ? "w" : "a");

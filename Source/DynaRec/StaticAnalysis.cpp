@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Core/R4300OpCode.h"
 #include "Core/CPU.h"
 #include "Core/ROM.h"
-
+#include "System/SystemInit.h"
 using namespace StaticAnalysis;
 
 namespace
@@ -201,7 +201,7 @@ void StaticAnalysis_LBU( OpCode op_code, RegisterUsage & recorder ) 			// Load B
 {
 	recorder.Record( RegBaseUse( op_code.base ), RegDstUse( op_code.rt ) );
 	//Should be safe to skip adding "op_code.offset" to check for inrage in RDRAM //Corn
-	if( !g_ROM.DISABLE_LBU_OPT ) recorder.Access( gCPUState.CPU[op_code.base]._u32_0 );	//PD and Banjo dont like this
+	if( !ctx.romInfo->DISABLE_LBU_OPT ) recorder.Access( gCPUState.CPU[op_code.base]._u32_0 );	//PD and Banjo dont like this
 }
 
 void StaticAnalysis_LH( OpCode op_code, RegisterUsage & recorder ) 		// Load Halfword
@@ -247,7 +247,7 @@ void StaticAnalysis_LW( OpCode op_code, RegisterUsage & recorder ) 			// Load Wo
 
 	// Causes P Mario to BSOD in intro, doesn't happen anymore //Salvy
 	//Should be safe to skip adding "op_code.offset" to check for inrage in RDRAM //Corn
-	if( g_ROM.GameHacks != PMARIO )	recorder.Access( gCPUState.CPU[op_code.base]._u32_0 );	// Breaks Paper Mario
+	if( ctx.romInfo->GameHacks != PMARIO )	recorder.Access( gCPUState.CPU[op_code.base]._u32_0 );	// Breaks Paper Mario
 }
 
 void StaticAnalysis_LWU( OpCode op_code, RegisterUsage & recorder ) 			// Load Word Unsigned
@@ -274,7 +274,7 @@ void StaticAnalysis_SH( OpCode op_code, RegisterUsage & recorder ) 			// Store H
 	recorder.Record( RegBaseUse( op_code.base ), RegSrcUse( op_code.rt ) );
 
 	// Causes Zelda MM to BSOD when you enter clock town
-	if( g_ROM.GameHacks != ZELDA_MM ) recorder.Access( gCPUState.CPU[op_code.base]._u32_0 );
+	if( ctx.romInfo->GameHacks != ZELDA_MM ) recorder.Access( gCPUState.CPU[op_code.base]._u32_0 );
 }
 
 void StaticAnalysis_SB( OpCode op_code, RegisterUsage & recorder ) 			// Store Byte

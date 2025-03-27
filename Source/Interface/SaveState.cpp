@@ -199,7 +199,7 @@ bool SaveState_SaveToFile( const std::filesystem::path &filename )
 	stream << SAVESTATE_PROJECT64_MAGIC_NUMBER;
 	stream << gRamSize;
 	ROMHeader rom_header;
-	memcpy(&rom_header, &g_ROM.rh, 64);
+	memcpy(&rom_header, &ctx.romInfo->rh, 64);
 	ROMFile::ByteSwap_3210(&rom_header, 64);
 	stream << rom_header;
 	stream << std::max< u32 >(CPU_GetVideoInterruptEventCount(), 1);
@@ -273,12 +273,12 @@ bool SaveState_LoadFromFile( const std::filesystem::path &filename )
 
 	RomID	new_rom_id( rom_header.CRC1, rom_header.CRC2, rom_header.CountryID );
 
-	if(g_ROM.mRomID != new_rom_id)
+	if(ctx.romInfo->mRomID != new_rom_id)
 	{
 		//ToDo: Give Option to switch Roms to one listed in SaveState if available.
 		DBGConsole_Msg(0, "ROM name in savestate is different from the name of the currently loaded ROM: %x-%x-%02x, %x-%x-%02x\n",
 
-			g_ROM.mRomID.CRC[0], g_ROM.mRomID.CRC[1], g_ROM.mRomID.CountryID,
+			ctx.romInfo->mRomID.CRC[0], ctx.romInfo->mRomID.CRC[1], ctx.romInfo->mRomID.CountryID,
 			new_rom_id.CRC[0], new_rom_id.CRC[1], new_rom_id.CountryID);
 		return false;
 	}

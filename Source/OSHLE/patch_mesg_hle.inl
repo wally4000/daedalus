@@ -221,7 +221,7 @@ TEST_DISABLE_MESG_FUNCS
 	// Zelda Hack handled now in Patch_RecurseAndFind
 	// osSendMesg brakes OOT's in-game menu
 	// ToDo : Fix Me
-	/*if( g_ROM.GameHacks == ZELDA_OOT )
+	/*if( ctx.romInfo->GameHacks == ZELDA_OOT )
 	{
 		return PATCH_RET_NOT_PROCESSED0(osSendMesg);
 	}*/

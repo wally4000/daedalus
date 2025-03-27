@@ -124,10 +124,7 @@ const char *	ROM_GetCountryNameFromID( u8 country_id );
 u32				ROM_GetTvTypeFromID( u8 country_id );
 const char *	ROM_GetCicTypeName( ECicType cic_type );
 
-//*****************************************************************************
-// Externs (urgh)
-//*****************************************************************************
-extern RomInfo g_ROM;
+
 
 #if defined(DAEDALUS_ENABLE_DYNAREC_PROFILE)
 extern u32 g_dwNumFrames;

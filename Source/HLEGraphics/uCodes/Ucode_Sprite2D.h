@@ -82,7 +82,7 @@ static void DLParser_Sprite2DScaleFlip( MicroCodeCommand command, Sprite2DInfo *
 // 	u32 height = sprite->height + sprite->imageY;
 // 	u32 pitch = (sprite->stride << sprite->size) >> 1;
 
-// 	if(g_ROM.GameHacks == WCW_NITRO)
+// 	if(ctx.romInfo->GameHacks == WCW_NITRO)
 // 	{
 // 		u32 scaleY = (u32)info.scaleY;
 // 		width *= scaleY;
@@ -136,7 +136,7 @@ static void DLParser_Sprite2DScaleFlip( MicroCodeCommand command, Sprite2DInfo *
 // 	f32 ult = sprite->imageY; //top
 // 	f32 lrs = sprite->imageX + sprite->imageW; //right
 // 	f32 lrt = sprite->imageY + sprite->height; //bottom
-// 	if (g_ROM.GameHacks == WCW_NITRO)
+// 	if (ctx.romInfo->GameHacks == WCW_NITRO)
 // 	{
 // 		ult /= info.scaleY;
 // 		lrt /= info.scaleY;

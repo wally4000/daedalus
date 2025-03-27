@@ -168,7 +168,7 @@ CController::~CController() {}
 
 bool CController::OnRomOpen()
 {
-	ESaveType save_type  = g_ROM.settings.SaveType;
+	ESaveType save_type  = ctx.romInfo->settings.SaveType;
 	mpPifRam = (u8 *)g_pMemoryBuffers[MEM_PIF_RAM];
 
 	if ( mpEepromData )

@@ -44,6 +44,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "OSHLE/OSMesgQueue.h"
 #include "OSHLE/patch.h"
 #include "OSHLE/patch_symbols.h"
+#include "System/SystemInit.h"
 #include "Ultra/ultra_os.h"
 #include "Ultra/ultra_R4300.h"
 #include "Ultra/ultra_rcp.h"
@@ -454,7 +455,7 @@ bool Patch_Hacks( PatchSymbol * ps )
 	// osSendMesg - Causes Animal Corssing to freeze after the N64 logo
 	// osSendMesg - Causes Clay Fighter 63 1-3 to not boot
 	//
-	switch( g_ROM.GameHacks )
+	switch( ctx.romInfo->GameHacks )
 	{
 	case ZELDA_OOT:
 	case ANIMAL_CROSSING:
@@ -964,7 +965,7 @@ static void Patch_FlushCache()
 {
 	std::filesystem::path path = setBasePath("SaveGames/Cache");
 	std::filesystem::create_directories(path);
-	std::filesystem::path name = g_ROM.mFileName.filename();
+	std::filesystem::path name = ctx.romInfo->mFileName.filename();
 	name.replace_extension("hle");
 	path /= name;
 	std::ofstream fp(path, std::ios::binary);
@@ -1016,7 +1017,7 @@ static void Patch_FlushCache()
 static bool Patch_GetCache()
 {
 	std::filesystem::path name = setBasePath("SaveGames/Cache");
-	std::filesystem::path romName = g_ROM.mFileName.filename();
+	std::filesystem::path romName = ctx.romInfo->mFileName.filename();
 	romName.replace_extension(".hle");
 	name /= romName;
 	std::cout << name << std::endl;

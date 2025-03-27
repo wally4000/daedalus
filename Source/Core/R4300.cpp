@@ -40,6 +40,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifdef DAEDALUS_PSP
 #include <pspfpu.h>
 #include "SysPSP/Math/Math.h"	// VFPU Math
+#include "System/SystemInit.h"
 
 #define SIM_DOUBLES
 #else
@@ -3285,7 +3286,7 @@ CPU_Instruction	R4300_GetInstructionHandler( OpCode op_code )
 void R4300_Init()
 {
 #ifdef SIM_DOUBLES
-	if(g_ROM.GameHacks == BUCK_BUMBLE)
+	if(ctx.romInfo->GameHacks == BUCK_BUMBLE)
 	{
 		R4300Cop1DInstruction[Cop1OpFunc_ADD]	= R4300_Cop1_D_ADD_2;
 	}
@@ -3295,7 +3296,7 @@ void R4300_Init()
 	}
 
 	// Mario Party Draft mini game, Earth Worm Jim, Tom and Jerry, Power Puff Girls
-    if( g_ROM.DISABLE_SIM_CVT_D_S )
+    if( ctx.romInfo->DISABLE_SIM_CVT_D_S )
 	{
 		R4300Cop1SInstruction[Cop1OpFunc_CVT_D] = R4300_Cop1_S_CVT_D_2;
 	}
@@ -3305,7 +3306,7 @@ void R4300_Init()
 	}
 #endif
 #ifdef DAEDALUS_PSP
-	if(g_ROM.SET_ROUND_MODE)
+	if(ctx.romInfo->SET_ROUND_MODE)
 	{
 		R4300Cop1Instruction[Cop1Op_CTC1]	= R4300_Cop1_CTC1_2;
 	}

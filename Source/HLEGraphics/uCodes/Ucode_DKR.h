@@ -99,7 +99,7 @@ void DLParser_GBI0_Vtx_DKR( MicroCodeCommand command )
 	u32 n = ((command.inst.cmd0 >> 19) & 0x1F);
 
 	// Increase by one num verts for DKR
-	if( g_ROM.GameHacks == DKR ) n++;
+	if( ctx.romInfo->GameHacks == DKR ) n++;
 
 
 	DL_PF("    Address[0x%08x] v0[%d] Num[%d]", address, v0, n);

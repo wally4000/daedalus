@@ -184,7 +184,7 @@ void DMA_SI_CopyToDRAM( )
 
 	//Skipping this IRQ fixes allows Body Harvest, Nightmare Creatures and Cruisn' USA to boot
 	//ToDo: Implement Delay SI, PJ64 uses that option to make these games boot..
-	if (g_ROM.GameHacks != BODY_HARVEST)
+	if (ctx.romInfo->GameHacks != BODY_HARVEST)
 		R4300_Interrupt_UpdateCause3();
 }
 
@@ -236,11 +236,11 @@ static void OnCopiedRom()
 #endif
 
 		// Set RDRAM size
-		u32 addr = (g_ROM.cic_chip != CIC_6105) ? (u32)0x318 : (u32)0x3F0;
+		u32 addr = (ctx.romInfo->cic_chip != CIC_6105) ? (u32)0x318 : (u32)0x3F0;
 		*(u32 *)(g_pu8RamBase + addr) = gRamSize;
 
 		// Azimer's DK64 hack, it makes DK64 boot!
-		if(g_ROM.GameHacks == DK64)
+		if(ctx.romInfo->GameHacks == DK64)
 			*(u32 *)(g_pu8RamBase + 0x2FE1C0) = 0xAD170014;
 	}
 }
@@ -282,7 +282,7 @@ void DMA_PI_CopyToRDRAM()
 		u32       src_size = (MemoryRegionSizes[MEM_SAVE]);
 		cart_address -= PI_DOM2_ADDR2;
 
-		if (g_ROM.settings.SaveType != SAVE_TYPE_FLASH)
+		if (ctx.romInfo->settings.SaveType != SAVE_TYPE_FLASH)
 			copy_succeeded = DMA_HandleTransfer( g_pu8RamBase, mem_address, gRamSize, p_src, cart_address, src_size, pi_length_reg );
 		else
 			copy_succeeded = DMA_FLASH_CopyToDRAM(mem_address, cart_address, pi_length_reg);
@@ -369,7 +369,7 @@ void DMA_PI_CopyFromRDRAM()
 		u32	dst_size = MemoryRegionSizes[MEM_SAVE];
 		cart_address -= PI_DOM2_ADDR2;
 
-		if (g_ROM.settings.SaveType != SAVE_TYPE_FLASH)
+		if (ctx.romInfo->settings.SaveType != SAVE_TYPE_FLASH)
 			copy_succeeded = DMA_HandleTransfer( p_dst, cart_address, dst_size, g_pu8RamBase, mem_address, gRamSize, pi_length_reg );
 		else
 			copy_succeeded = DMA_FLASH_CopyFromDRAM(mem_address, pi_length_reg);

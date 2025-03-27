@@ -32,7 +32,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <vector>
 #include <fstream>
 #include <algorithm>
-
+#include "System/SystemInit.h"
 static void InitMempackContent();
 
 static std::filesystem::path gSaveFileName;
@@ -45,7 +45,7 @@ static bool				gMempackDirty;
 bool Save_Reset()
 {
 	const char * ext;
-	switch (g_ROM.settings.SaveType)
+	switch (ctx.romInfo->settings.SaveType)
 	{
 	case SAVE_TYPE_EEP4K:
 		ext = ".sav";
@@ -74,7 +74,7 @@ bool Save_Reset()
 	if (gSaveSize > 0)
 	{
 		std::filesystem::path saveDir = setBasePath("SaveGames");
-		std::filesystem::path romName = g_ROM.mFileName;
+		std::filesystem::path romName = ctx.romInfo->mFileName;
 		gSaveFileName = saveDir / (romName.filename().string());
 		gSaveFileName.replace_extension(ext);
 		std::ifstream file(gSaveFileName, std::ios::in | std::ios::binary);
@@ -105,7 +105,7 @@ bool Save_Reset()
 	// init mempack, we always assume the presence of the mempack for simplicity 
 	{	
 		std::filesystem::path saveDir = setBasePath("SaveGames");
-		std::filesystem::path romName = g_ROM.mFileName;
+		std::filesystem::path romName = ctx.romInfo->mFileName;
 		gMempackFileName = saveDir / (romName.filename().string());
 		gMempackFileName.replace_extension(".mpk");
 		bool fileExists = std::filesystem::exists(gMempackFileName); 
@@ -150,7 +150,7 @@ void Save_MarkMempackDirty()
 
 void Save_Flush()
 {
-	if (gSaveDirty && g_ROM.settings.SaveType != SAVE_TYPE_UNKNOWN)
+	if (gSaveDirty && ctx.romInfo->settings.SaveType != SAVE_TYPE_UNKNOWN)
 	{
 
 		DBGConsole_Msg(0, "Saving to [C%s]", gSaveFileName.string().c_str());

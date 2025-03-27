@@ -485,7 +485,7 @@ u32 DLParser_Process(u32 instruction_limit, DLDebugOutput * debug_output)
 	}
 
 	// Update Screen only when something is drawn, otherwise several games ex Army Men will flash or shake.
-	if( g_ROM.GameHacks != CHAMELEON_TWIST_2 ) ctx.graphicsPlugin->UpdateScreen();
+	if( ctx.romInfo->GameHacks != CHAMELEON_TWIST_2 ) ctx.graphicsPlugin->UpdateScreen();
 
 	OSTask * pTask = (OSTask *)(g_pu8SpMemBase + 0x0FC0);
 	u32 code_base = (u32)pTask->t.ucode & 0x1fffffff;
@@ -542,7 +542,7 @@ u32 DLParser_Process(u32 instruction_limit, DLDebugOutput * debug_output)
 	}
 
 	// Hack for Chameleon Twist 2, only works if screen is update at last
-	if( g_ROM.GameHacks == CHAMELEON_TWIST_2 ) 
+	if( ctx.romInfo->GameHacks == CHAMELEON_TWIST_2 ) 
 		ctx.graphicsPlugin->UpdateScreen();
 
 #ifdef DAEDALUS_DEBUG_DISPLAYLIST
@@ -761,7 +761,7 @@ void DLParser_SetScissor( MicroCodeCommand command )
 	scissors.bottom  = command.scissor.y1>>2;
 
 	// Hack to correct Super Bowling's right and left screens
-	if ( g_ROM.GameHacks == SUPER_BOWLING && g_CI.Address%0x100 != 0 )
+	if ( ctx.romInfo->GameHacks == SUPER_BOWLING && g_CI.Address%0x100 != 0 )
 	{
 		scissors.left += 160;
 		scissors.right += 160;
@@ -880,7 +880,7 @@ void DLParser_TexRect( MicroCodeCommand command )
 	//if( tex_rect.x0 >= tex_rect.x1 )
 
 	// Hack for Banjo Tooie shadow
-	if (g_ROM.GameHacks == BANJO_TOOIE && gRDPOtherMode.L == 0x00504241)
+	if (ctx.romInfo->GameHacks == BANJO_TOOIE && gRDPOtherMode.L == 0x00504241)
 	{
 		return;
 	}

@@ -226,7 +226,7 @@ void BaseRenderer::SetVIScales()
 	}
 
 	f32 vi_width = (hend-hstart) * fScaleX;
-	f32 vi_height = (vend-vstart) * fScaleY * (g_ROM.TvType == OS_TV_PAL ? 1.0041841f : 1.0126582f);
+	f32 vi_height = (vend-vstart) * fScaleY * (ctx.romInfo->TvType == OS_TV_PAL ? 1.0041841f : 1.0126582f);
 
 	//printf("width[%d] ViWidth[%f] ViHeight[%f]\n", width, vi_width, vi_height);
 
@@ -1543,7 +1543,7 @@ void BaseRenderer::ModifyVertexInfo(u32 whered, u32 vert, u32 val)
 
 		case G_MWO_POINT_XYSCREEN:
 			{
-				if( g_ROM.GameHacks == TARZAN ) return;
+				if(ctx.romInfo->GameHacks == TARZAN ) return;
 
 				s16 x = (u16)(val >> 16) >> 2;
 				s16 y = (u16)(val & 0xFFFF) >> 2;
@@ -1631,7 +1631,7 @@ void BaseRenderer::UpdateTileSnapshots( u32 tile_idx )
 	UpdateTileSnapshot( 0, tile_idx );
 
 #if defined(DAEDALUS_PSP)
-	if ( g_ROM.LOAD_T1_HACK & !gRDPOtherMode.text_lod )
+	if ( ctx.romInfo->LOAD_T1_HACK & !gRDPOtherMode.text_lod )
 	{
 		// LOD is disabled - use two textures
 		UpdateTileSnapshot( 1, tile_idx + 1 );
@@ -1675,7 +1675,7 @@ static void T1Hack(const TextureInfo & ti0, std::shared_ptr<CNativeTexture> text
 	   (ti1.GetWidth()  == ti0.GetWidth()) &&
 	   (ti1.GetHeight() == ti0.GetHeight()))
 	{
-		if( g_ROM.T1_HACK )
+		if( ctx.romInfo->T1_HACK )
 		{
 			const u32 * src = static_cast<const u32*>(texture0->GetData());
 			u32 * dst       = static_cast<      u32*>(texture1->GetData());
@@ -1789,9 +1789,9 @@ void BaseRenderer::UpdateTileSnapshot( u32 index, u32 tile_idx )
 		// Do a hack just for Zelda for now..
 		//
 #ifdef DAEDALUS_PSP
-		mode_u = g_ROM.ZELDA_HACK ? GU_CLAMP : GU_REPEAT;
+		mode_u = ctx.romInfo->ZELDA_HACK ? GU_CLAMP : GU_REPEAT;
 #else
-		mode_u = g_ROM.ZELDA_HACK ? GL_CLAMP : (rdp_tile.mirror_s ? GL_MIRRORED_REPEAT : GL_REPEAT);
+		mode_u = ctx.romInfo->ZELDA_HACK ? GL_CLAMP : (rdp_tile.mirror_s ? GL_MIRRORED_REPEAT : GL_REPEAT);
 #endif
 	}
 
@@ -1983,7 +1983,7 @@ void BaseRenderer::SetProjection(const u32 address, bool bReplace)
 		//it renders at Z cordinate = 0.0f that gets clipped away.
 		//so we translate them a bit along Z to make them stick :) //Corn
 		//
-		if( g_ROM.ZELDA_HACK )
+		if( ctx.romInfo->ZELDA_HACK )
 		mProjectionMat[3][2] += 0.4f;
 		if( gGlobalPreferences.ViewportType == VT_FULLSCREEN_HD )
 		mProjectionMat[0][0] *= HD_SCALE;//proper 16:9 scale
@@ -2058,7 +2058,7 @@ void BaseRenderer::SetWorldView(const u32 address, bool bPush, bool bReplace)
 			// Load ModelView matrix
 			MatrixFromN64FixedPoint( mModelViewStack[mModelViewTop], address);
 			//Hack to make GEX games work, need to multiply all elements with 2.0 //Corn
-			if (g_ROM.GameHacks == GEX_GECKO) {
+			if (ctx.romInfo->GameHacks == GEX_GECKO) {
 				mModelViewStack[mModelViewTop] *= 2.0f;  // Multiply entire matrix by 2
 			}
 		}

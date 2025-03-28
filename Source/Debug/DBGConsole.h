@@ -25,6 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Base/Types.h"
 
 #include "Base/Macros.h"
+#include <memory>
 
 #ifdef DAEDALUS_DEBUG_CONSOLE
 
@@ -34,7 +35,7 @@ void Destroy_DebugConsole();
 class CDebugConsole 
 {
 	public:
-		virtual ~CDebugConsole();
+	virtual ~CDebugConsole() {};
 
 		virtual void Msg( u32 type, const char * format, ... ) = 0;
 

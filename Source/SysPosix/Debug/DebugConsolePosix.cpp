@@ -50,6 +50,7 @@ class IDebugConsole : public CDebugConsole
 };
 
 std::unique_ptr<CDebugConsole> gDebugConsole;
+
 bool Init_DebugConsole()
 {
 	gDebugConsole = std::make_unique<IDebugConsole>();

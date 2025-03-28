@@ -67,6 +67,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
 SystemContext ctx; 
+SystemContext::SystemContext()
+{
+	romInfo = std::make_unique<RomInfo>();
+}
 
 struct SysEntityEntry
 {
@@ -256,15 +260,13 @@ bool Init_ROMBuffer(SystemContext& ctx)
 {
 	// Create memory heap used for either ROM Cache or ROM buffer
 	// We do this to avoid memory fragmentation
-	 ctx.gROMFileMemory = std::make_unique<CROMFileMemory>();
-	 ctx.romFileCache = std::make_unique<ROMFileCache>();
+	RomBuffer::Create();
 
 	return true;
 }
 
 static void Destroy_ROMBuffer(SystemContext& ctx) {
-	ctx.romFileCache->Close(); // Needed?
-	ctx.romFileCache.reset(); 
+	// ctx.gROMFileMemory.reset();
 }
 #ifdef DAEDALUS_PSP
 bool Init_PSPVideoMemoryManager(SystemContext& ctx)
@@ -464,8 +466,11 @@ bool System_Init()
 bool System_Open(const std::filesystem::path &filename)
 {
 
-	ctx.romInfo->mFileName = filename;
 
+	if (!ctx.romInfo)
+		ctx.romInfo = std::make_unique<RomInfo>();
+	ctx.romInfo->mFileName = filename;
+	
 	for (size_t i = 0; i < gRomInitTable.size(); ++i)
 	{
 		const auto& entry = gRomInitTable[i];

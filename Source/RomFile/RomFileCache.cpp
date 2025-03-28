@@ -105,11 +105,11 @@ ROMFileCache::~ROMFileCache()
 //*****************************************************************************
 //
 //*****************************************************************************
-bool	ROMFileCache::Open( std::shared_ptr<ROMFile> p_rom_file )
+bool	ROMFileCache::Open( std::unique_ptr<ROMFile> p_rom_file )
 {
-	mpROMFile = p_rom_file;
+	mpROMFile = std::move(p_rom_file);
 
-	u32		rom_size( p_rom_file->GetRomSize() );
+	u32 rom_size = mpROMFile->GetRomSize(); 
 	u32		rom_chunks( AlignPow2( rom_size, CHUNK_SIZE ) / CHUNK_SIZE );
 
 	mChunkMapEntries = rom_chunks;
@@ -136,9 +136,9 @@ bool	ROMFileCache::Open( std::shared_ptr<ROMFile> p_rom_file )
 void	ROMFileCache::Close()
 {
 	delete [] mpChunkMap;
-	mpChunkMap = nullptr;
+	mpChunkMap = NULL;
 	mChunkMapEntries = 0;
-	mpROMFile = nullptr;
+	mpROMFile = NULL;
 }
 
 //*****************************************************************************

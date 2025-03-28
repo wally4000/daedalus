@@ -22,7 +22,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <memory>
  #include "RomFile/RomFileCache.h"
  #include "Core/ROM.h" 
-
 #ifdef DAEDALUS_PSP
 class CVideoMemoryManager;
 #endif
@@ -38,7 +37,7 @@ class CROMBuffer;
 class CDebugConsole;
 class CController;
 struct SystemContext {
-
+    SystemContext(); 
     std::unique_ptr<CGraphicsPlugin> graphicsPlugin;
     std::unique_ptr<CAudioPlugin> audioPlugin;
     std::unique_ptr<CPreferences> preferences;
@@ -46,7 +45,6 @@ struct SystemContext {
     std::unique_ptr<CRomSettingsDB> romSettingsDB;
     std::unique_ptr<CInputManager> inputManager;
     std::unique_ptr<CROMFileMemory> gROMFileMemory;
-    std::unique_ptr<ROMFileCache> romFileCache;
     std::unique_ptr<CController> pifController;
     std::unique_ptr<RomInfo> romInfo;
 

@@ -216,7 +216,6 @@ void HandleEndOfFrame()
 
 int main(int argc, char* argv[])
 {
-	ctx.romInfo = std::make_unique<RomInfo>(); 
 	if( Initialize() )
 	{
 #ifdef DAEDALUS_BATCH_TEST_ENABLED
@@ -230,7 +229,9 @@ int main(int argc, char* argv[])
 		//Ex. from PSPLink -> ./Daedalus.prx "Roms/StarFox 64.v64" //Corn
 		if( argc > 1 )
 		{
+			ctx.romInfo->mFileName = argv[1];
 			printf("Loading %s\n", argv[1] );
+			
 			System_Open( argv[1] );
 			CPU_Run();
 			System_Close();

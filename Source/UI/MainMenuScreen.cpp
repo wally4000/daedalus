@@ -22,6 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
 #include <string>
+#include <filesystem>
 
 #include "Core/CPU.h"
 #include "Core/ROM.h"
@@ -99,7 +100,7 @@ class IMainMenuScreen : public CMainMenuScreen, public CUIScreen
 
 				bool				IsOptionValid( EMenuOption option ) const;
 
-				void				OnRomSelected( const char * rom_filename );
+				void				OnRomSelected( const std::filesystem::path& filename);
 				void				OnSavestateSelected( const char * savestate_filename );
 				void				OnStartEmulation();
 
@@ -138,7 +139,7 @@ IMainMenuScreen::IMainMenuScreen( CUIContext * p_context )
 	mSelectedRomComponent = CSelectedRomComponent::Create( mpContext, [this]() { this->OnStartEmulation(); });
 
 	mOptionComponents[ MO_GLOBAL_SETTINGS ]	= CGlobalSettingsComponent::Create( mpContext );
-	mOptionComponents[ MO_ROMS ] 			= CRomSelectorComponent::Create( mpContext, [this](const char *rom ) { this->OnRomSelected(rom); } );
+	mOptionComponents[ MO_ROMS ] 			= CRomSelectorComponent::Create( mpContext, [this](const std::filesystem::path& rom) { this->OnRomSelected(rom); } );
 	mOptionComponents[ MO_SELECTED_ROM ]	= mSelectedRomComponent;
 	mOptionComponents[ MO_SAVESTATES ]		= CSavestateSelectorComponent::Create( mpContext, CSavestateSelectorComponent::AT_LOADING,[this](const char* savestate) { this->OnSavestateSelected(savestate); }, std::filesystem::path());
 	mOptionComponents[ MO_ABOUT ]			= CAboutComponent::Create( mpContext );
@@ -204,15 +205,14 @@ s32	IMainMenuScreen::GetNextValidOption() const
 
 //
 
-bool	IMainMenuScreen::IsOptionValid( EMenuOption option ) const
+bool IMainMenuScreen::IsOptionValid(EMenuOption option) const
 {
-	// Rom Settings is only valid if a rom has already been selected
-	if( option == MO_SELECTED_ROM )
+	if (option == MO_SELECTED_ROM)
 	{
-		return !ctx.romInfo->mFileName.empty();
+		return ctx.romInfo && !ctx.romInfo->mFileName.empty();
 	}
+	return true;
 }
-
 
 
 //
@@ -298,7 +298,7 @@ void	IMainMenuScreen::Run()
 	mGraphicsContext->ClearAllSurfaces();
 }
 
-void IMainMenuScreen::OnRomSelected(const char * rom_filename)
+void IMainMenuScreen::OnRomSelected(const std::filesystem::path& rom_filename)
 {
 	u32			rom_size;
 	ECicType	boot_type;

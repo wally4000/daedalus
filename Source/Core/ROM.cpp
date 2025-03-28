@@ -559,7 +559,7 @@ bool ROM_GetRomName( const std::filesystem::path &filename, std::string & game_n
 
 bool ROM_GetRomDetailsByFilename( const std::filesystem::path &filename, RomID * id, u32 * rom_size, ECicType * boot_type )
 {
-	return ctx.romDB->QueryByFilename( filename.c_str(), id, rom_size, boot_type );
+	return ctx.romDB->QueryByFilename( filename, id, rom_size, boot_type );
 }
 
 bool ROM_GetRomDetailsByID( const RomID & id, u32 * rom_size, ECicType * boot_type )

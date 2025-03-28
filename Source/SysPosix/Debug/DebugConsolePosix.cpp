@@ -60,7 +60,6 @@ void Destroy_DebugConsole()
 {
 	gDebugConsole.reset();
 }
-CDebugConsole::~CDebugConsole() {}
 
 
 IDebugConsole::IDebugConsole() {}

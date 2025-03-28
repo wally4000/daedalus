@@ -30,7 +30,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 struct TextureInfo;
 
 class CTextureCache;
-extern std::unique_ptr<CTextureCache> gTextureCache;
+
+
 class CTextureCache 
 {
 public:
@@ -38,7 +39,7 @@ public:
 	virtual ~CTextureCache();
 
 	std::shared_ptr<CNativeTexture>	GetOrCreateTexture(const TextureInfo & ti);
-
+	void		Clear();
 	void		PurgeOldTextures();
 	void		DropTextures();
 

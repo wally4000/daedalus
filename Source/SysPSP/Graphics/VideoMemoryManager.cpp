@@ -3,9 +3,9 @@
 
 #include "Base/Types.h"
 #include "SysPSP/Graphics/VideoMemoryManager.h"
-#include <stdio.h>
+#include <cstring>
 #include <pspge.h>
-
+#include <psputils.h>
 
 
 const u32 ERAM(3 * 512 * 1024);	//Amount of extra (volatile)RAM to use for textures in addition to VRAM //Corn
@@ -59,6 +59,19 @@ bool CVideoMemoryManager::Alloc( u32 size, void ** data, bool * isvidmem )
 	*isvidmem = false;
 	return false;
 }
+
+// void CVideoMemoryManager::Reset()
+// {
+//     if (mVideoMemoryHeap)
+//     {
+//         mVideoMemoryHeap->Reset(); 
+//     }
+
+//     if (mRamMemoryHeap)
+//     {
+//         mRamMemoryHeap->Reset(); 
+//     }
+// }
 
 
 void  CVideoMemoryManager::Free(void * ptr)

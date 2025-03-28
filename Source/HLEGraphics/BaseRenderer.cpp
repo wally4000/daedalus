@@ -578,7 +578,7 @@ void BaseRenderer::FlushTris()
 //improves quality but fails in some games (Rocket Robot/Lego racers)//Corn
 //*****************************************************************************
 // ALIGNED_TYPE(const v4, NDCPlane[6], 16) =
-std::array<const glm::vec4, 6> NDCPlane = 
+alignas(DATA_ALIGN) std::array<const glm::vec4, 6> NDCPlane = 
 {
 	glm::vec4(  0.f,  0.f, -1.f, -1.f ),	// near
 	glm::vec4(  0.f,  0.f,  1.f, -1.f ),	// far
@@ -1744,7 +1744,7 @@ void BaseRenderer::UpdateTileSnapshot( u32 index, u32 tile_idx )
 		}
 		else
 		{
-			std::shared_ptr<CNativeTexture> texture = gTextureCache->GetOrCreateTexture( ti );
+			std::shared_ptr<CNativeTexture> texture = ctx.textureCache->GetOrCreateTexture( ti );
 
 			if( texture != NULL && texture != mBoundTexture[ index ] )
 			{
@@ -1912,7 +1912,7 @@ void BaseRenderer::PrepareTexRectUVs(TexCoord * puv0, TexCoord * puv1)
 //*****************************************************************************
 std::shared_ptr<CNativeTexture> BaseRenderer::LoadTextureDirectly( const TextureInfo & ti )
 {
-	std::shared_ptr<CNativeTexture> texture = gTextureCache->GetOrCreateTexture( ti );
+	std::shared_ptr<CNativeTexture> texture = ctx.textureCache->GetOrCreateTexture( ti );
 	if (texture)
 	{
 		texture->InstallTexture();

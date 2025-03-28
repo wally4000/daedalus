@@ -28,12 +28,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "HLEGraphics/DisplayListDebugger.h"
 
 #include "Graphics/GraphicsContext.h"
+#include "SysPSP/Graphics/VideoMemoryManager.h"
 #include "HLEGraphics/GraphicsPlugin.h"
+
 
 #include "Utility/Profiler.h"
 #include "Utility/FramerateLimiter.h"
 #include "Interface/Preferences.h"
 #include "System/Timing.h"
+#include "System/SystemInit.h"
+
 
 #include <pspdebug.h>
 
@@ -150,7 +154,6 @@ bool CGraphicsPluginImpl::Initialise()
 		return false;
 	}
 	
-	gTextureCache = std::make_unique<CTextureCache>();
 
 	if (!DLParser_Initialise())
 	{
@@ -265,8 +268,13 @@ void CGraphicsPluginImpl::RomClosed()
 	DBGConsole_Msg(0, "Finalising PSPGraphics");
 	#endif
 	DLParser_Finalise();
-	gTextureCache.reset();
+	if (ctx.textureCache)
+	{
+		ctx.textureCache->Clear();
+		ctx.textureCache.reset();
+	}
 	DestroyRenderer();
+
 }
 
 class std::unique_ptr<CGraphicsPlugin>	CreateGraphicsPlugin()

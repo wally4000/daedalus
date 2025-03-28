@@ -47,6 +47,7 @@ public:
 	~CMemoryHeap();
 	void *		Alloc( u32 size );
 	void		Free( void * ptr );
+	void		Reset();
 
 	bool		IsFromHeap( void * ptr ) const;		// Does this chunk of memory belong to this heap?
 #ifdef DAEDALUS_DEBUG_MEMORY

@@ -115,7 +115,7 @@ void	ISplashScreen::Render()
 
 #if DAEDALUS_PSP
 	mpContext->SetFontStyle( CUIContext::FS_HEADING );
-	mpContext->DrawTextAlign(0,SCREEN_WIDTH,AT_CENTRE,SCREEN_HEIGHT-50,g32bitColorMode? "32Bit Color Selected" : "16Bit Color Selected",DrawTextUtilities::TextWhite);
+	mpContext->DrawTextAlign(0,SCREEN_WIDTH,AT_CENTRE,SCREEN_HEIGHT-50,g32bitColorMode? "Loading Please Wait..." : "16Bit Color Selected",DrawTextUtilities::TextWhite);
 #endif
 }
 

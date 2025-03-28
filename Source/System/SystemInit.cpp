@@ -29,7 +29,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "RomFile/RomSettings.h"
 #include "Input/SDL/InputManagerSDL.h" // Really needs to be one big header file for all platforms
 #include "Interface/RomDB.h"
-
+#include "HLEGraphics/TextureCache.h"
 #ifdef DAEDALUS_PSP
 #include "SysPSP/Graphics/VideoMemoryManager.h"
 #endif
@@ -149,6 +149,7 @@ bool Init_GraphicsPlugin(SystemContext& ctx)
 	if (plugin)
 	{
 		ctx.graphicsPlugin = std::move(plugin);
+		ctx.textureCache = std::make_unique<CTextureCache>();
 		return true;
 	}
 	return false;
@@ -159,6 +160,7 @@ void Destroy_GraphicsPlugin(SystemContext& ctx)
 	{
 		ctx.graphicsPlugin->RomClosed();
 		ctx.graphicsPlugin.reset();
+		ctx.textureCache.reset();
 	}
 }
 
@@ -386,7 +388,12 @@ static void Legacy_CPU_RomClose(SystemContext& ctx) {
 }
 
 static bool Controller_Reset(SystemContext& ctx) {
+	if (!ctx.pifController)
+	{
+		ctx.pifController = std::make_unique<CController>();
+	}
 	return ctx.pifController->OnRomOpen(); 
+
 }
 
 static void Controller_RomClose(SystemContext& ctx) {
@@ -465,21 +472,28 @@ bool System_Init()
 
 bool System_Open(const std::filesystem::path &filename)
 {
+	
+	// // Close any previously loaded ROM
+	// System_Close();
 
 
+
+	// #ifdef DAEDALUS_PSP
+
+	// if (ctx.videoMemoryManager)
+	// {
+	// 	ctx.videoMemoryManager->Reset();
+	// 	DBGConsole_Msg(0, "==> VideoMemoryManager: Reset VRAM/ERAM heaps");
+	// }
+	// #endif
+	
 	if (!ctx.romInfo)
 		ctx.romInfo = std::make_unique<RomInfo>();
 	ctx.romInfo->mFileName = filename;
-	
-	for (size_t i = 0; i < gRomInitTable.size(); ++i)
-	{
-		const auto& entry = gRomInitTable[i];
 
-		if (!entry.name)
-		{
-			DBGConsole_Msg(0, "==>Open entry[%zu] has no name (null)", i);
-			continue;
-		}
+	for (const auto& entry : gRomInitTable)
+	{
+		if (!entry.name) continue;
 
 		if (entry.open && !entry.open(ctx)) 
 		{
@@ -499,9 +513,10 @@ void System_Close()
 		if (it->close)
 		{
 			DBGConsole_Msg(0, "==>Close %s", it->name);
-			it->close(ctx);  
+			it->close(ctx);
 		}
 	}
+
 }
 
 

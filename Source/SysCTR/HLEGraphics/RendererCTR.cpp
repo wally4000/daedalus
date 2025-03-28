@@ -416,7 +416,7 @@ void RendererCTR::RenderUsingRenderSettings( const CBlendStates * states, Daedal
 			{
 				TextureInfo white_ti = mBoundTextureInfo[ texture_idx ];
 				white_ti.SetWhite(true);
-				texture = gTextureCache->GetOrCreateTexture( white_ti );
+				texture = ctx.textureCache->GetOrCreateTexture( white_ti );
 			}
 			else
 			{

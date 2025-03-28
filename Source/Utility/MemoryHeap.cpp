@@ -23,9 +23,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "Utility/MemoryHeap.h"
 
-#include <stdlib.h>
 #include <string.h>
-
+#include <iostream>
 
 
 
@@ -160,30 +159,53 @@ void  CMemoryHeap::Free( void * ptr )
 	#ifdef DAEDALUS_ENABLE_ASSERTS
 	DAEDALUS_ASSERT( ptr == NULL || IsFromHeap( ptr ), "Memory is not from this heap" );
 #endif
-	if( ptr == NULL )
+	if( ptr == nullptr ) 
 		return;
 
 	for ( u32 i=0; i < mMemMapLen; ++i )
 	{
 		if( mpMemMap[i].Ptr == ptr )
 		{
-			Chunk *tmp;
 
 #ifdef SHOW_MEM
 			mMemAlloc -= mpMemMap[i].Length;
 #endif
 			mMemMapLen--;
+			if (i < mMemMapLen)
+			{
 			memmove( &mpMemMap[i], &mpMemMap[i+1], (mMemMapLen-i) * sizeof(mpMemMap[0]) );
-			tmp = reinterpret_cast< Chunk * >( realloc( mpMemMap, mMemMapLen * sizeof(mpMemMap[0]) ) );
-			if( tmp != NULL )
+			}
+			// Try to shrink memory
+
+			Chunk  *tmp = reinterpret_cast< Chunk * >( realloc( mpMemMap, mMemMapLen * sizeof(mpMemMap[0]) ) );
+			if( tmp != nullptr )
 			{
 				mpMemMap = tmp;
 			}
+			else 
+			{
+				std::cout << "Memory Realloc Failed, old memory still valid" << std::endl;
+			}
+			return;
 		}
 	}
 #ifdef SHOW_MEM
 	printf("VRAM %d -\n", mMemAlloc);
 #endif
+}
+
+void CMemoryHeap::Reset()
+{
+	if (mpMemMap)
+	{
+		free(mpMemMap);
+		mpMemMap = nullptr;
+		mMemMapLen = 0;
+	}
+
+	#ifdef SHOW_MEM
+		mMemAlloc = 0;
+	#endif
 }
 
 #ifdef DAEDALUS_DEBUG_MEMORY

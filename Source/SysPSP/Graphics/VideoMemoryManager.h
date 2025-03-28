@@ -39,6 +39,7 @@ public:
 
 	 bool			Alloc( u32 size, void ** data, bool * isvidmem );
 	 void			Free( void * ptr );
+	 void			Reset();
 #ifdef DAEDALUS_DEBUG_MEMORY
 	 void			DisplayDebugInfo() = 0;
 #endif

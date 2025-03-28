@@ -566,8 +566,8 @@ CTextureExplorerDebugMenuOption::CTextureExplorerDebugMenuOption()
 
 	{
 		// The lock isn't really needed, as on the PSP we run this single threaded.
-		MutexLock lock(gTextureCache->GetDebugMutex());
-		gTextureCache->Snapshot( lock, mSnapshot );
+		MutexLock lock(ctx.textureCache->GetDebugMutex());
+		ctx.textureCache->Snapshot( lock, mSnapshot );
 	}
 
 	sort( mSnapshot.begin(), mSnapshot.end(), &OrderTextures );
@@ -742,7 +742,7 @@ void CTextureExplorerDebugMenuOption::Update( const SPspPadState & pad_state, fl
 
 		if(pad_state.NewButtons & PSP_CTRL_TRIANGLE)
 		{
-			gTextureCache->DropTextures();
+			ctx.textureCache->DropTextures();
 		}
 		if(pad_state.NewButtons & PSP_CTRL_CROSS)
 		{
@@ -980,10 +980,10 @@ void IDisplayListDebugger::Run()
 			debug_output = DLDebug_CreateFileOutput();
 
 			// Dump textures
-			MutexLock lock(gTextureCache->GetDebugMutex());
+			MutexLock lock(ctx.textureCache->GetDebugMutex());
 
 			std::vector<CTextureCache::STextureInfoSnapshot> snapshot;
-			gTextureCache->Snapshot( lock, snapshot );
+			ctx.textureCache->Snapshot( lock, snapshot );
 
 			sort( snapshot.begin(), snapshot.end(), &OrderTextures );
 

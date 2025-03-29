@@ -125,10 +125,10 @@ IUIContext::~IUIContext()
 	// Clear everything to black
 	for( u32 i = 0; i < 2; ++i )
 	{
-		mGraphicsContext->BeginFrame();
-		mGraphicsContext->ClearToBlack();
-		mGraphicsContext->EndFrame();
-		mGraphicsContext->UpdateFrame( false );
+		ctx.graphicsContext->BeginFrame();
+		ctx.graphicsContext->ClearToBlack();
+		ctx.graphicsContext->EndFrame();
+		ctx.graphicsContext->UpdateFrame( false );
 	}
 }
 
@@ -204,7 +204,7 @@ void	IUIContext::RenderTexture( const std::shared_ptr<CNativeTexture> texture, c
 
 void	IUIContext::ClearBackground( c32 colour )
 {
-	mGraphicsContext->ClearColBufferAndDepth( colour );
+	ctx.graphicsContext->ClearColBufferAndDepth( colour );
 }
 
 void	IUIContext::DrawRect( s32 x, s32 y, u32 w, u32 h, c32 colour )
@@ -376,7 +376,7 @@ extern void DrawText_SetScale(float X, float Y);
 
 void	IUIContext::BeginRender()
 {
-	mGraphicsContext->BeginFrame();
+	ctx.graphicsContext->BeginFrame();
 	
 	if(gSdlRenderer == nullptr){
 		gSdlRenderer = SDL_CreateRenderer(gWindow, 0, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
@@ -387,7 +387,7 @@ void	IUIContext::BeginRender()
 
 	// Caculate the scaleX and scale Y
 	u32 display_width, display_height;
-	mGraphicsContext->ViewportType(&display_width, &display_height);
+	ctx.graphicsContext->ViewportType(&display_width, &display_height);
 	scaleX = display_width * 1.0f / SCREEN_WIDTH;
 	scaleY = display_height * 1.0f / SCREEN_HEIGHT;
 
@@ -399,6 +399,6 @@ void	IUIContext::EndRender()
 {
 	SDL_RenderPresent(gSdlRenderer);
 
-	mGraphicsContext->EndFrame();
-	mGraphicsContext->UpdateFrame( true );
+	ctx.graphicsContext->EndFrame();
+	ctx.graphicsContext->UpdateFrame( true );
 }

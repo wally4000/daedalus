@@ -602,7 +602,7 @@ bool CTextureExplorerDebugMenuOption::OverrideDisplay() const
 		texture_height = info.GetHeight();
 	}
 
-	mGraphicsContext->BeginFrame();
+	ctx.graphicsContext->BeginFrame();
 
 	sceGuDisable(GU_DEPTH_TEST);
 	sceGuDepthMask( GL_TRUE );	// GL_TRUE to disable z-writes
@@ -668,7 +668,7 @@ bool CTextureExplorerDebugMenuOption::OverrideDisplay() const
 
 		sceGuDrawArray(GU_SPRITES,TEXTURE_VERTEX_FLAGS|GU_TRANSFORM_2D,num_verts,nullptr,p_verts);
 	}
-	mGraphicsContext->EndFrame();
+	ctx.graphicsContext->EndFrame();
 
 	return true;
 }
@@ -963,7 +963,7 @@ void IDisplayListDebugger::Run()
 		if( dump_next_screen )
 		{
 			dump_next_screen = false;
-			mGraphicsContext->DumpScreenShot();
+			ctx.graphicsContext->DumpScreenShot();
 		}
 
 		DLDebugOutput * debug_output = nullptr;
@@ -994,9 +994,9 @@ void IDisplayListDebugger::Run()
 			}
 		}
 
-		mGraphicsContext->BeginFrame();
-		mGraphicsContext->ClearToBlack();
-		mGraphicsContext->EndFrame();
+		ctx.graphicsContext->BeginFrame();
+		ctx.graphicsContext->ClearToBlack();
+		ctx.graphicsContext->EndFrame();
 
 		u64			time_before;
 		NTiming::GetPreciseTime( &time_before );
@@ -1036,7 +1036,7 @@ void IDisplayListDebugger::Run()
 			framerate = 1000.0f / elapsed_ms;
 		}
 
-		mGraphicsContext->UpdateFrame( false );
+		ctx.graphicsContext->UpdateFrame( false );
 
 		//sceDisplayWaitVblankStart();
 
@@ -1176,7 +1176,7 @@ void IDisplayListDebugger::Run()
 			if(pad_state.NewButtons & PSP_CTRL_LTRIGGER)
 			{
 				gGlobalPreferences.ViewportType = EViewportType( (gGlobalPreferences.ViewportType+1) % NUM_VIEWPORT_TYPES );
-				mGraphicsContext->ClearAllSurfaces();
+				ctx.graphicsContext->ClearAllSurfaces();
 			}
 			if(pad_state.NewButtons & PSP_CTRL_RTRIGGER)
 			{

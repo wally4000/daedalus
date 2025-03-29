@@ -27,12 +27,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 class c32;
 
-// This class basically provides an extra level of security for our
-// multithreaded code. Threads can Grab the CGraphicsContext to prevent
-// other threads from changing/releasing any of the pointers while it is
-// running.
-class CGraphicsContext;
-extern std::unique_ptr<CGraphicsContext> mGraphicsContext;
 
 class CGraphicsContext 
 {
@@ -57,6 +51,9 @@ public:
 
 #ifdef DAEDALUS_CTR
 	virtual void ResetVertexBuffer() = 0;
+#endif
+#ifdef DAEDALUS_PSP
+	virtual void CleanupDisplayLists() {} 
 #endif
 	virtual void ClearAllSurfaces() = 0;
 	virtual void ClearToBlack() = 0;

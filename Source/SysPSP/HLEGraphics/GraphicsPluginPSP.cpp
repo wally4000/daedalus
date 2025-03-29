@@ -225,11 +225,11 @@ void CGraphicsPluginImpl::UpdateScreen()
 			}
 			if(gTakeScreenshot)
 			{
-				mGraphicsContext->DumpNextScreen();
+				ctx.graphicsContext->DumpNextScreen();
 				gTakeScreenshot = false;
 			}
 
-			mGraphicsContext->UpdateFrame( false );
+			ctx.graphicsContext->UpdateFrame( false );
 			HandleEndOfFrame();
 		}
 

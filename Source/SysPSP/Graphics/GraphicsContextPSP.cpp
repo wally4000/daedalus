@@ -26,6 +26,7 @@
 #include <pspdisplay.h>
 #include <pspdebug.h>
 
+
 #include "Interface/ConfigOptions.h"
 #include "Core/ROM.h"
 #include "Debug/DBGConsole.h"
@@ -34,6 +35,7 @@
 #include "Graphics/GraphicsContext.h"
 #include "Graphics/PngUtil.h"
 #include "SysPSP/Graphics/VideoMemoryManager.h"
+#include "SysPSP/Graphics/GraphicsContextPSP.h"
 #include "System/SystemInit.h"
 
 #include "UI/DrawText.h"
@@ -43,7 +45,7 @@
 
 
 constexpr std::string gScreenDumpDumpPathFormat = "sd{}.png";
-std::unique_ptr<CGraphicsContext> mGraphicsContext;
+
 
 #define DLISTSIZE 1*1024*1024	//Size of PSP Dlist
 
@@ -97,71 +99,7 @@ static const ScePspIMatrix4 dither_matrixB =
 		 {-1,-2, 1, 2},
 		 { 2, 1,-2,-1}};
 
-// Implementation
-class IGraphicsContext : public CGraphicsContext
-{
-public:
-	IGraphicsContext();
-	virtual ~IGraphicsContext();
 
-	bool				Initialise();
-	bool				IsInitialised() const { return mInitialised; }
-
-	void				SwitchToChosenDisplay();
-	void				SwitchToLcdDisplay();
-	void				StoreSaveScreenData();
-
-	void				ClearAllSurfaces();
-
-	void				ClearToBlack();
-	void				ClearZBuffer();
-	void				ClearColBuffer(const c32 & colour);
-	void				ClearColBufferAndDepth(const c32 & colour);
-
-	void				BeginFrame();
-	void				EndFrame();
-	void				UpdateFrame( bool wait_for_vbl );
-	void				GetScreenSize( u32 * width, u32 * height ) const;
-
-	void				SetDebugScreenTarget( ETargetSurface buffer );
-
-	void				ViewportType( u32 * d_width, u32 * d_height ) const;
-	void				DumpScreenShot();
-	void				DumpNextScreen()			{ mDumpNextScreen = 2; }
-
-private:
-	void				SaveScreenshot( const std::filesystem::path filename, s32 x, s32 y, u32 width, u32 height );
-
-private:
-	bool				mInitialised;
-
-	void *				mpBuffers[2];
-	void *				mpCurrentBackBuffer;
-
-	void *				save_disp_rel;
-	void *				save_draw_rel;
-	void *				save_depth_rel;
-
-	u32					mDumpNextScreen;
-};
-
-//*************************************************************************************
-//
-//*************************************************************************************
-bool CGraphicsContext::Create()
-{
-    mGraphicsContext = std::make_unique<IGraphicsContext>(); 
-    return mGraphicsContext->Initialise();
-}
-
-void CGraphicsContext::Destroy()
-{
-    mGraphicsContext.reset();
-}
-
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
 
 IGraphicsContext::IGraphicsContext()
 :	mInitialised(false)
@@ -191,6 +129,7 @@ IGraphicsContext::IGraphicsContext()
 //*****************************************************************************
 IGraphicsContext::~IGraphicsContext()
 {
+	CleanupDisplayLists();
 	sceGuTerm();
 }
 
@@ -827,6 +766,35 @@ bool IGraphicsContext::Initialise()
 	// The app is ready to go
 	mInitialised = true;
     return true;
+}
+
+void IGraphicsContext::CleanupDisplayLists()
+{
+#if 1 // When using malloc_volatile
+    if (list[0])
+    {
+        free_volatile(list[0]);  // Or whatever cleanup is appropriate for malloc_volatile
+        list[0] = nullptr;
+    }
+
+    if (list[1])
+    {
+        free_volatile(list[1]);
+        list[1] = nullptr;
+    }
+#else // When using VRAM allocation
+    if (list[0])
+    {
+        ctx.videoMemoryManager->Free(list[0]);
+        list[0] = nullptr;
+    }
+
+    if (list[1])
+    {
+        ctx.videoMemoryManager->Free(list[1]);
+        list[1] = nullptr;
+    }
+#endif
 }
 
 void IGraphicsContext::SwitchToChosenDisplay()

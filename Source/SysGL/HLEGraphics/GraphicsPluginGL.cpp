@@ -15,6 +15,7 @@
 #include "HLEGraphics/DisplayListDebugger.h"
 
 #include "HLEGraphics/GraphicsPlugin.h"
+#include "System/SystemInit.h"
 
 #include "System/Timing.h"
 
@@ -135,9 +136,6 @@ bool CGraphicsPluginImpl::Initialise()
 	{
 		return false;
 	}
-
-	ctx.textureCache = std::make_unique<CTextureCache>();
-
 	if (!DLParser_Initialise())
 	{
 		return false;
@@ -171,11 +169,11 @@ void CGraphicsPluginImpl::UpdateScreen()
 
 		if (gTakeScreenshot)
 		{
-			mGraphicsContext->DumpNextScreen();
+			ctx.graphicsContext->DumpNextScreen();
 			gTakeScreenshot = false;
 		}
 
-		mGraphicsContext->UpdateFrame( false );
+		ctx.graphicsContext->UpdateFrame( false );
 
 		LastOrigin = current_origin;
 	}

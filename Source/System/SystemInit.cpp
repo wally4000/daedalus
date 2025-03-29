@@ -30,17 +30,32 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Input/SDL/InputManagerSDL.h" // Really needs to be one big header file for all platforms
 #include "Interface/RomDB.h"
 #include "HLEGraphics/TextureCache.h"
+
 #ifdef DAEDALUS_PSP
 #include "SysPSP/Graphics/VideoMemoryManager.h"
+
 #endif
 
+// Graphics Context
 #include "Graphics/GraphicsContext.h"
+#ifdef DAEDALUS_PSP
+#include "SysPSP/Graphics/GraphicsContextPSP.h"
+#elif defined(DAEDALUS_CTR) 
+#include "SysCTR/Graphics/GraphicsContextCTR.h"
+#elif defined(DAEDALUS_GL)
+#include "SysGL/Graphics/GraphicsContextGL.h"
+#elif defined (DAEDALUS_GLES)
+#include "SysGL/Graphics/GraphicsContextGLES.h"
+#endif
+
 
 #if defined(DAEDALUS_POSIX) || defined(DAEDALUS_W32)
 #include "SysPosix/Debug/WebDebug.h"
 #include "SysPosix/HLEGraphics/TextureCacheWebDebug.h"
 #include "HLEGraphics/DisplayListDebugger.h"
 #endif
+
+
 
 
 #include "Utility/FramerateLimiter.h"
@@ -50,7 +65,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Interface/Preferences.h"
 #include "Utility/Translate.h"
 
-#include "Input/InputManager.h"		// CInputManager::Create/Destroy
+#include "Input/InputManager.h"
 
 #include "Debug/DBGConsole.h"
 #include "Debug/DebugLog.h"
@@ -64,7 +79,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <array>
 #include <memory>
 #include <functional>
-
 
 SystemContext ctx; 
 SystemContext::SystemContext()
@@ -250,12 +264,13 @@ void Destroy_pifController(SystemContext& ctx)
 }
 
 
- bool Legacy_GraphicsContextInit(SystemContext& ctx) {
-    return mGraphicsContext->Create(); 
+ bool Init_GraphicsContext(SystemContext& ctx) {
+	ctx.graphicsContext = std::make_unique<IGraphicsContext>();
+	return ctx.graphicsContext->Initialise();
 }
 
- void Legacy_GraphicsContextDestroy(SystemContext& ctx) {
-    mGraphicsContext->Destroy(); 
+ void Destroy_GraphicsContext(SystemContext& ctx) {
+    ctx.graphicsContext.reset();
 }
 
 bool Init_ROMBuffer(SystemContext& ctx)
@@ -268,7 +283,7 @@ bool Init_ROMBuffer(SystemContext& ctx)
 }
 
 static void Destroy_ROMBuffer(SystemContext& ctx) {
-	// ctx.gROMFileMemory.reset();
+	ctx.gROMFileMemory.reset();
 }
 #ifdef DAEDALUS_PSP
 bool Init_PSPVideoMemoryManager(SystemContext& ctx)
@@ -304,9 +319,6 @@ static bool Init_OldDebugLog(SystemContext& ctx)           { return Legacy_Debug
 
 
 
-static bool Init_OldGraphicsContext(SystemContext& ctx)          { return Legacy_GraphicsContextInit(ctx); }
-static void Destroy_OldGraphicsContext(SystemContext& ctx)       { Legacy_GraphicsContextDestroy(ctx); }
-
 // FramerateLimiter (System table doesn't use it, but included here if needed)
 static bool Init_OldFramerateLimiter(SystemContext& ctx)   { return FramerateLimiter_Reset(); }
 
@@ -331,7 +343,7 @@ const std::vector<SysEntityEntry> gSysInitTable =
 #ifdef DAEDALUS_PSP
 	{"VideoMemory",          Init_PSPVideoMemoryManager, Destroy_PSPVideoMemoryManager},
 #endif
-	{"GraphicsContext",		 Init_OldGraphicsContext,  	 Destroy_OldGraphicsContext},
+	{"GraphicsContext",		 Init_GraphicsContext,  	 Destroy_GraphicsContext},
 	{"Preference",           Init_RomPreferences,     	 Destroy_RomPreferences},
 	{"Memory",               Init_Memory,                Destroy_Memory},
 	{"Controller",           Init_pifController,         Destroy_pifController},

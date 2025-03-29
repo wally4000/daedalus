@@ -240,13 +240,13 @@ bool RomBuffer::Open()
 			offset += length_to_process;
 			length_remaining -= length_to_process;
 
-			mGraphicsContext->BeginFrame();
-			mGraphicsContext->ClearToBlack();
+			ctx.graphicsContext->BeginFrame();
+			ctx.graphicsContext->ClearToBlack();
 			#ifdef INTRAFONT
 			intraFontPrintf( ltn8, 480/2, (272>>1), "Buffering ROM %d%%...", offset * 100 / sRomSize );
 			#endif
-			mGraphicsContext->EndFrame();
-			mGraphicsContext->UpdateFrame( false );
+			ctx.graphicsContext->EndFrame();
+			ctx.graphicsContext->UpdateFrame( false );
 		}
 	#ifdef INTRAFONT
 		 intraFontUnload( ltn8 );

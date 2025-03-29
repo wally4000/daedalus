@@ -267,7 +267,7 @@ void DLDebugger_ProcessDebugTask()
 
 				u32 width;
 				u32 height;
-				mGraphicsContext->GetScreenSize(&width, &height);
+				ctx.graphicsContext->GetScreenSize(&width, &height);
 
 				// Make the BYTE array, factor of 3 because it's RBG.
 				void * pixels = malloc( 4 * width * height );
@@ -321,7 +321,7 @@ bool DLDebugger_Process()
 		DLParser_Process(gInstructionCountLimit, NULL);
 		DLDebugger_ProcessDebugTask();
 
-		mGraphicsContext->UpdateFrame( false );
+		ctx.graphicsContext->UpdateFrame( false );
 
 		// FIXME: shouldn't need to do this, just wake up when there's incoming WebDebug request.
 		ThreadSleepMs(10);

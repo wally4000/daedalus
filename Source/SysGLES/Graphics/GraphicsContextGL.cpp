@@ -7,6 +7,7 @@
 #include <iostream>
 
 #include "Graphics/GraphicsContext.h"
+#include "SysGLES/Graphics/GraphicsContextGL.h"
 
 #include "Graphics/ColourValue.h"
 #include "UI/DrawText.h"
@@ -19,33 +20,9 @@ SDL_GLContext   gContext     = nullptr;
 
 extern void HandleEndOfFrame();
 
-class GraphicsContextGL : public CGraphicsContext
-{
-public:
-    virtual ~GraphicsContextGL();
 
-    virtual bool Initialise();
-    virtual bool IsInitialised() const { return true; }
 
-    virtual void ClearAllSurfaces();
-    virtual void ClearZBuffer();
-    virtual void ClearColBuffer(const c32 & colour);
-    virtual void ClearToBlack();
-    virtual void ClearColBufferAndDepth(const c32 & colour);
-    virtual void BeginFrame();
-    virtual void EndFrame();
-    virtual void UpdateFrame( bool wait_for_vbl );
-
-    virtual void GetScreenSize(u32 * width, u32 * height) const;
-    virtual void ViewportType(u32 * width, u32 * height) const;
-
-    virtual void SetDebugScreenTarget( ETargetSurface buffer [[maybe_unused]] ) {}
-    virtual void DumpNextScreen() {}
-    virtual void DumpScreenShot() {}
-    virtual void UItoGL();
-};
-
-GraphicsContextGL::~GraphicsContextGL()
+IGraphicsContext::~IGraphicsContext()
 {
     // Destroy context and window
     if (gContext)
@@ -66,7 +43,7 @@ GraphicsContextGL::~GraphicsContextGL()
 
 extern bool initgl();
 
-bool GraphicsContextGL::Initialise()
+bool IGraphicsContext::Initialise()
 {
     //Initialize SDL
     if ( SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_EVENTS | SDL_INIT_GAMECONTROLLER) < 0 )
@@ -148,7 +125,7 @@ bool GraphicsContextGL::Initialise()
     return true;
 }
 
-void GraphicsContextGL::UItoGL()
+void IGraphicsContext::UItoGL()
 {
     if (gSdlRenderer != nullptr)
     {
@@ -165,11 +142,11 @@ void GraphicsContextGL::UItoGL()
             gContext = nullptr;
             gWindow = nullptr;
         }
-        GraphicsContextGL::Initialise();
+        IGraphicsContext::Initialise();
     }
 }
 
-void GraphicsContextGL::GetScreenSize(u32* width, u32* height) const
+void IGraphicsContext::GetScreenSize(u32* width, u32* height) const
 {
     int window_width  = 0;
     int window_height = 0;
@@ -179,21 +156,21 @@ void GraphicsContextGL::GetScreenSize(u32* width, u32* height) const
     *height = static_cast<u32>(window_height);
 }
 
-void GraphicsContextGL::ViewportType(u32* width, u32* height) const
+void IGraphicsContext::ViewportType(u32* width, u32* height) const
 {
     GetScreenSize(width, height);
 }
 
-void GraphicsContextGL::ClearAllSurfaces()
+void IGraphicsContext::ClearAllSurfaces()
 {
     // FIXME: this should clear/flip a couple of times to ensure 
     // the front and backbuffers are cleared. 
     // Not sure if it's necessary...
-    GraphicsContextGL::UItoGL();
+    IGraphicsContext::UItoGL();
     ClearToBlack();
 }
 
-void GraphicsContextGL::ClearToBlack()
+void IGraphicsContext::ClearToBlack()
 {
     glDepthMask(GL_TRUE);
     glClearDepthf(1.0f);
@@ -201,20 +178,20 @@ void GraphicsContextGL::ClearToBlack()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void GraphicsContextGL::ClearZBuffer()
+void IGraphicsContext::ClearZBuffer()
 {
     glDepthMask(GL_TRUE);
     glClearDepthf(1.0f);
     glClear(GL_DEPTH_BUFFER_BIT);
 }
 
-void GraphicsContextGL::ClearColBuffer(const c32 & colour)
+void IGraphicsContext::ClearColBuffer(const c32 & colour)
 {
     glClearColor(colour.GetRf(), colour.GetGf(), colour.GetBf(), colour.GetAf());
     glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void GraphicsContextGL::ClearColBufferAndDepth(const c32 & colour)
+void IGraphicsContext::ClearColBufferAndDepth(const c32 & colour)
 {
     glDepthMask(GL_TRUE);
     glClearDepthf(1.0f);
@@ -222,7 +199,7 @@ void GraphicsContextGL::ClearColBufferAndDepth(const c32 & colour)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void GraphicsContextGL::BeginFrame()
+void IGraphicsContext::BeginFrame()
 {
     // Get window size (may be different than the requested size)
     u32 width, height;
@@ -235,12 +212,12 @@ void GraphicsContextGL::BeginFrame()
     glScissor(0, 0, width, height);
 }
 
-void GraphicsContextGL::EndFrame()
+void IGraphicsContext::EndFrame()
 {
     HandleEndOfFrame();
 }
 
-void GraphicsContextGL::UpdateFrame(bool wait_for_vbl [[maybe_unused]])
+void IGraphicsContext::UpdateFrame(bool wait_for_vbl [[maybe_unused]])
 {
     // Bind default framebuffer
     glBindFramebuffer(GL_FRAMEBUFFER, 0);

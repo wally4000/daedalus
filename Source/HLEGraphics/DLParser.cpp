@@ -469,7 +469,7 @@ u32 DLParser_Process(u32 instruction_limit, DLDebugOutput * debug_output)
 {
 	DAEDALUS_PROFILE( "DLParser_Process" );
 
-	if ( !mGraphicsContext->IsInitialised() || !gRenderer )
+	if ( !ctx.graphicsContext->IsInitialised() || !gRenderer )
 	{
 		return 0;
 	}
@@ -479,7 +479,7 @@ u32 DLParser_Process(u32 instruction_limit, DLDebugOutput * debug_output)
 	// to remove any stuff lingering on the screen.
 	if(gFirstCall)
 	{
-		mGraphicsContext->ClearAllSurfaces();
+		ctx.graphicsContext->ClearAllSurfaces();
 
 		gFirstCall = false;
 	}
@@ -1041,7 +1041,7 @@ void DLParser_FillRect( MicroCodeCommand command )
 	//Always clear Zbuffer if Depthbuffer is selected //Corn
 	if (g_DI.Address == g_CI.Address)
 	{
-		mGraphicsContext->ClearZBuffer();
+		ctx.graphicsContext->ClearZBuffer();
 
 #ifdef DAEDALUS_PSP
 		if(gClearDepthFrameBuffer)
@@ -1097,7 +1097,7 @@ void DLParser_FillRect( MicroCodeCommand command )
 			// Clear the screen if its just a large rectangle
 			if( (x1 - x0) == uViWidth && (y1 - y0) == uViHeight )
 			{
-				mGraphicsContext->ClearColBuffer( colour );
+				ctx.graphicsContext->ClearColBuffer( colour );
 				DL_PF("    Clearing Colour Buffer");
 				return;
 			}

@@ -38,6 +38,5 @@ public:
 	std::unique_ptr<CMemoryHeap> mRomMemoryHeap;
 };
 
-extern std::unique_ptr<CROMFileMemory> gROMFileMemory;
 
 #endif // UTILITY_ROMFILEMEMORY_H_

@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "RomFile/RomFile.h"
 #include "RomFile/RomFileCache.h"
 #include "RomFile/RomFileMemory.h"
-
+#include "System/SystemInit.h"
 
 #ifdef DAEDALUS_PSP
 extern bool PSP_IS_SLIM;
@@ -88,7 +88,7 @@ ROMFileCache::ROMFileCache()
 #ifdef DAEDALUS_ENABLE_ASSERTS
 	DAEDALUS_ASSERT( (1<<(sizeof(CacheIdx)*8)) > CACHE_SIZE, "Need to increase size of CacheIdx typedef to allow sufficient entries to be indexed" );
 #endif
-	mpStorage   = (u8*)gROMFileMemory->Alloc( STORAGE_BYTES );
+	mpStorage   = (u8*)ctx.ROMFileMemory->Alloc( STORAGE_BYTES );
 	mpChunkInfo = new SChunkInfo[ CACHE_SIZE ];
 }
 
@@ -97,7 +97,7 @@ ROMFileCache::ROMFileCache()
 //*****************************************************************************
 ROMFileCache::~ROMFileCache()
 {
-	gROMFileMemory->Free( mpStorage );
+	ctx.ROMFileMemory->Free( mpStorage );
 
 	delete [] mpChunkInfo;
 }

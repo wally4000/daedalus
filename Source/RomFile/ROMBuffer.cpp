@@ -169,15 +169,6 @@ namespace
 }
 
 
-bool RomBuffer::Create()
-{
-	// Create memory heap used for either ROM Cache or ROM buffer
-	// We do this to avoid memory fragmentation
-	gROMFileMemory = std::make_unique<CROMFileMemory>();
-	return true;
-}
-
-
 void RomBuffer::Destroy()
 {
 		spRomFileCache->Close();
@@ -209,7 +200,7 @@ bool RomBuffer::Open()
 	{
 		// Now, allocate memory for rom - round up to a 4 byte boundry
 		u32		size_aligned =  AlignPow2( sRomSize, 4 );
-		u8 *	p_bytes =  (u8*)gROMFileMemory->Alloc( size_aligned );
+		u8 *	p_bytes =  (u8*)ctx.ROMFileMemory->Alloc( size_aligned );
 
 #ifndef DAEDALUS_PSP
 		if( !p_rom_file->LoadData( sRomSize, p_bytes, messages ) )
@@ -217,7 +208,7 @@ bool RomBuffer::Open()
 			#ifdef DAEDALUS_DEBUG_CONSOLE
 			DBGConsole_Msg(0, "Failed to load [C%s]\n", filename.c_str());
 			#endif
-			gROMFileMemory->Free( p_bytes );
+			ctx.ROMFileMemory->Free( p_bytes );
 			return false;
 		}
 #else
@@ -321,7 +312,7 @@ void	RomBuffer::Close()
 {
 	if (spRomData)
 	{
-		gROMFileMemory->Free( spRomData );
+		ctx.ROMFileMemory->Free( spRomData );
 		spRomData = nullptr;
 	}
 

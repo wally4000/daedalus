@@ -49,7 +49,7 @@ struct SystemContext {
     std::unique_ptr<CRomDB> romDB;
     std::unique_ptr<CRomSettingsDB> romSettingsDB;
     std::unique_ptr<CInputManager> inputManager;
-    std::unique_ptr<CROMFileMemory> gROMFileMemory;
+    std::unique_ptr<CROMFileMemory> ROMFileMemory;
     std::unique_ptr<CController> pifController;
     std::unique_ptr<RomInfo> romInfo;
     std::unique_ptr<CTextureCache> textureCache;

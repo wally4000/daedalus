@@ -280,11 +280,15 @@ bool Init_ROMBuffer(SystemContext& ctx)
 {
 	// Create memory heap used for either ROM Cache or ROM buffer
 	// We do this to avoid memory fragmentation
-	RomBuffer::Create();
+	ctx.ROMFileMemory = std::make_unique<CROMFileMemory>();
 
 	return true;
 }
 
+bool Destroy_ROMBuffer(SystemContext& ctx)
+{
+	// This needs some work
+}
 bool Init_Renderer(SystemContext& ctx)
 {
 	DAEDALUS_ASSERT_Q(ctx.renderer == NULL);
@@ -297,7 +301,7 @@ void Destroy_Renderer(SystemContext& ctx)
 }
 
 static void Destroy_ROMBuffer(SystemContext& ctx) {
-	ctx.gROMFileMemory.reset();
+	ctx.ROMFileMemory.reset();
 }
 #ifdef DAEDALUS_PSP
 bool Init_PSPVideoMemoryManager(SystemContext& ctx)

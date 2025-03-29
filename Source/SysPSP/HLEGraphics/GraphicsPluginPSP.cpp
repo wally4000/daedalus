@@ -121,49 +121,19 @@ static void	UpdateFramerate()
 }
 }
 
-class CGraphicsPluginImpl : public CGraphicsPlugin
-{
-	public:
-	virtual	~CGraphicsPluginImpl();
-
-		virtual 	bool		Initialise();
-		virtual bool		StartEmulation()		{ return true; }
-		virtual void		ViStatusChanged()		{}
-		virtual void		ViWidthChanged()		{}
-		virtual void		ProcessDList();
-
-		virtual void		UpdateScreen();
-
-		virtual void		RomClosed();
-};
-
-CGraphicsPluginImpl::~CGraphicsPluginImpl()
-{
-}
-
 
 CGraphicsPlugin::~CGraphicsPlugin()
 {
 }
 
-
-bool CGraphicsPluginImpl::Initialise()
+CGraphicsPlugin::CGraphicsPlugin()
+:	LastOrigin( 0 )
 {
-	// if(!CreateRenderer())
-	// {
-	// 	return false;
-	// }
-	
-
-	if (!DLParser_Initialise())
-	{
-		return false;
-	}
-
-	return true;
 }
 
-void CGraphicsPluginImpl::ProcessDList()
+
+
+void CGraphicsPlugin::ProcessDList()
 {
 #ifdef DAEDALUS_DEBUG_DISPLAYLIST
 	if (!DLDebugger_Process())
@@ -181,7 +151,7 @@ extern u32 gNumDListsCulled;
 extern u32 gNumRectsClipped;
 #endif
 
-void CGraphicsPluginImpl::UpdateScreen()
+void CGraphicsPlugin::UpdateScreen()
 {
 	//gVblCount++;
 
@@ -262,7 +232,7 @@ void CGraphicsPluginImpl::UpdateScreen()
 	}
 }
 
-void CGraphicsPluginImpl::RomClosed()
+void CGraphicsPlugin::RomClosed()
 {
 	#ifdef DAEDALUS_DEBUG_CONSOLE
 	DBGConsole_Msg(0, "Finalising PSPGraphics");
@@ -274,16 +244,4 @@ void CGraphicsPluginImpl::RomClosed()
 		ctx.textureCache.reset();
 	}
 
-}
-
-class std::unique_ptr<CGraphicsPlugin>	CreateGraphicsPlugin()
-{
-	DBGConsole_Msg( 0, "Initialising PSP Graphics Plugin" );
-	auto plugin = std::make_unique<CGraphicsPluginImpl>();
-	if (!plugin->Initialise())
-	{
-		plugin = nullptr;
-	}
-
-	return plugin;
 }

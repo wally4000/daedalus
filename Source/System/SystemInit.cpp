@@ -62,7 +62,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "HLEGraphics/DisplayListDebugger.h"
 #endif
 
-
+#include "HLEGraphics/DLParser.h"
 #include "Utility/FramerateLimiter.h"
 #include "Debug/Synchroniser.h"
 #include "Base/Macros.h"
@@ -165,14 +165,17 @@ bool Init_GraphicsPlugin(SystemContext& ctx)
 {
 	DAEDALUS_ASSERT(ctx.graphicsPlugin == NULL, "Graphics Plugin should not be initialised at this point");
 
-	auto plugin = CreateGraphicsPlugin();
-	if (plugin)
+	ctx.graphicsPlugin = std::make_unique<CGraphicsPlugin>();
+	ctx.textureCache = std::make_unique<CTextureCache>();
+
+	if (!DLParser_Initialise())
 	{
-		ctx.graphicsPlugin = std::move(plugin);
-		ctx.textureCache = std::make_unique<CTextureCache>();
-		return true;
+		DBGConsole_Msg(0, "ERROR: Failed to initialise DLParser.");
+		ctx.graphicsPlugin.reset();
+		ctx.textureCache.reset();
 	}
-	return false;
+	return DLParser_Initialise();
+	
 }
 void Destroy_GraphicsPlugin(SystemContext& ctx)
 {

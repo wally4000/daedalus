@@ -26,11 +26,11 @@ struct DebugBlendSettings
 	u32 ForceRGB;	//defaults to OFF
 };
 
-class RendererCTR : public BaseRenderer
+class Renderer : public BaseRenderer
 {
 public:
-	RendererCTR();
-	~RendererCTR();
+	Renderer();
+	~Renderer();
 
 	virtual void		RestoreRenderStates();
 

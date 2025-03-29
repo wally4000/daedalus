@@ -26,23 +26,22 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 class CGraphicsPlugin
 {
 	public:
-		virtual ~CGraphicsPlugin();
+	CGraphicsPlugin();		
+	~CGraphicsPlugin();
 
-		virtual bool		StartEmulation() = 0;
+		bool		StartEmulation() { return true;};
 
-		virtual void		ViStatusChanged() = 0;
-		virtual void		ViWidthChanged() = 0;
-		virtual void		ProcessDList() = 0;
+		[[maybe_unused]] void		ViStatusChanged() {}; // Not implemented
+		[[maybe_unused]] void		ViWidthChanged() {}; // Not implemented but seen in Memory_WriteValue.inl
+		void		ProcessDList();
 
-		virtual void		UpdateScreen() = 0;
+		void		UpdateScreen();
 
-		virtual void		RomClosed() = 0;
+		void		RomClosed() ;
+
+	private:
+		u32 LastOrigin; 
 };
 
-//
-//	This needs to be defined for all targets.
-//
-std::unique_ptr<CGraphicsPlugin> CreateGraphicsPlugin();
-// extern std::unique_ptr<CGraphicsPlugin> graphicsPlugin;
 
 #endif // PLUGINS_GRAPHICSPLUGIN_H_

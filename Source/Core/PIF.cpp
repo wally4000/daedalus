@@ -475,17 +475,19 @@ void	CController::CommandWriteEeprom(u8* cmd)
 }
 
 
-u8 CController::CalculateDataCrc(const u8 *data) const
+u8 CController::CalculateDataCrc(const u8 * data) const
 {
+	size_t i;
     uint8_t crc = 0;
 
-    for (size_t i = 0; i < 32; ++i) // ✅ Exactly 32 bytes
+    for(i = 0; i <= 0x20; ++i)
     {
-        for (int mask = 0x80; mask >= 1; mask >>= 1)
+        int mask;
+        for (mask = 0x80; mask >= 1; mask >>= 1)
         {
             uint8_t xor_tap = (crc & 0x80) ? 0x85 : 0x00;
             crc <<= 1;
-            if (data[i] & mask) crc |= 1;
+            if (i != 0x20 && (data[i] & mask)) crc |= 1;
             crc ^= xor_tap;
         }
     }
@@ -509,9 +511,7 @@ void	CController::CommandReadMemPack(u32 channel, u8 *cmd)
 		memset(data, 0, 32);
 	}
 
-	u8 expected_crc = CalculateDataCrc(data);
-    cmd[37] = expected_crc;
-
+	cmd[37] = CalculateDataCrc(data);
 }
 
 

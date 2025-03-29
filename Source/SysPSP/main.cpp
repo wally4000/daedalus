@@ -239,7 +239,6 @@ int main(int argc, char* argv[])
 			return 0;
 		}
 #endif
-		Translate_Init();
 		bool show_splash = true;
 		for(;;)
 		{

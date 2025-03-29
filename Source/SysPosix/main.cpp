@@ -175,10 +175,7 @@ int main(int argc, char **argv)
 		else if (filename)
 		{
 			System_Open(filename);
-
-			//
 			// Commit the preferences and roms databases before starting to run
-			//
 			ctx.romDB->Commit();
 			ctx.preferences->Commit();
 
@@ -186,7 +183,6 @@ int main(int argc, char **argv)
 			System_Close();
 		}
 	}
-	Translate_Init();
 	bool show_splash = true;
 	for (;;)
 	{

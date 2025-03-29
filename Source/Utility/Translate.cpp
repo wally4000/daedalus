@@ -37,9 +37,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "Base/Macros.h"
 #define TRANSLATE_DUMP_VALUE 0xDAEDDAED
-//*****************************************************************************
-//
-//*****************************************************************************
+
 struct pTranslate
 {
 	u32		hash;			// hash that corresponds to string
@@ -52,9 +50,7 @@ std::vector<std::string> gLanguage;
 //
 // Hash was taken from http://stackoverflow.com/questions/98153/whats-the-best-hashing-algorithm-to-use-on-a-stl-string-when-using-hash-map
 //
-//*****************************************************************************
-//
-//*****************************************************************************
+
 u32 HashString(const std::string& s) {
     u32 hash = 0;
     for (char c : s) {
@@ -63,9 +59,7 @@ u32 HashString(const std::string& s) {
     return hash;
 }
 
-//*****************************************************************************
-//
-//*****************************************************************************
+
 const char * Translate_Strings(const std::string& original, u32 & len)
 {
 	u32 hash = HashString(original);
@@ -91,18 +85,14 @@ const char * Translate_Strings(const std::string& original, u32 & len)
 	return original.data();
 }
 
-//*****************************************************************************
-//
-//*****************************************************************************
+
 const char * Translate_String(const char *original)
 {
 	u32 dummy;
 	return Translate_Strings( original, dummy );
 }
 
-//*****************************************************************************
-//
-//*****************************************************************************
+
 void Translate_Unload()
 {
 	// Clear translations
@@ -115,23 +105,12 @@ void Translate_Unload()
 		}
 	}
 }
-//*****************************************************************************
-//
-//*****************************************************************************
-bool	Translate_Init()
-{
-	// Init translations if available
-	Translate_Load("Languages/" );
 
-	return /*gLanguage.empty() == 0*/ true;
-}
 
-//*****************************************************************************
-//
-//*****************************************************************************
 void	Translate_Load( const std::filesystem::path& p_dir )
 {
 	// Set default language
+	// XXX Need to set this based on the language in the Preferences INI file
 	gLanguage.push_back("English");
 
 	for (auto const& dir_entry : std::filesystem::directory_iterator(p_dir))
@@ -144,9 +123,7 @@ void	Translate_Load( const std::filesystem::path& p_dir )
 	}
 }
 
-//*****************************************************************************
-//
-//*****************************************************************************
+
 const char * Translate_Name(u32 idx)
 {
 	if( idx < gLanguage.size())
@@ -157,17 +134,13 @@ const char * Translate_Name(u32 idx)
 	return "?";
 }
 
-//*****************************************************************************
-//
-//*****************************************************************************
+
 u32 Translate_Number()
 {
 	return gLanguage.size()-1;
 }
 
-//*****************************************************************************
-//
-//*****************************************************************************
+
 u32	Translate_IndexFromName( const char * name )
 {
 	for( u32 i = 0; i < gLanguage.size(); ++i )
@@ -182,9 +155,7 @@ u32	Translate_IndexFromName( const char * name )
 	return 0;
 }
 
-//*****************************************************************************
-//
-//*****************************************************************************
+
 const char * Translate_NameFromIndex( u32 idx )
 {
 	if( idx < gLanguage.size())
@@ -216,9 +187,7 @@ std::string Restore(std::string s, size_t len) {
     return s;
 }
 
-//*****************************************************************************
-//
-//*****************************************************************************
+
 void Translate_Dump(const std::string string, bool dump)
 {
 	if(dump)
@@ -233,9 +202,7 @@ void Translate_Dump(const std::string string, bool dump)
 	}
 }
 
-//*****************************************************************************
-//
-//*****************************************************************************
+
 bool Translate_Read(u32 idx, const std::filesystem::path& dir)
 {
 	/// Always unload previous language file if available

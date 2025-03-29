@@ -240,7 +240,8 @@ static void Profiler_Fini(SystemContext& ctx)
 #endif
 
 static bool Init_Translate(SystemContext& ctx) { // should be a class and unique_ptr
-	return Translate_Init();
+	 Translate_Load("Languages/" );
+	 return true;
 }
 
 static bool Init_Memory(SystemContext& ctx) { // should be a class and unique_ptr
@@ -285,10 +286,6 @@ bool Init_ROMBuffer(SystemContext& ctx)
 	return true;
 }
 
-bool Destroy_ROMBuffer(SystemContext& ctx)
-{
-	// This needs some work
-}
 bool Init_Renderer(SystemContext& ctx)
 {
 	DAEDALUS_ASSERT_Q(ctx.renderer == NULL);

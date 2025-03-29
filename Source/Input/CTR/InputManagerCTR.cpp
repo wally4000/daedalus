@@ -36,7 +36,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Interface/Preferences.h"
 #include "Utility/Stream.h"
 #include "Debug/Synchroniser.h"
-
+#include "Input/CTR/InputManagerCTR.h"
 extern bool isN3DS;
 
 
@@ -263,32 +263,6 @@ u32		CControllerConfig::GetN64ButtonsState( u32 psp_button_mask ) const
 //*****************************************************************************
 //
 //*****************************************************************************
-
-class IInputManager : public CInputManager
-{
-	public:
-		IInputManager();
-		virtual ~IInputManager();
-
-		virtual bool				Initialise();
-		virtual void				Finalise();
-
-		virtual void				GetState( OSContPad pPad[4] );
-
-		virtual u32					GetNumConfigurations() const;
-		virtual const char *		GetConfigurationName( u32 configuration_idx ) const;
-		virtual const char *		GetConfigurationDescription( u32 configuration_idx ) const;
-		virtual void				SetConfiguration( u32 configuration_idx );
-		virtual u32					GetConfigurationFromName( const char * name ) const;
-
-	private:
-		void								LoadControllerConfigs( const std::filesystem::path p_dir );
-		CControllerConfig *					BuildDefaultConfig(bool ZSwap = false);
-		CControllerConfig *					BuildControllerConfig( const char * filename );
-
-		CControllerConfig *					mpControllerConfig;
-		std::vector<CControllerConfig*>		mControllerConfigs;
-};
 
 
 IInputManager::IInputManager() : mpControllerConfig( NULL )

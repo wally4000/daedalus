@@ -60,6 +60,7 @@ struct SystemContext {
     std::unique_ptr<BaseRenderer> renderer;
     SCPUState cpuState;
     volatile u32 eventQueueLocked;
+    std::filesystem::path saveStateFilename;
 
     #ifdef DAEDALUS_PSP
     std::unique_ptr<CVideoMemoryManager> videoMemoryManager;

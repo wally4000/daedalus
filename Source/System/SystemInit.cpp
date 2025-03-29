@@ -27,7 +27,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Core/PIF.h"
 #include "RomFile/ROMBuffer.h"
 #include "RomFile/RomSettings.h"
-#include "Input/SDL/InputManagerSDL.h" // Really needs to be one big header file for all platforms
 #include "Interface/RomDB.h"
 #include "HLEGraphics/TextureCache.h"
 
@@ -39,15 +38,19 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // Graphics Context
 #include "Graphics/GraphicsContext.h"
 #ifdef DAEDALUS_PSP
+#include "Input/PSP/InputManagerPSP.h"
 #include "SysPSP/Graphics/GraphicsContextPSP.h"
 #include "SysPSP/HLEGraphics/RendererPSP.h"
 #elif defined(DAEDALUS_CTR) 
+#include "Input/CTR/InputManagerCTR.h"
 #include "SysCTR/Graphics/GraphicsContextCTR.h"
 #include "SysCTR/HLEGraphics/RendererCTR.h"
 #elif defined(DAEDALUS_GL)
+#include "Input/SDL/InputManagerSDL.h"
 #include "SysGL/Graphics/GraphicsContextGL.h"
 #include "SysGL/HLEGraphics/RendererGL.h"
 #elif defined (DAEDALUS_GLES)
+#include "Input/SDL/InputManagerSDL.h"
 #include "SysGL/Graphics/GraphicsContextGLES.h"
 #include "SysGLES/HLEGraphics/RendererGL.h"
 #endif

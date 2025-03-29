@@ -28,11 +28,11 @@ struct DebugBlendSettings
 	u32 ForceRGB;	//defaults to OFF
 };
 
-class RendererPSP : public BaseRenderer
+class Renderer : public BaseRenderer
 {
 public:
-	RendererPSP();
-	~RendererPSP();
+	Renderer();
+	~Renderer();
 
 	virtual void		RestoreRenderStates();
 
@@ -57,7 +57,8 @@ public:
 private:
 	// For handling large textures.
 	void				Draw2DTextureBlit(f32 x0, f32 y0, f32 x1, f32 y1, f32 u0, f32 v0, f32 u1, f32 v1, const std::shared_ptr<CNativeTexture> texture);
-
+	void				StartFrame();
+	void				FlushVertexBuffer();
 	inline void			RenderFog( DaedalusVtx * p_vertices, u32 num_vertices, u32 triangle_mode, u32 render_flags );
 	void				RenderUsingCurrentBlendMode( DaedalusVtx * p_vertices, u32 num_vertices, u32 triangle_mode, u32 render_mode, bool disable_zbuffer );
 	void				RenderUsingRenderSettings( const CBlendStates * states, DaedalusVtx * p_vertices, u32 num_vertices, u32 triangle_mode, u32 render_flags );
@@ -78,7 +79,7 @@ private:
 #ifdef DAEDALUS_DEBUG_DISPLAYLIST
 public:
 	virtual void 		ResetDebugState();
-
+	
 	bool				IsCombinerStateDefault( u64 state ) const	{ return IsInexactDefault( LookupOverrideBlendModeInexact( state ) ); }
 	bool				IsCombinerStateForced( u64 state ) const	{ return LookupOverrideBlendModeForced( state ) != NULL; }
 	//bool				IsCombinerStateUnhandled( u64 state ) const	{ return mUnhandledCombinerStates.find( state ) != mUnhandledCombinerStates.end(); }
@@ -111,8 +112,5 @@ private:
 	std::set< u64 >		mUnhandledCombinerStates;
 #endif
 };
-
-// NB: this is equivalent to gRenderer, but points to the implementation class, for platform-specific functionality.
-extern RendererPSP * gRendererPSP;
 
 #endif // SYSPSP_HLEGRAPHICS_RENDERERPSP_H_

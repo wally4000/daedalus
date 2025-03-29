@@ -40,7 +40,7 @@ void DLParser_GBI0_Vtx_Beta( MicroCodeCommand command )
 	DL_PF( "    Address[0x%08x] v0[%d] Num[%d] Len[0x%04x]", addr, v0, n, len );
 	if (IsVertexInfoValid(addr, 16, v0, n))
 	{
-		gRenderer->SetNewVertexInfo( addr, v0, n );
+		ctx.renderer->SetNewVertexInfo( addr, v0, n );
 
 #ifdef DAEDALUS_DEBUG_DISPLAYLIST
 		gNumVertices += n;

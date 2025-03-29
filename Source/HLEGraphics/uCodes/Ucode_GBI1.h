@@ -42,7 +42,7 @@ void DLParser_GBI1_Vtx( MicroCodeCommand command )
 	DL_PF("    Address 0x%08x, v0: %d, Num: %d, Length: 0x%04x", address, v0, n, command.vtx1.len);
 	if (IsVertexInfoValid(address, 16, v0, n))
 	{
-		gRenderer->SetNewVertexInfo( address, v0, n );
+		ctx.renderer->SetNewVertexInfo( address, v0, n );
 
 #ifdef DAEDALUS_DEBUG_DISPLAYLIST
 		gNumVertices += n;
@@ -60,7 +60,7 @@ void DLParser_GBI1_ModifyVtx( MicroCodeCommand command )
 	u32 vert   = command.modifyvtx.vtx;
 	u32 value  = command.modifyvtx.value;
 
-	gRenderer->ModifyVertexInfo( offset, vert, value );
+	ctx.renderer->ModifyVertexInfo( offset, vert, value );
 }
 
 //*****************************************************************************
@@ -79,11 +79,11 @@ void DLParser_GBI1_Mtx( MicroCodeCommand command )
 	// Load matrix from address
 	if (command.mtx1.projection)
 	{
-		gRenderer->SetProjection(address, command.mtx1.load);
+		ctx.renderer->SetProjection(address, command.mtx1.load);
 	}
 	else
 	{
-		gRenderer->SetWorldView(address, command.mtx1.push, command.mtx1.load);
+		ctx.renderer->SetWorldView(address, command.mtx1.push, command.mtx1.load);
 	}
 }
 
@@ -99,7 +99,7 @@ void DLParser_GBI1_PopMtx( MicroCodeCommand command )
 	// So far only Extreme-G seems to Push/Pop projection matrices
 	// Can't pop projection matrix
 	if(command.inst.cmd1 == 0)
-		gRenderer->PopWorldView();
+		ctx.renderer->PopWorldView();
 }
 
 //*****************************************************************************
@@ -138,7 +138,7 @@ void DLParser_GBI1_MoveMem( MicroCodeCommand command )
 				DL_PF("		Force Matrix(1): addr=%08X", address);
 				
 				// Rayman 2, Donald Duck, Tarzan, all wrestling games use this
-				gRenderer->ForceMatrix( address );
+				ctx.renderer->ForceMatrix( address );
 				// ForceMatrix takes four cmds
 				gDlistStack.address[gDlistStackPointer] += 24;
 			}
@@ -187,13 +187,13 @@ void DLParser_GBI1_MoveWord( MicroCodeCommand command )
 	{
 	case G_MW_MATRIX:
 		{
-			gRenderer->InsertMatrix(command.inst.cmd0, command.inst.cmd1);
+			ctx.renderer->InsertMatrix(command.inst.cmd0, command.inst.cmd1);
 		}
 		break;
 	case G_MW_NUMLIGHT:
 		{
 			u32 num_lights = ((value - 0x80000000) >> 5) - 1;
-			gRenderer->SetNumLights(num_lights);
+			ctx.renderer->SetNumLights(num_lights);
 
 		}
 		break;
@@ -212,13 +212,13 @@ void DLParser_GBI1_MoveWord( MicroCodeCommand command )
 				old_fog_mult = mul;
 				old_fog_offs = offs;
 #ifndef DAEDALUS_CTR
-				gRenderer->SetFogMultOffs(mul, offs);
+				ctx.renderer->SetFogMultOffs(mul, offs);
 #else
 				f32 rng = 128000.0f / mul;
 			
 				f32 fog_near = 500 - (offs * rng / 256.0f);
 				f32 fog_far = rng + fog_near;
-				gRenderer->SetFogMinMax(fog_near, fog_far);
+				ctx.renderer->SetFogMinMax(fog_near, fog_far);
 #endif
 			}
 		}
@@ -234,13 +234,13 @@ void DLParser_GBI1_MoveWord( MicroCodeCommand command )
 				u8 g = ((value>>16)&0xFF);
 				u8 b = ((value>>8)&0xFF);
 				u8 a [[maybe_unused]] = 255;
-				gRenderer->SetLightCol(light_idx, r, g, b);
+				ctx.renderer->SetLightCol(light_idx, r, g, b);
 			}
 		}
 		break;
 	case G_MW_POINTS:	// Used in FIFA 98
 		{
-			gRenderer->ModifyVertexInfo( (offset % 40), (offset / 40), value);
+			ctx.renderer->ModifyVertexInfo( (offset % 40), (offset / 40), value);
 		}
 		break;
 	default:
@@ -258,7 +258,7 @@ void DLParser_GBI1_CullDL( MicroCodeCommand command )
 	u32 last = command.culldl.end;
 
 	DL_PF("    Culling using verts %d to %d\n", first, last);
-	if( gRenderer->TestVerts( first, last ) )
+	if( ctx.renderer->TestVerts( first, last ) )
 	{
 		DL_PF("    Display list is visible, returning");
 		return;
@@ -317,7 +317,7 @@ void DLParser_GBI1_BranchZ( MicroCodeCommand command [[maybe_unused]] )
 		//OOT: Death Mountain
 		//MM: Clock Town
 
-		if (gRenderer->GetVtxWeight(command.branchw.vtx) < (f32)command.branchw.value) 
+		if (ctx.renderer->GetVtxWeight(command.branchw.vtx) < (f32)command.branchw.value) 
 		{
 			u32 address = RDPSegAddr(gRDPHalf1);
 			if( !IsAddressValid(address, 8, "BranchW") )
@@ -332,7 +332,7 @@ void DLParser_GBI1_BranchZ( MicroCodeCommand command [[maybe_unused]] )
 		//Penny racers: (cars)
 		//Aerogauge: (skips rendering ship shadows and exaust plumes from afar)
 
-		const glm::vec4 & v = gRenderer->GetProjectedVtxPos( command.branchz.vtx );
+		const glm::vec4 & v = ctx.renderer->GetProjectedVtxPos( command.branchz.vtx );
 		const u32 zTest = u32((v.z / v.w) * 1023.0f);
 
 		if (zTest > 0x3FF || zTest <= command.branchz.value)
@@ -392,7 +392,7 @@ void DLParser_GBI1_GeometryMode( MicroCodeCommand command )
 	TnL.TriCull		= gGeometryMode.GBI1_CullFront | gGeometryMode.GBI1_CullBack;
 	TnL.CullBack	= gGeometryMode.GBI1_CullBack;
 
-	gRenderer->SetTnLMode( TnL._u32 );
+	ctx.renderer->SetTnLMode( TnL._u32 );
 #ifdef DAEDALUS_DEBUG_DISPLAYLIST
 	DL_PF("    ZBuffer %s",			 (gGeometryMode.GBI1_Zbuffer)		? "On" : "Off");
 	DL_PF("    Culling %s",			 (gGeometryMode.GBI1_CullBack)		? "Back face" : (gGeometryMode.GBI1_CullFront) ? "Front face" : "Off");
@@ -444,19 +444,19 @@ void DLParser_GBI1_Texture( MicroCodeCommand command )
 	if (!enabled)
 	{
 		DL_PF("    Texture its disabled -> Ignored");
-		gRenderer->SetTextureEnable( false );
+		ctx.renderer->SetTextureEnable( false );
 		return;
 	}
 
 	DL_PF("    Texture its enabled: Level[%d] Tile[%d]", command.texture.level, command.texture.tile);
-	gRenderer->SetTextureEnable( true );
-	gRenderer->SetTextureTile( command.texture.tile );
+	ctx.renderer->SetTextureEnable( true );
+	ctx.renderer->SetTextureTile( command.texture.tile );
 
 	f32 scale_s = f32(command.texture.scaleS) / (65536.0f * 32.0f);
 	f32 scale_t = f32(command.texture.scaleT)  / (65536.0f * 32.0f);
 
 	DL_PF("    ScaleS[%0.4f], ScaleT[%0.4f]", scale_s*32.0f, scale_t*32.0f);
-	gRenderer->SetTextureScale( scale_s, scale_t );
+	ctx.renderer->SetTextureScale( scale_s, scale_t );
 }
 
 //*****************************************************************************
@@ -554,7 +554,7 @@ void DLParser_GBI1_Tri1_T( MicroCodeCommand command )
 		u32 v1_idx = command.gbi1tri1.v1 / VertexStride;
 		u32 v2_idx = command.gbi1tri1.v2 / VertexStride;
 
-		tris_added |= gRenderer->AddTri(v0_idx, v1_idx, v2_idx);
+		tris_added |= ctx.renderer->AddTri(v0_idx, v1_idx, v2_idx);
 
 		command.inst.cmd0= *pCmdBase++;
 		command.inst.cmd1= *pCmdBase++;
@@ -565,7 +565,7 @@ void DLParser_GBI1_Tri1_T( MicroCodeCommand command )
 
 	if (tris_added)
 	{
-		gRenderer->FlushTris();
+		ctx.renderer->FlushTris();
 	}
 }
 
@@ -590,13 +590,13 @@ void DLParser_GBI1_Tri2_T( MicroCodeCommand command )
 		u32 v1_idx = command.gbi1tri2.v1 / VertexStride;
 		u32 v2_idx = command.gbi1tri2.v2 / VertexStride;
 
-		tris_added |= gRenderer->AddTri(v0_idx, v1_idx, v2_idx);
+		tris_added |= ctx.renderer->AddTri(v0_idx, v1_idx, v2_idx);
 
 		u32 v3_idx = command.gbi1tri2.v3 / VertexStride;
 		u32 v4_idx = command.gbi1tri2.v4 / VertexStride;
 		u32 v5_idx = command.gbi1tri2.v5 / VertexStride;
 
-		tris_added |= gRenderer->AddTri(v3_idx, v4_idx, v5_idx);
+		tris_added |= ctx.renderer->AddTri(v3_idx, v4_idx, v5_idx);
 
 		command.inst.cmd0= *pCmdBase++;
 		command.inst.cmd1= *pCmdBase++;
@@ -607,7 +607,7 @@ void DLParser_GBI1_Tri2_T( MicroCodeCommand command )
 
 	if (tris_added)
 	{
-		gRenderer->FlushTris();
+		ctx.renderer->FlushTris();
 	}
 }
 
@@ -641,8 +641,8 @@ void DLParser_GBI1_Line3D_T( MicroCodeCommand command )
 		u32 v2_idx   = command.gbi1line3d.v2 / VertexStride;
 		u32 v3_idx   = command.gbi1line3d.v3 / VertexStride;
 
-		tris_added |= gRenderer->AddTri(v0_idx, v1_idx, v2_idx);
-		tris_added |= gRenderer->AddTri(v2_idx, v3_idx, v0_idx);
+		tris_added |= ctx.renderer->AddTri(v0_idx, v1_idx, v2_idx);
+		tris_added |= ctx.renderer->AddTri(v2_idx, v3_idx, v0_idx);
 
 		command.inst.cmd0 = *pCmdBase++;
 		command.inst.cmd1 = *pCmdBase++;
@@ -653,7 +653,7 @@ void DLParser_GBI1_Line3D_T( MicroCodeCommand command )
 
 	if (tris_added)
 	{
-		gRenderer->FlushTris();
+		ctx.renderer->FlushTris();
 	}
 }
 

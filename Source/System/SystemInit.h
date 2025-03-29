@@ -38,6 +38,7 @@ class CROMBuffer;
 class CDebugConsole;
 class CController;
 class CTextureCache;
+class BaseRenderer;
 
 
 struct SystemContext {
@@ -53,6 +54,7 @@ struct SystemContext {
     std::unique_ptr<RomInfo> romInfo;
     std::unique_ptr<CTextureCache> textureCache;
     std::unique_ptr<CGraphicsContext> graphicsContext;
+    std::unique_ptr<BaseRenderer> renderer;
 
 
     #ifdef DAEDALUS_PSP

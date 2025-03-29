@@ -149,10 +149,10 @@ CGraphicsPlugin::~CGraphicsPlugin()
 
 bool CGraphicsPluginImpl::Initialise()
 {
-	if(!CreateRenderer())
-	{
-		return false;
-	}
+	// if(!CreateRenderer())
+	// {
+	// 	return false;
+	// }
 	
 
 	if (!DLParser_Initialise())
@@ -214,7 +214,7 @@ void CGraphicsPluginImpl::UpdateScreen()
 				pspDebugScreenSetXY(0, 0);
 
 #ifdef DAEDALUS_DEBUG_DISPLAYLIST
-				pspDebugScreenPrintf( "Dlist[%d] Cull[%d] | Tris[%d] Cull[%d] | Rect[%d] Clip[%d] ", gNumInstructionsExecuted, gNumDListsCulled, gRenderer->GetNumTrisRendered(), gRenderer->GetNumTrisClipped(), gRenderer->GetNumRect(), gNumRectsClipped);
+				pspDebugScreenPrintf( "Dlist[%d] Cull[%d] | Tris[%d] Cull[%d] | Rect[%d] Clip[%d] ", gNumInstructionsExecuted, gNumDListsCulled, ctx.renderer->GetNumTrisRendered(), ctx.renderer->GetNumTrisClipped(), ctx.renderer->GetNumRect(), gNumRectsClipped);
 #else
 				pspDebugScreenPrintf( "FPS[%#.1f] VB[%d/%d] Sync[%#.1f%%]   ", gCurrentFramerate, u32( Fsync * f32( FramerateLimiter_GetTvFrequencyHz() ) ), FramerateLimiter_GetTvFrequencyHz(), Fsync * 100.0f );
 #endif
@@ -273,7 +273,6 @@ void CGraphicsPluginImpl::RomClosed()
 		ctx.textureCache->Clear();
 		ctx.textureCache.reset();
 	}
-	DestroyRenderer();
 
 }
 

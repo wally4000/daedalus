@@ -182,7 +182,7 @@ void DLDebugger_ProcessDebugTask()
 			{
 				DLParser_Process(gInstructionCountLimit, NULL);
 
-				u64 mux = gRenderer->GetMux();
+				u64 mux = ctx.renderer->GetMux();
 				u32 mux_hi = mux >> 32;
 				u32 mux_lo = mux & 0xffffffff;
 
@@ -192,11 +192,11 @@ void DLDebugger_ProcessDebugTask()
 					mux_hi, mux_lo);
 				connection->WriteF("\t\"rdpOtherModeH\": \"0x%08x\",\n", gRDPOtherMode.H);
 				connection->WriteF("\t\"rdpOtherModeL\": \"0x%08x\",\n", gRDPOtherMode.L);
-				connection->WriteF("\t\"fillColor\": \"0x%08x\",\n", gRenderer->GetFillColour());	// FIXME: this is usually 16-bit
-				connection->WriteF("\t\"envColor\": \"0x%08x\",\n", gRenderer->GetEnvColour().GetColour());
-				connection->WriteF("\t\"primColor\": \"0x%08x\",\n", gRenderer->GetPrimitiveColour().GetColour());
-				connection->WriteF("\t\"blendColour\": \"0x%08x\",\n", gRenderer->GetBlendColour().GetColour());
-				connection->WriteF("\t\"fogColor\": \"0x%08x\",\n", gRenderer->GetFogColour().GetColour());
+				connection->WriteF("\t\"fillColor\": \"0x%08x\",\n", ctx.renderer->GetFillColour());	// FIXME: this is usually 16-bit
+				connection->WriteF("\t\"envColor\": \"0x%08x\",\n", ctx.renderer->GetEnvColour().GetColour());
+				connection->WriteF("\t\"primColor\": \"0x%08x\",\n", ctx.renderer->GetPrimitiveColour().GetColour());
+				connection->WriteF("\t\"blendColour\": \"0x%08x\",\n", ctx.renderer->GetBlendColour().GetColour());
+				connection->WriteF("\t\"fogColor\": \"0x%08x\",\n", ctx.renderer->GetFogColour().GetColour());
 				connection->WriteString("\t\"tiles\": [\n");
 				for (u32 i = 0; i < 8; ++i)
 				{

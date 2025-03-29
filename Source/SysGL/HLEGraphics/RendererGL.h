@@ -3,7 +3,7 @@
 
 #include "HLEGraphics/BaseRenderer.h"
 
-class RendererGL : public BaseRenderer
+class Renderer : public BaseRenderer
 {
 public:
 	virtual void		RestoreRenderStates();
@@ -29,7 +29,5 @@ private:
 	void 				RenderDaedalusVtxStreams(int prim, const float * positions, const TexCoord * uvs, const u32 * colours, int count);
 };
 
-// NB: this is equivalent to gRenderer, but points to the implementation class, for platform-specific functionality.
-extern RendererGL * gRendererGL;
 
 #endif // SYSGL_HLEGRAPHICS_RENDERERGL_H_

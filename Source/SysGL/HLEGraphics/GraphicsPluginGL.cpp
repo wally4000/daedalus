@@ -132,10 +132,6 @@ CGraphicsPluginImpl::~CGraphicsPluginImpl()
 
 bool CGraphicsPluginImpl::Initialise()
 {
-	if (!CreateRenderer())
-	{
-		return false;
-	}
 	if (!DLParser_Initialise())
 	{
 		return false;
@@ -185,7 +181,6 @@ void CGraphicsPluginImpl::RomClosed()
 
 	DLParser_Finalise();
 	ctx.textureCache.reset();
-	DestroyRenderer();
 }
 
  std::unique_ptr<CGraphicsPlugin>	CreateGraphicsPlugin()

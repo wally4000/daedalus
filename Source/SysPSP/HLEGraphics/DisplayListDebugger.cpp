@@ -256,7 +256,7 @@ void CCombinerExplorerDebugMenuOption::Display() const
 	{
 		DLDebug_PrintMux( stdout, selected_mux );
 
-		RendererPSP::SBlendStateEntry entry1( gRendererPSP->LookupBlendState( selected_mux, false ) );
+		Renderer::SBlendStateEntry entry1( gRendererPSP->LookupBlendState( selected_mux, false ) );
 		if( entry1.OverrideFunction != nullptr )
 		{
 			printf( "1 Cycle: Overridden\n" );
@@ -267,7 +267,7 @@ void CCombinerExplorerDebugMenuOption::Display() const
 			entry1.States->Print();
 		}
 
-		RendererPSP::SBlendStateEntry	entry2( gRendererPSP->LookupBlendState( selected_mux, true ) );
+		Renderer::SBlendStateEntry	entry2( gRendererPSP->LookupBlendState( selected_mux, true ) );
 		if( entry2.OverrideFunction != nullptr )
 		{
 			printf( "2 Cycles: Overridden\n" );

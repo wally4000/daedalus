@@ -40,12 +40,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Graphics/GraphicsContext.h"
 #ifdef DAEDALUS_PSP
 #include "SysPSP/Graphics/GraphicsContextPSP.h"
+#include "SysPSP/HLEGraphics/RendererPSP.h"
 #elif defined(DAEDALUS_CTR) 
 #include "SysCTR/Graphics/GraphicsContextCTR.h"
+#include "SysCTR/HLEGraphics/RendererCTR.h"
 #elif defined(DAEDALUS_GL)
 #include "SysGL/Graphics/GraphicsContextGL.h"
+#include "SysGL/HLEGraphics/RendererGL.h"
 #elif defined (DAEDALUS_GLES)
 #include "SysGL/Graphics/GraphicsContextGLES.h"
+#include "SysGLES/HLEGraphics/RendererGL.h"
 #endif
 
 
@@ -54,8 +58,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "SysPosix/HLEGraphics/TextureCacheWebDebug.h"
 #include "HLEGraphics/DisplayListDebugger.h"
 #endif
-
-
 
 
 #include "Utility/FramerateLimiter.h"
@@ -71,6 +73,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Debug/DebugLog.h"
 
 #include "HLEGraphics/GraphicsPlugin.h"
+#include "HLEGraphics/BaseRenderer.h"
 #include "HLEAudio/AudioPlugin.h"
 #include "Interface/Preferences.h"
 #include "Interface/RomDB.h"
@@ -282,6 +285,17 @@ bool Init_ROMBuffer(SystemContext& ctx)
 	return true;
 }
 
+bool Init_Renderer(SystemContext& ctx)
+{
+	DAEDALUS_ASSERT_Q(ctx.renderer == NULL);
+	ctx.renderer = std::make_unique<Renderer>(); 
+	return true;
+}
+void Destroy_Renderer(SystemContext& ctx)
+{
+	ctx.renderer.reset();
+}
+
 static void Destroy_ROMBuffer(SystemContext& ctx) {
 	ctx.gROMFileMemory.reset();
 }
@@ -333,7 +347,7 @@ const std::vector<SysEntityEntry> gSysInitTable =
 #ifdef DAEDALUS_ENABLE_PROFILING
 	{"Profiler",             Profiler_Init,              Profiler_Fini},
 #endif
-
+	{"Renderer", 			 Init_Renderer, 			 Destroy_Renderer},
 	{"ROM Database",         Init_RomDB,              	 Destroy_RomDB},
 	{"ROM Settings",         Init_RomSettingsDB,     	 Destroy_RomSettingsDB},
 	{"InputManager",         Init_InputManager,       	 Destroy_InputManager},

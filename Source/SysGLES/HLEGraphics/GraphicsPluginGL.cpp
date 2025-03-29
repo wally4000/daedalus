@@ -131,10 +131,6 @@ CGraphicsPluginImpl::~CGraphicsPluginImpl()
 
 bool CGraphicsPluginImpl::Initialise()
 {
-	if (!CreateRenderer())
-	{
-		return false;
-	}
 
 
 
@@ -186,7 +182,6 @@ void CGraphicsPluginImpl::RomClosed()
 	DBGConsole_Msg(0, "Finalising GLGraphics");
 
 	DLParser_Finalise();
-	DestroyRenderer();
 }
 
 class std::unique_ptr<CGraphicsPlugin>	CreateGraphicsPlugin()

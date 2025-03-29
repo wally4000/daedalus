@@ -20,8 +20,7 @@
 #include "Utility/Profiler.h"
 #include <glm/gtc/type_ptr.hpp> 
 
-BaseRenderer *gRenderer    = nullptr;
-RendererCTR  *gRendererCTR = nullptr;
+
 
 extern float 	*gVertexBuffer;
 extern uint32_t	*gColorBuffer;
@@ -165,7 +164,7 @@ static void InitBlenderMode()
 	}
 }
 
-RendererCTR::RendererCTR()
+Renderer::Renderer()
 {
 	//
 	//	Set up RGB = T0, A = T0
@@ -199,13 +198,13 @@ RendererCTR::RendererCTR()
 
 }
 
-RendererCTR::~RendererCTR()
+Renderer::~Renderer()
 {
 	delete mFillBlendStates;
 	delete mCopyBlendStates;
 }
 
-void RendererCTR::RestoreRenderStates()
+void Renderer::RestoreRenderStates()
 {	
 	// Initialise the device to our default state
 	glEnable(GL_TEXTURE_2D);
@@ -241,10 +240,10 @@ void RendererCTR::RestoreRenderStates()
 	glColor3f(1.0f, 1.0f, 1.0f);
 }
 
-RendererCTR::SBlendStateEntry RendererCTR::LookupBlendState( u64 mux, bool two_cycles )
+Renderer::SBlendStateEntry Renderer::LookupBlendState( u64 mux, bool two_cycles )
 {
 	#ifdef DAEDALUS_DEBUG_DISPLAYLIST
-	DAEDALUS_PROFILE( "RendererCtr::LookupBlendState" );
+	DAEDALUS_PROFILE( "Renderer::LookupBlendState" );
 	mRecordedCombinerStates.insert( mux );
 	#endif
 
@@ -287,7 +286,7 @@ RendererCTR::SBlendStateEntry RendererCTR::LookupBlendState( u64 mux, bool two_c
 	return entry;
 }
 
-void RendererCTR::DrawPrimitives(DaedalusVtx * p_vertices, u32 num_vertices, u32 triangle_mode, bool has_texture)
+void Renderer::DrawPrimitives(DaedalusVtx * p_vertices, u32 num_vertices, u32 triangle_mode, bool has_texture)
 {
 	if((gVertexCount + num_vertices + 1) > gMaxVertices)
 	{
@@ -316,7 +315,7 @@ void RendererCTR::DrawPrimitives(DaedalusVtx * p_vertices, u32 num_vertices, u32
 	gVertexCount += num_vertices;
 }
 
-void RendererCTR::RenderUsingRenderSettings( const CBlendStates * states, DaedalusVtx * p_vertices, u32 num_vertices, u32 triangle_mode)
+void Renderer::RenderUsingRenderSettings( const CBlendStates * states, DaedalusVtx * p_vertices, u32 num_vertices, u32 triangle_mode)
 {
 	const CAlphaRenderSettings *	alpha_settings( states->GetAlphaSettings() );
 
@@ -449,7 +448,7 @@ void RendererCTR::RenderUsingRenderSettings( const CBlendStates * states, Daedal
 }
 
 
-void RendererCTR::RenderUsingCurrentBlendMode(const float* mat_project, DaedalusVtx * p_vertices, u32 num_vertices, u32 triangle_mode, bool disable_zbuffer )
+void Renderer::RenderUsingCurrentBlendMode(const float* mat_project, DaedalusVtx * p_vertices, u32 num_vertices, u32 triangle_mode, bool disable_zbuffer )
 {
 	glMatrixMode(GL_PROJECTION);
 	glLoadMatrixf((float*)mat_project);
@@ -603,7 +602,7 @@ void RendererCTR::RenderUsingCurrentBlendMode(const float* mat_project, Daedalus
 
 }
 
-void RendererCTR::RenderTriangles(DaedalusVtx *p_vertices, u32 num_vertices, bool disable_zbuffer)
+void Renderer::RenderTriangles(DaedalusVtx *p_vertices, u32 num_vertices, bool disable_zbuffer)
 {
 	if (mTnL.Flags.Texture)
 	{
@@ -635,7 +634,7 @@ void RendererCTR::RenderTriangles(DaedalusVtx *p_vertices, u32 num_vertices, boo
 	RenderUsingCurrentBlendMode(gProjection.m, p_vertices, num_vertices, GL_TRIANGLES, disable_zbuffer);
 }
 
-void RendererCTR::TexRect(u32 tile_idx, const glm::vec2 & xy0, const glm::vec2 & xy1, TexCoord st0, TexCoord st1)
+void Renderer::TexRect(u32 tile_idx, const glm::vec2 & xy0, const glm::vec2 & xy1, TexCoord st0, TexCoord st1)
 {
 	// FIXME(strmnnrmn): in copy mode, depth buffer is always disabled. Might not need to check this explicitly.
 	UpdateTileSnapshots( tile_idx );
@@ -707,7 +706,7 @@ void RendererCTR::TexRect(u32 tile_idx, const glm::vec2 & xy0, const glm::vec2 &
 	RenderUsingCurrentBlendMode(glm::value_ptr(mScreenToDevice), p_vertices, 4, GL_TRIANGLE_STRIP, gRDPOtherMode.depth_source ? false : true);
 }
 
-void RendererCTR::TexRectFlip(u32 tile_idx, const glm::vec2 & xy0, const glm::vec2 & xy1, TexCoord st0, TexCoord st1)
+void Renderer::TexRectFlip(u32 tile_idx, const glm::vec2 & xy0, const glm::vec2 & xy1, TexCoord st0, TexCoord st1)
 {
 	// FIXME(strmnnrmn): in copy mode, depth buffer is always disabled. Might not need to check this explicitly.
 	UpdateTileSnapshots( tile_idx );
@@ -764,7 +763,7 @@ void RendererCTR::TexRectFlip(u32 tile_idx, const glm::vec2 & xy0, const glm::ve
 	RenderUsingCurrentBlendMode(glm::value_ptr(mScreenToDevice), p_vertices, 4, GL_TRIANGLE_STRIP, gRDPOtherMode.depth_source ? false : true);
 }
 
-void RendererCTR::FillRect(const glm::vec2 & xy0, const glm::vec2 & xy1, u32 color)
+void Renderer::FillRect(const glm::vec2 & xy0, const glm::vec2 & xy1, u32 color)
 {
 	glm::vec2 screen0;
 	glm::vec2 screen1;
@@ -801,7 +800,7 @@ void RendererCTR::FillRect(const glm::vec2 & xy0, const glm::vec2 & xy1, u32 col
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 }
 
-void RendererCTR::Draw2DTexture(f32 x0, f32 y0, f32 x1, f32 y1,
+void Renderer::Draw2DTexture(f32 x0, f32 y0, f32 x1, f32 y1,
 								f32 u0, f32 v0, f32 u1, f32 v1,
 								const std::shared_ptr<CNativeTexture> texture)
 {
@@ -850,7 +849,7 @@ void RendererCTR::Draw2DTexture(f32 x0, f32 y0, f32 x1, f32 y1,
 	RenderUsingCurrentBlendMode(glm::value_ptr(mScreenToDevice), p_vertices, 4, GL_TRIANGLE_STRIP, true);
 }
 
-void RendererCTR::Draw2DTextureR(f32 x0, f32 y0, f32 x1, f32 y1, f32 x2,
+void Renderer::Draw2DTextureR(f32 x0, f32 y0, f32 x1, f32 y1, f32 x2,
 								 f32 y2, f32 x3, f32 y3, f32 s, f32 t,
 								 const std::shared_ptr<CNativeTexture> texture)
 {	
@@ -891,18 +890,4 @@ void RendererCTR::Draw2DTextureR(f32 x0, f32 y0, f32 x1, f32 y1, f32 x2,
 	
 	glEnable(GL_TEXTURE_2D);
 	RenderUsingCurrentBlendMode(glm::value_ptr(mScreenToDevice), p_vertices, 4, GL_TRIANGLE_FAN, true);
-}
-
-bool CreateRenderer()
-{
-	gRendererCTR = new RendererCTR();
-	gRenderer    = gRendererCTR;
-	return true;
-}
-
-void DestroyRenderer()
-{
-	delete gRendererCTR;
-	gRendererCTR = nullptr;
-	gRenderer    = nullptr;
 }

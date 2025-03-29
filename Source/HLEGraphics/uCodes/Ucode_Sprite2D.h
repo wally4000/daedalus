@@ -97,7 +97,7 @@ static void DLParser_Sprite2DScaleFlip( MicroCodeCommand command, Sprite2DInfo *
 // 	DL_PF( "    Sprite2D Texture:[Width:%d, Height:%d] -> Address[0x%08x] Format[%s] TLUT[0x%x] Pitch[%d]",
 // 		ti.GetWidth(), ti.GetHeight(), ti.GetLoadAddress(), ti.GetFormatName(), ti.GetTlutAddress(), ti.GetPitch());
 
-// 	gRenderer->LoadTextureDirectly(ti);
+// 	ctx.renderer->LoadTextureDirectly(ti);
 // }
 
 //*****************************************************************************
@@ -145,9 +145,9 @@ static void DLParser_Sprite2DScaleFlip( MicroCodeCommand command, Sprite2DInfo *
 // 	DL_PF("    Sprite2D Tex:(%.1f, %.1f) -> (%.1f, %.1f)", uls, lrs, ult, lrt);
 	
 // 	#ifdef DAEDALUS_CTR
-// 	gRenderer->Draw2DTexture( ulx, uly, lrx, lry, uls, ult, lrs, lrt, texture );
+// 	ctx.renderer->Draw2DTexture( ulx, uly, lrx, lry, uls, ult, lrs, lrt, texture );
 // 	#else
-// 	gRenderer->Draw2DTexture( ulx, uly, lrx, lry, uls, ult, lrs, lrt );
+// 	ctx.renderer->Draw2DTexture( ulx, uly, lrx, lry, uls, ult, lrs, lrt );
 // 	#endif
 // }
 
@@ -189,7 +189,7 @@ void DLParser_Sprite2DDraw( MicroCodeCommand command, const Sprite2DInfo &info, 
 	ti.SetTlutAddress(RDPSegAddr(sprite->tlut));
 	ti.SetTLutFormat(kTT_RGBA16);
 
-	auto texture = gRenderer->LoadTextureDirectly(ti);
+	auto texture = ctx.renderer->LoadTextureDirectly(ti);
 
 	s16 px = (s16)((command.inst.cmd1>>16)&0xFFFF)/4;
 	s16 py = (s16)(command.inst.cmd1 &0xFFFF)/4;
@@ -208,7 +208,7 @@ void DLParser_Sprite2DDraw( MicroCodeCommand command, const Sprite2DInfo &info, 
 	if( info.flipY )
 		std::swap< s32 >( frameY, frameH );
 
-	gRenderer->Draw2DTexture( (f32)frameX, (f32)frameY, (f32)frameW, (f32)frameH,
+	ctx.renderer->Draw2DTexture( (f32)frameX, (f32)frameY, (f32)frameW, (f32)frameH,
 							  0.0f, 0.0f, (f32)sprite->width, (f32)sprite->height,
 							  texture );
 }

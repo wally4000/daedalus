@@ -41,15 +41,15 @@ void DLParser_DumpVtxInfoDKR(u32 address, u32 v0_idx, u32 num_verts)
 			f32 y = *(s16*)((psSrc + 2) ^ 2);
 			f32 z = *(s16*)((psSrc + 4) ^ 2);
 
-			//u16 wFlags = gRenderer->GetVtxFlags( idx ); //(u16)psSrc[3^0x1];
+			//u16 wFlags = ctx.renderer->GetVtxFlags( idx ); //(u16)psSrc[3^0x1];
 
 			u8 a = *(u8*)((psSrc + 6) ^ 3);	//R
 			u8 b = *(u8*)((psSrc + 7) ^ 3);	//G
 			u8 c = *(u8*)((psSrc + 8) ^ 3);	//B
 			u8 d = *(u8*)((psSrc + 9) ^ 3);	//A
 
-			const glm::vec4 & t = gRenderer->GetTransformedVtxPos( idx );
-			const glm::vec4 & p = gRenderer->GetProjectedVtxPos( idx );
+			const glm::vec4 & t = ctx.renderer->GetTransformedVtxPos( idx );
+			const glm::vec4 & p = ctx.renderer->GetProjectedVtxPos( idx );
 			#ifdef DAEDALUS_DEBUG_DISPLAYLIST
 			DL_PF("    #%02d Pos:{% 0.1f,% 0.1f,% 0.1f}->{% 0.1f,% 0.1f,% 0.1f} Proj:{% 6f,% 6f,% 6f,% 6f} RGBA:{%02x%02x%02x%02x}",
 				idx, x, y, z, t.x, t.y, t.z, p.x/p.w, p.y/p.w, p.z/p.w, p.w, a, b, c, d );
@@ -105,7 +105,7 @@ void DLParser_GBI0_Vtx_DKR( MicroCodeCommand command )
 	DL_PF("    Address[0x%08x] v0[%d] Num[%d]", address, v0, n);
 	if (IsVertexInfoValid(address, 10, v0, n))
 	{
-		gRenderer->SetNewVertexInfoDKR(address, v0, n, gDKRBillBoard);
+		ctx.renderer->SetNewVertexInfoDKR(address, v0, n, gDKRBillBoard);
 		gDKRVtxCount += n;
 
 #ifdef DAEDALUS_DEBUG_DISPLAYLIST
@@ -156,7 +156,7 @@ void DLParser_Mtx_DKR( MicroCodeCommand command )
 	}
 
 	// Load matrix from address
-	gRenderer->SetDKRMat(address, mul, index);
+	ctx.renderer->SetDKRMat(address, mul, index);
 }
 
 //*****************************************************************************
@@ -177,7 +177,7 @@ void DLParser_MoveWord_DKR( MicroCodeCommand command )
 		{
 			u32 idx = (command.inst.cmd1 >> 6) & 0x3;
 			DL_PF("    DKR MtxIdx: %d", idx);
-			gRenderer->DKRMtxChanged( idx );
+			ctx.renderer->DKRMtxChanged( idx );
 		}
 		break;
 
@@ -216,24 +216,24 @@ void DLParser_DMA_Tri_DKR( MicroCodeCommand command )
 		u32 v1_idx = tri->v1;
 		u32 v2_idx = tri->v2;
 
-		gRenderer->SetCullMode( !(tri->flag & 0x40), true );
+		ctx.renderer->SetCullMode( !(tri->flag & 0x40), true );
 
 		//if( info & 0x40000000 )
 		//{	// no cull
-		//	gRenderer->SetCullMode( false, false );
+		//	ctx.renderer->SetCullMode( false, false );
 		//}
 		//else
 		//{
 		//	// back culling
-		//	gRenderer->SetCullMode( true, true );
+		//	ctx.renderer->SetCullMode( true, true );
 
 		//	//if (RDP_View_Scales_X < 0)
 		//	//{   // back culling
-		//	//	gRenderer->SetCullMode( true, true );
+		//	//	ctx.renderer->SetCullMode( true, true );
 		//	//}
 		//	//else
 		//	//{   // front cull
-		//	//	gRenderer->SetCullMode( true, false );
+		//	//	ctx.renderer->SetCullMode( true, false );
 		//	//}
 		//}
 		DL_PF("    Index[%d %d %d] Cull[%s] uv_TexCoord[%0.2f|%0.2f] [%0.2f|%0.2f] [%0.2f|%0.2f]",
@@ -250,26 +250,26 @@ void DLParser_DMA_Tri_DKR( MicroCodeCommand command )
 		const u32 new_v1_idx = i * 3 + 33;
 		const u32 new_v2_idx = i * 3 + 34;
 
-		gRenderer->CopyVtx( v0_idx, new_v0_idx);
-		gRenderer->CopyVtx( v1_idx, new_v1_idx);
-		gRenderer->CopyVtx( v2_idx, new_v2_idx);
+		ctx.renderer->CopyVtx( v0_idx, new_v0_idx);
+		ctx.renderer->CopyVtx( v1_idx, new_v1_idx);
+		ctx.renderer->CopyVtx( v2_idx, new_v2_idx);
 
-		if( gRenderer->AddTri(new_v0_idx, new_v1_idx, new_v2_idx) )
+		if( ctx.renderer->AddTri(new_v0_idx, new_v1_idx, new_v2_idx) )
 		{
 			tris_added = true;
 			// Generate texture coordinates...
-			gRenderer->SetVtxTextureCoord( new_v0_idx, tri->s0, tri->t0 );
-			gRenderer->SetVtxTextureCoord( new_v1_idx, tri->s1, tri->t1 );
-			gRenderer->SetVtxTextureCoord( new_v2_idx, tri->s2, tri->t2 );
+			ctx.renderer->SetVtxTextureCoord( new_v0_idx, tri->s0, tri->t0 );
+			ctx.renderer->SetVtxTextureCoord( new_v1_idx, tri->s1, tri->t1 );
+			ctx.renderer->SetVtxTextureCoord( new_v2_idx, tri->s2, tri->t2 );
 		}
 #else
-		if( gRenderer->AddTri(v0_idx, v1_idx, v2_idx) )
+		if( ctx.renderer->AddTri(v0_idx, v1_idx, v2_idx) )
 		{
 			tris_added = true;
 			// Generate texture coordinates...
-			gRenderer->SetVtxTextureCoord( v0_idx, tri->s0, tri->t0 );
-			gRenderer->SetVtxTextureCoord( v1_idx, tri->s1, tri->t1 );
-			gRenderer->SetVtxTextureCoord( v2_idx, tri->s2, tri->t2 );
+			ctx.renderer->SetVtxTextureCoord( v0_idx, tri->s0, tri->t0 );
+			ctx.renderer->SetVtxTextureCoord( v1_idx, tri->s1, tri->t1 );
+			ctx.renderer->SetVtxTextureCoord( v2_idx, tri->s2, tri->t2 );
 		}
 #endif
 		tri++;
@@ -277,7 +277,7 @@ void DLParser_DMA_Tri_DKR( MicroCodeCommand command )
 
 	if(tris_added)
 	{
-		gRenderer->FlushTris();
+		ctx.renderer->FlushTris();
 	}
 
 	gDKRVtxCount = 0;
@@ -291,14 +291,14 @@ void DLParser_GBI1_Texture_DKR( MicroCodeCommand command )
 	DL_PF("    Texture its enabled: Level[%d] Tile[%d]", command.texture.level, command.texture.tile);
 
 	// Force enable texture in DKR Ucode, fixes static texture bug etc
-	gRenderer->SetTextureEnable( true );
-	gRenderer->SetTextureTile( command.texture.tile );
+	ctx.renderer->SetTextureEnable( true );
+	ctx.renderer->SetTextureTile( command.texture.tile );
 
 	f32 scale_s = f32(command.texture.scaleS) / (65536.0f * 32.0f);
 	f32 scale_t = f32(command.texture.scaleT)  / (65536.0f * 32.0f);
 
 	DL_PF("    ScaleS[%0.4f], ScaleT[%0.4f]", scale_s*32.0f, scale_t*32.0f);
-	gRenderer->SetTextureScale( scale_s, scale_t );
+	ctx.renderer->SetTextureScale( scale_s, scale_t );
 }
 
 #endif // HLEGRAPHICS_UCODES_UCODE_DKR_H_

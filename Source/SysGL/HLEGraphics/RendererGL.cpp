@@ -23,8 +23,7 @@
 #include "Utility/Paths.h"
 #include "Utility/Profiler.h"
 
-BaseRenderer * gRenderer   = NULL;
-RendererGL *   gRendererGL = NULL;
+
 
 static bool gAccurateUVPipe = true;
 
@@ -513,7 +512,7 @@ static void InitShaderProgram(ShaderProgram * program, const ShaderConfiguration
 	glVertexAttribPointer(attrloc, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0, 0);
 }
 
-void RendererGL::MakeShaderConfigFromCurrentState(ShaderConfiguration * config) const
+void Renderer::MakeShaderConfigFromCurrentState(ShaderConfiguration * config) const
 {
 	config->Mux = mMux;
 	config->CycleType = gRDPOtherMode.cycle_type;
@@ -600,7 +599,7 @@ static ShaderProgram * GetShaderForConfig(const ShaderConfiguration & config)
 	return program;
 }
 
-void RendererGL::RestoreRenderStates()
+void Renderer::RestoreRenderStates()
 {
 	// Initialise the device to our default state
 
@@ -641,7 +640,7 @@ void RendererGL::RestoreRenderStates()
 
 // Strip out vertex stream into separate buffers.
 // TODO(strmnnrmn): Renderer should support generating this data directly.
-void RendererGL::RenderDaedalusVtx(int prim, const DaedalusVtx * vertices, int count)
+void Renderer::RenderDaedalusVtx(int prim, const DaedalusVtx * vertices, int count)
 {
 	DAEDALUS_ASSERT(count <= kMaxVertices, "Too many vertices!");
 
@@ -670,7 +669,7 @@ void RendererGL::RenderDaedalusVtx(int prim, const DaedalusVtx * vertices, int c
 	RenderDaedalusVtxStreams(prim, &gPositionBuffer[0][0], &gTexCoordBuffer[0], &gColorBuffer[0], count);
 }
 
-void RendererGL::RenderDaedalusVtxStreams(int prim, const float * positions, const TexCoord * uvs, const u32 * colours, int count)
+void Renderer::RenderDaedalusVtxStreams(int prim, const float * positions, const TexCoord * uvs, const u32 * colours, int count)
 {
     // --- Update positions ---
     glBindBuffer(GL_ARRAY_BUFFER, gVBOs[kPositionBuffer]);
@@ -884,8 +883,8 @@ inline u32 MakeMirror(u32 mirror, u32 m)
 {
 	return (mirror && m) ? (1<<m) : 0;
 }
-void RendererGL::PrepareRenderState(const float *mat_project, bool disable_zbuffer) {
-    DAEDALUS_PROFILE("RendererGL::PrepareRenderState");
+void Renderer::PrepareRenderState(const float *mat_project, bool disable_zbuffer) {
+    DAEDALUS_PROFILE("Renderer::PrepareRenderState");
 
     if (disable_zbuffer) {
         glDisable(GL_DEPTH_TEST);
@@ -991,7 +990,7 @@ void RendererGL::PrepareRenderState(const float *mat_project, bool disable_zbuff
 
 // FIXME(strmnnrmn): for fill/copy modes this does more work than needed.
 // It ends up copying colour/uv coords when not needed, and can use a shader uniform for the fill colour.
-void RendererGL::RenderTriangles( DaedalusVtx * p_vertices, u32 num_vertices, bool disable_zbuffer )
+void Renderer::RenderTriangles( DaedalusVtx * p_vertices, u32 num_vertices, bool disable_zbuffer )
 {
 	if (mTnL.Flags.Texture)
 	{
@@ -1023,7 +1022,7 @@ void RendererGL::RenderTriangles( DaedalusVtx * p_vertices, u32 num_vertices, bo
 	RenderDaedalusVtx(GL_TRIANGLES, p_vertices, num_vertices);
 }
 
-void RendererGL::TexRect( u32 tile_idx, const glm::vec2 & xy0, const glm::vec2 & xy1, TexCoord st0, TexCoord st1 )
+void Renderer::TexRect( u32 tile_idx, const glm::vec2 & xy0, const glm::vec2 & xy1, TexCoord st0, TexCoord st1 )
 {
 	// FIXME(strmnnrmn): in copy mode, depth buffer is always disabled. Might not need to check this explicitly.
 
@@ -1073,7 +1072,7 @@ void RendererGL::TexRect( u32 tile_idx, const glm::vec2 & xy0, const glm::vec2 &
 #endif
 }
 
-void RendererGL::TexRectFlip( u32 tile_idx, const glm::vec2 & xy0, const glm::vec2 & xy1, TexCoord st0, TexCoord st1 )
+void Renderer::TexRectFlip( u32 tile_idx, const glm::vec2 & xy0, const glm::vec2 & xy1, TexCoord st0, TexCoord st1 )
 {
 	UpdateTileSnapshots( tile_idx );
 
@@ -1121,7 +1120,7 @@ void RendererGL::TexRectFlip( u32 tile_idx, const glm::vec2 & xy0, const glm::ve
 #endif
 }
 
-void RendererGL::FillRect( const glm::vec2 & xy0, const glm::vec2 & xy1, u32 color )
+void Renderer::FillRect( const glm::vec2 & xy0, const glm::vec2 & xy1, u32 color )
 {
 	PrepareRenderState(glm::value_ptr(mScreenToDevice), gRDPOtherMode.depth_source ? false : true);
 
@@ -1163,10 +1162,10 @@ void RendererGL::FillRect( const glm::vec2 & xy0, const glm::vec2 & xy1, u32 col
 #endif
 }
 
-void RendererGL::Draw2DTexture(f32 x0, f32 y0, f32 x1, f32 y1,
+void Renderer::Draw2DTexture(f32 x0, f32 y0, f32 x1, f32 y1,
 							   f32 u0, f32 v0, f32 u1, f32 v1, std::shared_ptr<CNativeTexture> texture)
 {
-	DAEDALUS_PROFILE( "RendererGL::Draw2DTexture" );
+	DAEDALUS_PROFILE( "Renderer::Draw2DTexture" );
 	texture->InstallTexture();
 	// FIXME(strmnnrmn): is this right? Gross anyway.
 	gRDPOtherMode.cycle_type = CYCLE_COPY;
@@ -1211,14 +1210,14 @@ void RendererGL::Draw2DTexture(f32 x0, f32 y0, f32 x1, f32 y1,
 	RenderDaedalusVtxStreams(GL_TRIANGLE_STRIP, positions, uvs, colours, 4);
 }
 
-void RendererGL::Draw2DTextureR(f32 x0, f32 y0,
+void Renderer::Draw2DTextureR(f32 x0, f32 y0,
 								f32 x1, f32 y1,
 								f32 x2, f32 y2,
 								f32 x3, f32 y3,
 								f32 s, f32 t, std::shared_ptr<CNativeTexture> texture)	// With Rotation
 {
 		texture->InstallTexture();
-	DAEDALUS_PROFILE( "RendererGL::Draw2DTextureR" );
+	DAEDALUS_PROFILE( "Renderer::Draw2DTextureR" );
 
 	// FIXME(strmnnrmn): is this right? Gross anyway.
 	gRDPOtherMode.cycle_type = CYCLE_COPY;
@@ -1255,18 +1254,4 @@ void RendererGL::Draw2DTextureR(f32 x0, f32 y0,
 	};
 
 	RenderDaedalusVtxStreams(GL_TRIANGLE_FAN, positions, uvs, colours, 4);
-}
-
-bool CreateRenderer()
-{
-	DAEDALUS_ASSERT_Q(gRenderer == NULL);
-	gRendererGL = new RendererGL();
-	gRenderer   = gRendererGL;
-	return true;
-}
-void DestroyRenderer()
-{
-	delete gRendererGL;
-	gRendererGL = NULL;
-	gRenderer   = NULL;
 }

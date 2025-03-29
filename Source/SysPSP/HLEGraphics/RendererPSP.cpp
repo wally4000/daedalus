@@ -2,6 +2,8 @@
 #include "Base/Types.h"
 
 #include <pspgu.h>
+
+
 #include <glm/gtc/type_ptr.hpp>  
 #include "Combiner/BlendConstant.h"
 #include "Combiner/CombinerTree.h"
@@ -10,6 +12,7 @@
 #include "Debug/Dump.h"
 #include "Graphics/GraphicsContext.h"
 #include "Graphics/NativeTexture.h"
+#include "HLEGraphics/BaseRenderer.h"
 #include "HLEGraphics/CachedTexture.h"
 #include "HLEGraphics/DLDebug.h"
 #include "HLEGraphics/RDPStateManager.h"
@@ -30,9 +33,6 @@
 // FIXME - surely these should be defined by a system header? Or GU_TRUE etc?
 #define GL_TRUE                           1
 #define GL_FALSE                          0
-
-BaseRenderer * gRenderer    = nullptr;
-RendererPSP  * gRendererPSP = nullptr;
 
 extern void InitBlenderMode( u32 blender );
 
@@ -149,7 +149,7 @@ u32 alignas(DATA_ALIGN) gSelectedTexture[kPlaceholderSize];
 
 #endif // DAEDALUS_DEBUG_DISPLAYLIST
 
-RendererPSP::RendererPSP()
+Renderer::Renderer()
 {
 	//
 	//	Set up RGB = T0, A = T0
@@ -204,13 +204,13 @@ RendererPSP::RendererPSP()
 #endif
 }
 
-RendererPSP::~RendererPSP()
+Renderer::~Renderer()
 {
 	delete mFillBlendStates;
 	delete mCopyBlendStates;
 }
 
-void RendererPSP::RestoreRenderStates()
+void Renderer::RestoreRenderStates()
 {
 	// Initialise the device to our default state
 
@@ -267,17 +267,17 @@ void RendererPSP::RestoreRenderStates()
 }
 
 #ifdef DAEDALUS_DEBUG_DISPLAYLIST
-void RendererPSP::ResetDebugState()
+void Renderer::ResetDebugState()
 {
 	BaseRenderer::ResetDebugState();
 	mRecordedCombinerStates.clear();
 }
 #endif
 
-RendererPSP::SBlendStateEntry RendererPSP::LookupBlendState( u64 mux, bool two_cycles )
+Renderer::SBlendStateEntry Renderer::LookupBlendState( u64 mux, bool two_cycles )
 {
 	#ifdef DAEDALUS_DEBUG_DISPLAYLIST
-	DAEDALUS_PROFILE( "RendererPSP::LookupBlendState" );
+	DAEDALUS_PROFILE( "Renderer::LookupBlendState" );
 	mRecordedCombinerStates.insert( mux );
 #endif
 
@@ -320,7 +320,7 @@ RendererPSP::SBlendStateEntry RendererPSP::LookupBlendState( u64 mux, bool two_c
 	return entry;
 }
 
-void RendererPSP::RenderTriangles( DaedalusVtx * p_vertices, u32 num_vertices, bool disable_zbuffer )
+void Renderer::RenderTriangles( DaedalusVtx * p_vertices, u32 num_vertices, bool disable_zbuffer )
 {
 	if( mTnL.Flags.Texture )
 	{
@@ -353,7 +353,7 @@ void RendererPSP::RenderTriangles( DaedalusVtx * p_vertices, u32 num_vertices, b
 	RenderUsingCurrentBlendMode( p_vertices, num_vertices, DRAW_MODE, GU_TRANSFORM_3D, disable_zbuffer );
 }
 
-inline void RendererPSP::RenderFog( DaedalusVtx * p_vertices, u32 num_vertices, u32 triangle_mode, u32 render_flags )
+inline void Renderer::RenderFog( DaedalusVtx * p_vertices, u32 num_vertices, u32 triangle_mode, u32 render_flags )
 {
 	//This will render a second pass on triangles that are fog enabled to blend in the fog color as a function of depth(alpha) //Corn
 	//
@@ -381,11 +381,11 @@ inline void RendererPSP::RenderFog( DaedalusVtx * p_vertices, u32 num_vertices, 
 	}
 }
 
-void RendererPSP::RenderUsingCurrentBlendMode( DaedalusVtx * p_vertices, u32 num_vertices, u32 triangle_mode, u32 render_mode, bool disable_zbuffer )
+void Renderer::RenderUsingCurrentBlendMode( DaedalusVtx * p_vertices, u32 num_vertices, u32 triangle_mode, u32 render_mode, bool disable_zbuffer )
 {
 	static bool	ZFightingEnabled = false;
 
-	DAEDALUS_PROFILE( "RendererPSP::RenderUsingCurrentBlendMode" );
+	DAEDALUS_PROFILE( "Renderer::RenderUsingCurrentBlendMode" );
 
 	if ( disable_zbuffer )
 	{
@@ -560,9 +560,9 @@ void RendererPSP::RenderUsingCurrentBlendMode( DaedalusVtx * p_vertices, u32 num
 	}
 }
 
-void RendererPSP::RenderUsingRenderSettings( const CBlendStates * states, DaedalusVtx * p_vertices, u32 num_vertices, u32 triangle_mode, u32 render_flags)
+void Renderer::RenderUsingRenderSettings( const CBlendStates * states, DaedalusVtx * p_vertices, u32 num_vertices, u32 triangle_mode, u32 render_flags)
 {
-	DAEDALUS_PROFILE( "RendererPSP::RenderUsingRenderSettings" );
+	DAEDALUS_PROFILE( "Renderer::RenderUsingRenderSettings" );
 
 	const CAlphaRenderSettings *	alpha_settings( states->GetAlphaSettings() );
 
@@ -687,7 +687,7 @@ void RendererPSP::RenderUsingRenderSettings( const CBlendStates * states, Daedal
 	}
 }
 
-void RendererPSP::TexRect( u32 tile_idx, const glm::vec2 & xy0, const glm::vec2 & xy1, TexCoord st0, TexCoord st1 )
+void Renderer::TexRect( u32 tile_idx, const glm::vec2 & xy0, const glm::vec2 & xy1, TexCoord st0, TexCoord st1 )
 {
 	mTnL.Flags.Fog = 0;	//For now we force fog off for textrect, normally it should be fogged when depth_source is set //Corn
 
@@ -782,7 +782,7 @@ void RendererPSP::TexRect( u32 tile_idx, const glm::vec2 & xy0, const glm::vec2 
 #endif
 }
 
-void RendererPSP::TexRectFlip( u32 tile_idx, const glm::vec2 & xy0, const glm::vec2 & xy1, TexCoord st0, TexCoord st1 )
+void Renderer::TexRectFlip( u32 tile_idx, const glm::vec2 & xy0, const glm::vec2 & xy1, TexCoord st0, TexCoord st1 )
 {
 	mTnL.Flags.Fog = 0;	//For now we force fog off for textrect, normally it should be fogged when depth_source is set //Corn
 
@@ -844,7 +844,7 @@ void RendererPSP::TexRectFlip( u32 tile_idx, const glm::vec2 & xy0, const glm::v
 #endif
 }
 
-void RendererPSP::FillRect( const glm::vec2 & xy0, const glm::vec2 & xy1, u32 color )
+void Renderer::FillRect( const glm::vec2 & xy0, const glm::vec2 & xy1, u32 color )
 {
 /*
 	if ( (gRDPOtherMode._u64 & 0xffff0000) == 0x5f500000 )	//Used by Wave Racer
@@ -890,11 +890,11 @@ void RendererPSP::FillRect( const glm::vec2 & xy0, const glm::vec2 & xy1, u32 co
 #endif
 }
 
-void RendererPSP::Draw2DTexture(f32 x0, f32 y0, f32 x1, f32 y1,
+void Renderer::Draw2DTexture(f32 x0, f32 y0, f32 x1, f32 y1,
 								f32 u0, f32 v0, f32 u1, f32 v1, std::shared_ptr<CNativeTexture> texture)
 {
 	texture->InstallTexture();
-	DAEDALUS_PROFILE( "RendererPSP::Draw2DTexture" );
+	DAEDALUS_PROFILE( "Renderer::Draw2DTexture" );
 	TextureVtx *p_verts = (TextureVtx*)sceGuGetMemory(4*sizeof(TextureVtx));
 
 	// Enable or Disable ZBuffer test
@@ -958,12 +958,12 @@ void RendererPSP::Draw2DTexture(f32 x0, f32 y0, f32 x1, f32 y1,
 	sceGuDrawArray( GU_TRIANGLE_STRIP, GU_TEXTURE_32BITF | GU_VERTEX_32BITF | GU_TRANSFORM_2D, 4, 0, p_verts );
 }
 
-void RendererPSP::Draw2DTextureR(f32 x0, f32 y0, f32 x1, f32 y1,
+void Renderer::Draw2DTextureR(f32 x0, f32 y0, f32 x1, f32 y1,
 								 f32 x2, f32 y2, f32 x3, f32 y3,
 								 f32 s, f32 t, std::shared_ptr<CNativeTexture> texture)	// With Rotation
 {
 	texture->InstallTexture();
-	DAEDALUS_PROFILE( "RendererPSP::Draw2DTextureR" );
+	DAEDALUS_PROFILE( "Renderer::Draw2DTextureR" );
 	TextureVtx *p_verts = (TextureVtx*)sceGuGetMemory(4*sizeof(TextureVtx));
 
 	// Enable or Disable ZBuffer test
@@ -1024,7 +1024,7 @@ void RendererPSP::Draw2DTextureR(f32 x0, f32 y0, f32 x1, f32 y1,
 
 // The following blitting code was taken from The TriEngine.
 // See http://www.assembla.com/code/openTRI for more information.
-void RendererPSP::Draw2DTextureBlit(f32 x, f32 y, f32 width, f32 height,
+void Renderer::Draw2DTextureBlit(f32 x, f32 y, f32 width, f32 height,
 									f32 u0, f32 v0, f32 u1, f32 v1,
 									const std::shared_ptr<CNativeTexture> texture)
 {
@@ -1118,7 +1118,7 @@ void RendererPSP::Draw2DTextureBlit(f32 x, f32 y, f32 width, f32 height,
 }
 
 #ifdef DAEDALUS_DEBUG_DISPLAYLIST
-void RendererPSP::SelectPlaceholderTexture( EPlaceholderTextureType type )
+void Renderer::SelectPlaceholderTexture( EPlaceholderTextureType type )
 {
 	switch( type )
 	{
@@ -1134,7 +1134,7 @@ void RendererPSP::SelectPlaceholderTexture( EPlaceholderTextureType type )
 
 #ifdef DAEDALUS_DEBUG_DISPLAYLIST
 // Used for Blend Explorer, or Nasty texture
-bool RendererPSP::DebugBlendmode( DaedalusVtx * p_vertices, u32 num_vertices, u32 triangle_mode, u32 render_flags, u64 mux )
+bool Renderer::DebugBlendmode( DaedalusVtx * p_vertices, u32 num_vertices, u32 triangle_mode, u32 render_flags, u64 mux )
 {
 	if( IsCombinerStateDisabled( mux ) )
 	{
@@ -1189,7 +1189,7 @@ bool RendererPSP::DebugBlendmode( DaedalusVtx * p_vertices, u32 num_vertices, u3
 
 
 #ifdef DAEDALUS_DEBUG_DISPLAYLIST
-void RendererPSP::DebugMux( const CBlendStates * states, DaedalusVtx * p_vertices, u32 num_vertices, u32 triangle_mode, u32 render_flags, u64 mux)
+void Renderer::DebugMux( const CBlendStates * states, DaedalusVtx * p_vertices, u32 num_vertices, u32 triangle_mode, u32 render_flags, u64 mux)
 {
 	// Only dump missing_mux when we awant to search for inexact blends aka HighlightInexactBlendModes is enabled.
 	// Otherwise will dump lotsa of missing_mux even though is not needed since was handled correctly by auto blendmode thing - Salvy
@@ -1227,21 +1227,3 @@ void RendererPSP::DebugMux( const CBlendStates * states, DaedalusVtx * p_vertice
 #endif // DAEDALUS_DEBUG_DISPLAYLIST
 
 
-
-
-
-bool CreateRenderer()
-{
-	#ifdef DAEDALUS_ENABLE_ASSERTS
-	DAEDALUS_ASSERT_Q(gRenderer == nullptr);
-	#endif
-	gRendererPSP = new RendererPSP();
-	gRenderer    = gRendererPSP;
-	return true;
-}
-void DestroyRenderer()
-{
-	delete gRendererPSP;
-	gRendererPSP = nullptr;
-	gRenderer    = nullptr;
-}

@@ -69,5 +69,3 @@ private:
 	BlendStatesMap		mBlendStatesMap;
 };
 
-// NB: this is equivalent to gRenderer, but points to the implementation class, for platform-specific functionality.
-extern RendererCTR * gRendererCTR;

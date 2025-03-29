@@ -32,7 +32,7 @@ void DLParser_GBI0_Vtx( MicroCodeCommand command )
 	DL_PF("    Address[0x%08x] v0[%d] Num[%d] Len[0x%04x]", address, v0, n, command.vtx0.len);
 	if (IsVertexInfoValid(address, 16, v0, n))
 	{
-		gRenderer->SetNewVertexInfo( address, v0, n );
+		ctx.renderer->SetNewVertexInfo( address, v0, n );
 
 #ifdef DAEDALUS_DEBUG_DISPLAYLIST
 		gNumVertices += n;
@@ -50,7 +50,7 @@ void DLParser_GBI0_CullDL( MicroCodeCommand command )
 	u32 last = (command.inst.cmd1 / 40) - 1;
 
 	DL_PF("    Culling using verts: %d to %d", first, last);
-	if( gRenderer->TestVerts( first, last ) )
+	if( ctx.renderer->TestVerts( first, last ) )
 	{
 		DL_PF("    Display list is visible, returning");
 		return;

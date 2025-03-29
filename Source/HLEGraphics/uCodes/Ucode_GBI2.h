@@ -36,7 +36,7 @@ void DLParser_GBI2_Vtx( MicroCodeCommand command )
 	DL_PF( "    Address[0x%08x] vEnd[%d] v0[%d] Num[%d]", address, vend, v0, n );
 	if (IsVertexInfoValid(address, 16, v0, n))
 	{
-		gRenderer->SetNewVertexInfo( address, v0, n );
+		ctx.renderer->SetNewVertexInfo( address, v0, n );
 
 #ifdef DAEDALUS_DEBUG_DISPLAYLIST
 		gNumVertices += n;
@@ -61,11 +61,11 @@ void DLParser_GBI2_Mtx( MicroCodeCommand command )
 	// Load matrix from address
 	if (command.mtx2.projection)
 	{
-		gRenderer->SetProjection(address, command.mtx2.load);
+		ctx.renderer->SetProjection(address, command.mtx2.load);
 	}
 	else
 	{
-		gRenderer->SetWorldView(address, command.mtx2.nopush==0, command.mtx2.load);
+		ctx.renderer->SetWorldView(address, command.mtx2.nopush==0, command.mtx2.load);
 	}
 }
 //*****************************************************************************
@@ -80,7 +80,7 @@ void DLParser_GBI2_PopMtx( MicroCodeCommand command )
 	u32 num = command.inst.cmd1>>6;
 
 	// Just pop the worldview matrix
-	gRenderer->PopWorldView(num);
+	ctx.renderer->PopWorldView(num);
 }
 
 //*****************************************************************************
@@ -100,14 +100,14 @@ void DLParser_GBI2_MoveWord( MicroCodeCommand command )
 	{
 	case G_MW_MATRIX:
 		{
-			gRenderer->InsertMatrix(command.inst.cmd0, command.inst.cmd1);
+			ctx.renderer->InsertMatrix(command.inst.cmd0, command.inst.cmd1);
 		}
 		break;
 
 	case G_MW_NUMLIGHT:
 		{
 			u32 num_lights = value / 24;
-			gRenderer->SetNumLights(num_lights);
+			ctx.renderer->SetNumLights(num_lights);
 		}
 		break;
 	case G_MW_SEGMENT:
@@ -125,13 +125,13 @@ void DLParser_GBI2_MoveWord( MicroCodeCommand command )
 				old_fog_mult = mul;
 				old_fog_offs = offs;
 #ifndef DAEDALUS_CTR
-				gRenderer->SetFogMultOffs(mul, offs);
+				ctx.renderer->SetFogMultOffs(mul, offs);
 #else
 				f32 rng = 128000.0f / mul;
 			
 				f32 fog_near = 500 - (offs * rng / 256.0f);
 				f32 fog_far = rng + fog_near;
-				gRenderer->SetFogMinMax(fog_near, fog_far);
+				ctx.renderer->SetFogMinMax(fog_near, fog_far);
 #endif
 			}
 		}
@@ -146,7 +146,7 @@ void DLParser_GBI2_MoveWord( MicroCodeCommand command )
 				u8 r = ((value>>24)&0xFF);
 				u8 g = ((value>>16)&0xFF);
 				u8 b = ((value>>8)&0xFF);
-				gRenderer->SetLightCol(light_idx, r, g, b);
+				ctx.renderer->SetLightCol(light_idx, r, g, b);
 			}
 		}
 		break;
@@ -241,7 +241,7 @@ void DLParser_GBI2_MoveMem( MicroCodeCommand command )
 			DL_PF("    Force Matrix(2): addr=%08X", address);
 			#endif
 			// Rayman 2, Donald Duck, Tarzan, all wrestling games use this
-			gRenderer->ForceMatrix( address );
+			ctx.renderer->ForceMatrix( address );
 			// ForceMatrix takes two cmds
 			gDlistStack.address[gDlistStackPointer] += 8;
 		}
@@ -335,7 +335,7 @@ void DLParser_GBI2_GeometryMode( MicroCodeCommand command )
 	TnL.CullBack	= gGeometryMode.GBI2_CullBack;
 	TnL.PointLight	= gGeometryMode.GBI2_PointLight;
 
-	gRenderer->SetTnLMode( TnL._u32 );
+	ctx.renderer->SetTnLMode( TnL._u32 );
 }
 
 //*****************************************************************************
@@ -377,19 +377,19 @@ void DLParser_GBI2_Texture( MicroCodeCommand command )
 	if (!enabled)
 	{
 		DL_PF("    Texture its disabled -> Ignored");
-		gRenderer->SetTextureEnable( false );
+		ctx.renderer->SetTextureEnable( false );
 		return;
 	}
 
 	DL_PF("    Texture its enabled: Level[%d] Tile[%d]", command.texture.level, command.texture.tile);
-	gRenderer->SetTextureEnable( true );
-	gRenderer->SetTextureTile( command.texture.tile );
+	ctx.renderer->SetTextureEnable( true );
+	ctx.renderer->SetTextureTile( command.texture.tile );
 
 	f32 scale_s = f32(command.texture.scaleS) / (65536.0f * 32.0f);
 	f32 scale_t = f32(command.texture.scaleT)  / (65536.0f * 32.0f);
 
 	DL_PF("    ScaleS[%0.4f], ScaleT[%0.4f]", scale_s*32.0f, scale_t*32.0f);
-	gRenderer->SetTextureScale( scale_s, scale_t );
+	ctx.renderer->SetTextureScale( scale_s, scale_t );
 }
 
 //*****************************************************************************
@@ -422,13 +422,13 @@ void DLParser_GBI2_Quad( MicroCodeCommand command )
 		u32 v1_idx = command.gbi2line3d.v1 >> 1;
 		u32 v2_idx = command.gbi2line3d.v2 >> 1;
 
-		tris_added |= gRenderer->AddTri(v0_idx, v1_idx, v2_idx);
+		tris_added |= ctx.renderer->AddTri(v0_idx, v1_idx, v2_idx);
 
 		u32 v3_idx = command.gbi2line3d.v3 >> 1;
 		u32 v4_idx = command.gbi2line3d.v4 >> 1;
 		u32 v5_idx = command.gbi2line3d.v5 >> 1;
 
-		tris_added |= gRenderer->AddTri(v3_idx, v4_idx, v5_idx);
+		tris_added |= ctx.renderer->AddTri(v3_idx, v4_idx, v5_idx);
 
 		//printf("Q 0x%08x: %08x %08x %d\n", pc-8, command.inst.cmd0, command.inst.cmd1, tris_added);
 
@@ -441,7 +441,7 @@ void DLParser_GBI2_Quad( MicroCodeCommand command )
 
 	if (tris_added)
 	{
-		gRenderer->FlushTris();
+		ctx.renderer->FlushTris();
 	}
 }
 
@@ -465,13 +465,13 @@ void DLParser_GBI2_Line3D( MicroCodeCommand command )
 		u32 v1_idx = command.gbi2line3d.v1 >> 1;
 		u32 v2_idx = command.gbi2line3d.v2 >> 1;
 
-		tris_added |= gRenderer->AddTri(v0_idx, v1_idx, v2_idx);
+		tris_added |= ctx.renderer->AddTri(v0_idx, v1_idx, v2_idx);
 
 		u32 v3_idx = command.gbi2line3d.v3 >> 1;
 		u32 v4_idx = command.gbi2line3d.v4 >> 1;
 		u32 v5_idx = command.gbi2line3d.v5 >> 1;
 
-		tris_added |= gRenderer->AddTri(v3_idx, v4_idx, v5_idx);
+		tris_added |= ctx.renderer->AddTri(v3_idx, v4_idx, v5_idx);
 
 		command.inst.cmd0 = *pCmdBase++;
 		command.inst.cmd1 = *pCmdBase++;
@@ -482,7 +482,7 @@ void DLParser_GBI2_Line3D( MicroCodeCommand command )
 
 	if (tris_added)
 	{
-		gRenderer->FlushTris();
+		ctx.renderer->FlushTris();
 	}
 }
 
@@ -506,7 +506,7 @@ void DLParser_GBI2_Tri1( MicroCodeCommand command )
 		u32 v1_idx = command.gbi2tri1.v1 >> 1;
 		u32 v2_idx = command.gbi2tri1.v2 >> 1;
 
-		tris_added |= gRenderer->AddTri(v0_idx, v1_idx, v2_idx);
+		tris_added |= ctx.renderer->AddTri(v0_idx, v1_idx, v2_idx);
 
 		command.inst.cmd0 = *pCmdBase++;
 		command.inst.cmd1 = *pCmdBase++;
@@ -517,7 +517,7 @@ void DLParser_GBI2_Tri1( MicroCodeCommand command )
 
 	if (tris_added)
 	{
-		gRenderer->FlushTris();
+		ctx.renderer->FlushTris();
 	}
 }
 
@@ -541,13 +541,13 @@ void DLParser_GBI2_Tri2( MicroCodeCommand command )
 		u32 v1_idx = command.gbi2tri2.v1;
 		u32 v2_idx = command.gbi2tri2.v2;
 
-		tris_added |= gRenderer->AddTri(v0_idx, v1_idx, v2_idx);
+		tris_added |= ctx.renderer->AddTri(v0_idx, v1_idx, v2_idx);
 
 		u32 v3_idx = command.gbi2tri2.v3;
 		u32 v4_idx = command.gbi2tri2.v4;
 		u32 v5_idx = command.gbi2tri2.v5;
 
-		tris_added |= gRenderer->AddTri(v3_idx, v4_idx, v5_idx);
+		tris_added |= ctx.renderer->AddTri(v3_idx, v4_idx, v5_idx);
 
 		command.inst.cmd0 = *pCmdBase++;
 		command.inst.cmd1 = *pCmdBase++;
@@ -558,7 +558,7 @@ void DLParser_GBI2_Tri2( MicroCodeCommand command )
 
 	if (tris_added)
 	{
-		gRenderer->FlushTris();
+		ctx.renderer->FlushTris();
 	}
 }
 

@@ -154,7 +154,7 @@ void DLParser_TexRect_Last_Legion( MicroCodeCommand command )
 	glm::vec2 xy0( tex_rect.x0 / 4.0f, tex_rect.y0 / 4.0f );
 	glm::vec2 xy1( tex_rect.x1 / 4.0f, tex_rect.y1 / 4.0f );
 
-	gRenderer->TexRect( tex_rect.tile_idx, xy0, xy1, st0, st1 );
+	ctx.renderer->TexRect( tex_rect.tile_idx, xy0, xy1, st0, st1 );
 }
 
 #endif // HLEGRAPHICS_UCODES_UCODE_LL_H_

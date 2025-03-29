@@ -315,7 +315,7 @@ void DLParser_DumpVtxInfo(u32 address, u32 v0_idx, u32 num_verts)
 			f32 y = f32(psSrc[1^0x1]);
 			f32 z = f32(psSrc[2^0x1]);
 
-			u16 wFlags = u16(gRenderer->GetVtxFlags( idx )); //(u16)psSrc[3^0x1];
+			u16 wFlags = u16(ctx.renderer->GetVtxFlags( idx )); //(u16)psSrc[3^0x1];
 
 			u8 a = pcSrc[12^0x3];
 			u8 b = pcSrc[13^0x3];
@@ -328,8 +328,8 @@ void DLParser_DumpVtxInfo(u32 address, u32 v0_idx, u32 num_verts)
 			f32 tu = f32(nTU) * (1.0f / 32.0f);
 			f32 tv = f32(nTV) * (1.0f / 32.0f);
 
-			const glm::vec4 & t = gRenderer->GetTransformedVtxPos( idx );
-			const glm::vec4 & p = gRenderer->GetProjectedVtxPos( idx );
+			const glm::vec4 & t = ctx.renderer->GetTransformedVtxPos( idx );
+			const glm::vec4 & p = ctx.renderer->GetProjectedVtxPos( idx );
 
 			psSrc += 8;			// Increase by 16 bytes
 			pcSrc += 16;
@@ -469,7 +469,7 @@ u32 DLParser_Process(u32 instruction_limit, DLDebugOutput * debug_output)
 {
 	DAEDALUS_PROFILE( "DLParser_Process" );
 
-	if ( !ctx.graphicsContext->IsInitialised() || !gRenderer )
+	if ( !ctx.graphicsContext->IsInitialised() || !ctx.renderer )
 	{
 		return 0;
 	}
@@ -529,12 +529,12 @@ u32 DLParser_Process(u32 instruction_limit, DLDebugOutput * debug_output)
 
 	if(!gFrameskipActive)
 	{
-		gRenderer->SetVIScales();
-		gRenderer->ResetMatrices(stack_size);
-		gRenderer->Reset();
-		gRenderer->BeginScene();
+		ctx.renderer->SetVIScales();
+		ctx.renderer->ResetMatrices(stack_size);
+		ctx.renderer->Reset();
+		ctx.renderer->BeginScene();
 		count = DLParser_ProcessDList(instruction_limit);
-		gRenderer->EndScene();
+		ctx.renderer->EndScene();
 	}
 	else
 	{
@@ -609,20 +609,20 @@ void RDP_MoveMemLight(u32 address, u32 light_idx)
     DL_PF("    Light[%d] RGB[%d, %d, %d] x[%d] y[%d] z[%d]", light_idx, r, g, b, dir_x, dir_y, dir_z);
 
     // Set light color and direction
-    gRenderer->SetLightCol(light_idx, r, g, b);
-    gRenderer->SetLightDirection(light_idx, dir_x, dir_y, dir_z);
+    ctx.renderer->SetLightCol(light_idx, r, g, b);
+    ctx.renderer->SetLightDirection(light_idx, dir_x, dir_y, dir_z);
 
     // Handle light position and ambient light for different sources
     switch (Source)
     {
         case POINT_LIGHT_MM:
-            gRenderer->SetLightPosition(light_idx, light->x1, light->y1, light->z1, 1.0f);
-            gRenderer->SetLightEx(light_idx, light->ca, light->la, light->qa);
+            ctx.renderer->SetLightPosition(light_idx, light->x1, light->y1, light->z1, 1.0f);
+            ctx.renderer->SetLightEx(light_idx, light->ca, light->la, light->qa);
             break;
 
         case POINT_LIGHT_CBFD:
-            gRenderer->SetLightPosition(light_idx, light->x, light->y, light->z, light->w);
-            gRenderer->SetLightCBFD(light_idx, light->nonzero);
+            ctx.renderer->SetLightPosition(light_idx, light->x, light->y, light->z, light->w);
+            ctx.renderer->SetLightCBFD(light_idx, light->nonzero);
             break;
 
         case POINT_LIGHT_ACCLAIM:
@@ -661,7 +661,7 @@ void RDP_MoveMemViewport(u32 address)
 	glm::vec2 vec_scale( vp->scale_x * 0.25f, vp->scale_y * 0.25f );
 	glm::vec2 vec_trans( vp->trans_x * 0.25f, vp->trans_y * 0.25f );
 
-	gRenderer->SetN64Viewport( vec_scale, vec_trans );
+	ctx.renderer->SetN64Viewport( vec_scale, vec_trans );
 
 	DL_PF("    Scale: %d %d", vp->scale_x, vp->scale_y);
 	DL_PF("    Trans: %d %d", vp->trans_x, vp->trans_y);
@@ -713,7 +713,7 @@ void DLParser_SetPrimDepth( MicroCodeCommand command )
 	DL_PF("    SetPrimDepth z[0x%04x] dz[0x%04x]",
 		command.primdepth.z, command.primdepth.dz);
 
-	gRenderer->SetPrimitiveDepth( command.primdepth.z );
+	ctx.renderer->SetPrimitiveDepth( command.primdepth.z );
 }
 
 //*****************************************************************************
@@ -767,7 +767,7 @@ void DLParser_SetScissor( MicroCodeCommand command )
 		scissors.right += 160;
 		glm::vec2 vec_trans( 240, 120 );
 		glm::vec2 vec_scale( 80, 120 );
-		gRenderer->SetN64Viewport( vec_scale, vec_trans );
+		ctx.renderer->SetN64Viewport( vec_scale, vec_trans );
 	}
 
 	DL_PF("    x0=%d y0=%d x1=%d y1=%d mode=%d", scissors.left, scissors.top, scissors.right, scissors.bottom, command.scissor.mode);
@@ -775,7 +775,7 @@ void DLParser_SetScissor( MicroCodeCommand command )
 	// Set the cliprect now...
 	if ( scissors.left < scissors.right && scissors.top < scissors.bottom )
 	{
-		gRenderer->SetScissor( scissors.left, scissors.top, scissors.right, scissors.bottom );
+		ctx.renderer->SetScissor( scissors.left, scissors.top, scissors.right, scissors.bottom );
 	}
 }
 //*****************************************************************************
@@ -937,7 +937,7 @@ void DLParser_TexRect( MicroCodeCommand command )
 	DL_PF("    Screen(%.1f,%.1f) -> (%.1f,%.1f) Tile[%d]", xy0.x, xy0.y, xy1.x, xy1.y, tex_rect.tile_idx);
 	DL_PF("    Tex:(%#5.3f,%#5.3f) -> (%#5.3f,%#5.3f) (DSDX:%#5f DTDY:%#5f)", rect_s0/32.f, rect_t0/32.f, rect_s1/32.f, rect_t1/32.f, rect_dsdx/1024.f, rect_dtdy/1024.f);
 
-	gRenderer->TexRect( tex_rect.tile_idx, xy0, xy1, st0, st1 );
+	ctx.renderer->TexRect( tex_rect.tile_idx, xy0, xy1, st0, st1 );
 }
 
 //*****************************************************************************
@@ -995,7 +995,7 @@ void DLParser_TexRectFlip( MicroCodeCommand command )
 	DL_PF("    Screen(%.1f,%.1f) -> (%.1f,%.1f) Tile[%d]", xy0.x, xy0.y, xy1.x, xy1.y, tex_rect.tile_idx);
 	DL_PF("    FlipTex:(%#5.3f,%#5.3f) -> (%#5.3f,%#5.3f) (DSDX:%#5f DTDY:%#5f)", rect_s0/32.f, rect_t0/32.f, rect_s1/32.f, rect_t1/32.f, rect_dsdx/1024.f, rect_dtdy/1024.f);
 
-	gRenderer->TexRectFlip( tex_rect.tile_idx, xy0, xy1, st0, st1 );
+	ctx.renderer->TexRectFlip( tex_rect.tile_idx, xy0, xy1, st0, st1 );
 }
 
 //Clear framebuffer, thanks Gonetz! http://www.emutalk.net/threads/15818-How-to-implement-quot-emulate-clear-quot-Answer-and-Question
@@ -1020,7 +1020,7 @@ void Clear_N64DepthBuffer( MicroCodeCommand command )
 	x0 >>= 1;
 	x1 >>= 1;
 	u32 zi_width_in_dwords = g_CI.Width >> 1;
-	u32 fill_colour = gRenderer->GetFillColour();
+	u32 fill_colour = ctx.renderer->GetFillColour();
 	u32 * dst = (u32*)(g_pu8RamBase + g_CI.Address) + y0 * zi_width_in_dwords;
 
 	for( u32 y = y0; y <y1; y++ )
@@ -1082,7 +1082,7 @@ void DLParser_FillRect( MicroCodeCommand command )
 
 		if ( cycle_mode == CYCLE_FILL )
 		{
-			u32 fill_colour = gRenderer->GetFillColour();
+			u32 fill_colour = ctx.renderer->GetFillColour();
 			if(g_CI.Size == G_IM_SIZ_16b)
 			{
 				const N64Pf5551	c( (u16)fill_colour );
@@ -1111,7 +1111,7 @@ void DLParser_FillRect( MicroCodeCommand command )
 	// TODO - In 1/2cycle mode, skip bottom/right edges!?
 	// This is done in BaseRenderer.
 
-	gRenderer->FillRect( xy0, xy1, colour.GetColour() );
+	ctx.renderer->FillRect( xy0, xy1, colour.GetColour() );
 }
 
 //*****************************************************************************
@@ -1147,7 +1147,7 @@ void DLParser_SetCombine( MicroCodeCommand command )
 	Mux._u32_0 = command.inst.cmd1;
 	Mux._u32_1 = command.inst.arg0;
 
-	gRenderer->SetMux( Mux._u64 );
+	ctx.renderer->SetMux( Mux._u64 );
 
 #ifdef DAEDALUS_DEBUG_DISPLAYLIST
 	if (DLDebug_IsActive())
@@ -1169,7 +1169,7 @@ void DLParser_SetFillColor( MicroCodeCommand command )
 	DL_PF( "    Color5551=0x%04x", n64col.Bits );
 #endif
 
-	gRenderer->SetFillColour( fill_colour );
+	ctx.renderer->SetFillColour( fill_colour );
 }
 
 //*****************************************************************************
@@ -1182,7 +1182,7 @@ void DLParser_SetFogColor( MicroCodeCommand command )
 	//c32	fog_colour( command.color.r, command.color.g, command.color.b, command.color.a );
 	c32	fog_colour( command.color.r, command.color.g, command.color.b, 0 );	//alpha is always 0
 
-	gRenderer->SetFogColour( fog_colour );
+	ctx.renderer->SetFogColour( fog_colour );
 }
 
 //*****************************************************************************
@@ -1194,7 +1194,7 @@ void DLParser_SetBlendColor( MicroCodeCommand command )
 
 	c32	blend_colour( command.color.r, command.color.g, command.color.b, command.color.a );
 
-	gRenderer->SetBlendColour( blend_colour );
+	ctx.renderer->SetBlendColour( blend_colour );
 }
 
 //*****************************************************************************
@@ -1206,8 +1206,8 @@ void DLParser_SetPrimColor( MicroCodeCommand command )
 
 	c32	prim_colour( command.color.r, command.color.g, command.color.b, command.color.a );
 
-	gRenderer->SetPrimitiveLODFraction(command.color.prim_level / 256.f);
-	gRenderer->SetPrimitiveColour( prim_colour );
+	ctx.renderer->SetPrimitiveLODFraction(command.color.prim_level / 256.f);
+	ctx.renderer->SetPrimitiveColour( prim_colour );
 }
 
 //*****************************************************************************
@@ -1219,7 +1219,7 @@ void DLParser_SetEnvColor( MicroCodeCommand command )
 
 	c32	env_colour( command.color.r, command.color.g,command.color.b, command.color.a );
 
-	gRenderer->SetEnvColour( env_colour );
+	ctx.renderer->SetEnvColour( env_colour );
 }
 
 //*****************************************************************************

@@ -60,7 +60,7 @@ static inline std::shared_ptr<CNativeTexture> LoadFrameBuffer(u32 origin)
 	ti.SetHeight			(FB_HEIGHT);
 	ti.SetPitch				(width << 2 >> 1);
 
-	return gRenderer->LoadTextureDirectly(ti);
+	return ctx.renderer->LoadTextureDirectly(ti);
 }
 
 //Borrowed from StrmnNrmn's N64js
@@ -89,7 +89,7 @@ static inline void DrawFrameBuffer(u32 origin, const std::shared_ptr<CNativeText
 	//sceGuTexMode( GU_PSM_5551, 0, 0, 1 );		// maxmips/a2/swizzle = 0
 	//sceGuTexImage(0, texture->GetCorrectedWidth(), texture->GetCorrectedHeight(), texture->GetBlockWidth(), pixels);
 
-	gRenderer->Draw2DTexture(0, 0, FB_WIDTH, FB_HEIGHT, 0, 0, FB_WIDTH, FB_HEIGHT, texture);
+	ctx.renderer->Draw2DTexture(0, 0, FB_WIDTH, FB_HEIGHT, 0, 0, FB_WIDTH, FB_HEIGHT, texture);
 
 	free(pixels);
 }
@@ -97,14 +97,14 @@ static inline void DrawFrameBuffer(u32 origin, const std::shared_ptr<CNativeText
 
 void RenderFrameBuffer(u32 origin)
 {
-	gRenderer->SetVIScales();
-	gRenderer->BeginScene();
+	ctx.renderer->SetVIScales();
+	ctx.renderer->BeginScene();
 
 	std::shared_ptr<CNativeTexture> texture = LoadFrameBuffer(origin);
 	if(texture != NULL)
 		DrawFrameBuffer(origin, texture);
 
-	gRenderer->EndScene();
+	ctx.renderer->EndScene();
 	ctx.graphicsPlugin->UpdateScreen();
 }
 

@@ -51,7 +51,7 @@ void DLParser_Vtx_Conker( MicroCodeCommand command )
 	DL_PF("    Address[0x%08x] Len[%d] v0[%d] Num[%d]", address, len, v0, n);
 	if (IsVertexInfoValid(address, 16, v0, n))
 	{
-		gRenderer->SetNewVertexInfoConker( address, v0, n );
+		ctx.renderer->SetNewVertexInfoConker( address, v0, n );
 
 #ifdef DAEDALUS_DEBUG_DISPLAYLIST
 	  	gNumVertices += n;
@@ -94,7 +94,7 @@ void DLParser_Tri1_Conker( MicroCodeCommand command )
 		u32 v1_idx = command.gbi2tri1.v1 >> 1;
 		u32 v2_idx = command.gbi2tri1.v2 >> 1;
 
-		tris_added |= gRenderer->AddTri(v0_idx, v1_idx, v2_idx);
+		tris_added |= ctx.renderer->AddTri(v0_idx, v1_idx, v2_idx);
 
 		command.inst.cmd0 = *pCmdBase++;
 		command.inst.cmd1 = *pCmdBase++;
@@ -105,7 +105,7 @@ void DLParser_Tri1_Conker( MicroCodeCommand command )
 
 	if (tris_added)
 	{
-		gRenderer->FlushTris();
+		ctx.renderer->FlushTris();
 	}
 }
 
@@ -143,13 +143,13 @@ void DLParser_Tri2_Conker( MicroCodeCommand command )
 		u32 v1_idx = command.gbi2tri2.v1;
 		u32 v2_idx = command.gbi2tri2.v2;
 
-		tris_added |= gRenderer->AddTri(v0_idx, v1_idx, v2_idx);
+		tris_added |= ctx.renderer->AddTri(v0_idx, v1_idx, v2_idx);
 
 		u32 v3_idx = command.gbi2tri2.v3;
 		u32 v4_idx = command.gbi2tri2.v4;
 		u32 v5_idx = command.gbi2tri2.v5;
 
-		tris_added |= gRenderer->AddTri(v3_idx, v4_idx, v5_idx);
+		tris_added |= ctx.renderer->AddTri(v3_idx, v4_idx, v5_idx);
 
 		command.inst.cmd0 = *pCmdBase++;
 		command.inst.cmd1 = *pCmdBase++;
@@ -160,7 +160,7 @@ void DLParser_Tri2_Conker( MicroCodeCommand command )
 
 	if (tris_added)
 	{
-		gRenderer->FlushTris();
+		ctx.renderer->FlushTris();
 	}
 }
 
@@ -196,28 +196,28 @@ void DLParser_Tri4_Conker( MicroCodeCommand command )
 		idx[1] = (command.inst.cmd1>> 5)&0x1F;
 		idx[2] = (command.inst.cmd1>>10)&0x1F;
 
-		tris_added |= gRenderer->AddTri(idx[0], idx[1], idx[2]);
+		tris_added |= ctx.renderer->AddTri(idx[0], idx[1], idx[2]);
 
 		//Tri #2
 		idx[3] = (command.inst.cmd1>>15)&0x1F;
 		idx[4] = (command.inst.cmd1>>20)&0x1F;
 		idx[5] = (command.inst.cmd1>>25)&0x1F;
 
-		tris_added |= gRenderer->AddTri(idx[3], idx[4], idx[5]);
+		tris_added |= ctx.renderer->AddTri(idx[3], idx[4], idx[5]);
 
 		//Tri #3
 		idx[6] = (command.inst.cmd0    )&0x1F;
 		idx[7] = (command.inst.cmd0>> 5)&0x1F;
 		idx[8] = (command.inst.cmd0>>10)&0x1F;
 
-		tris_added |= gRenderer->AddTri(idx[6], idx[7], idx[8]);
+		tris_added |= ctx.renderer->AddTri(idx[6], idx[7], idx[8]);
 
 		//Tri #4
 		idx[ 9] = (((command.inst.cmd0>>15)&0x7)<<2)|(command.inst.cmd1>>30);
 		idx[10] = (command.inst.cmd0>>18)&0x1F;
 		idx[11] = (command.inst.cmd0>>23)&0x1F;
 
-		tris_added |= gRenderer->AddTri(idx[9], idx[10], idx[11]);
+		tris_added |= ctx.renderer->AddTri(idx[9], idx[10], idx[11]);
 
 		command.inst.cmd0			= *(u32 *)(g_pu8RamBase + pc+0);
 		command.inst.cmd1			= *(u32 *)(g_pu8RamBase + pc+4);
@@ -228,7 +228,7 @@ void DLParser_Tri4_Conker( MicroCodeCommand command )
 
 	if (tris_added)
 	{
-		gRenderer->FlushTris();
+		ctx.renderer->FlushTris();
 	}
 }
 
@@ -286,7 +286,7 @@ void DLParser_MoveWord_Conker( MicroCodeCommand command )
 			u32 num_lights = command.inst.cmd1 / 48;
 
 			DL_PF("    G_MW_NUMLIGHT: %d", num_lights);
-			gRenderer->SetNumLights(num_lights);
+			ctx.renderer->SetNumLights(num_lights);
 		}
 		break;
 
@@ -313,18 +313,18 @@ void DLParser_MoveWord_Conker( MicroCodeCommand command )
 			switch(pos)
 			{
 			case 0:
-				gRenderer->SetCoordMod( 0+idx, (s16)(command.inst.cmd1 >> 16) );
-				gRenderer->SetCoordMod( 1+idx, (s16)(command.inst.cmd1 & 0xFFFF) );
+				ctx.renderer->SetCoordMod( 0+idx, (s16)(command.inst.cmd1 >> 16) );
+				ctx.renderer->SetCoordMod( 1+idx, (s16)(command.inst.cmd1 & 0xFFFF) );
 				break;
 			case 0x10:
-				gRenderer->SetCoordMod( 4+idx, (command.inst.cmd1 >> 16) / 65536.0f );
-				gRenderer->SetCoordMod( 5+idx, (command.inst.cmd1 & 0xFFFF) / 65536.0f );
-				gRenderer->SetCoordMod( 12+idx, gRenderer->GetCoordMod(0+idx) + gRenderer->GetCoordMod(4+idx) );
-				gRenderer->SetCoordMod( 13+idx, gRenderer->GetCoordMod(1+idx) + gRenderer->GetCoordMod(5+idx) );
+				ctx.renderer->SetCoordMod( 4+idx, (command.inst.cmd1 >> 16) / 65536.0f );
+				ctx.renderer->SetCoordMod( 5+idx, (command.inst.cmd1 & 0xFFFF) / 65536.0f );
+				ctx.renderer->SetCoordMod( 12+idx, ctx.renderer->GetCoordMod(0+idx) + ctx.renderer->GetCoordMod(4+idx) );
+				ctx.renderer->SetCoordMod( 13+idx, ctx.renderer->GetCoordMod(1+idx) + ctx.renderer->GetCoordMod(5+idx) );
 				break;
 			case 0x20:
-				gRenderer->SetCoordMod( 8+idx, (s16)(command.inst.cmd1 >> 16) );
-				gRenderer->SetCoordMod( 9+idx, (s16)(command.inst.cmd1 & 0xFFFF) );
+				ctx.renderer->SetCoordMod( 8+idx, (s16)(command.inst.cmd1 >> 16) );
+				ctx.renderer->SetCoordMod( 9+idx, (s16)(command.inst.cmd1 & 0xFFFF) );
 				break;
 			}
 		}

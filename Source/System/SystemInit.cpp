@@ -84,7 +84,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <functional>
 
 SystemContext ctx; 
-SystemContext::SystemContext()
+SystemContext::SystemContext(): eventQueueLocked(0)
 {
 	romInfo = std::make_unique<RomInfo>();
 }

@@ -672,7 +672,7 @@ CJumpLocation	CAssemblyWriterX64::CALL( CCodeLabel target )
 #endif
 
 	CJumpLocation	jump_location( mpAssemblyBuffer->GetJumpLocation() );
-	CJumpLocation   rbx_location(&gCPUState);
+	CJumpLocation   rbx_location(&ctx.cpuState);
 
 	if (jump_location.IsIn32BitRange(target))
 	{

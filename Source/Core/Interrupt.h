@@ -39,12 +39,12 @@ inline void R4300_Interrupt_UpdateCause3()
 		 Memory_MI_GetRegister(MI_INTR_REG)) == 0)
 	{
 		// Clear the Cause register
-		gCPUState.CPUControl[C0_CAUSE]._u32 &= ~CAUSE_IP3;
+		ctx.cpuState.CPUControl[C0_CAUSE]._u32 &= ~CAUSE_IP3;
 	}
 	else
 	{
-		gCPUState.CPUControl[C0_CAUSE]._u32 |= CAUSE_IP3;
-		gCPUState.AddJob( CPU_CHECK_INTERRUPTS );
+		ctx.cpuState.CPUControl[C0_CAUSE]._u32 |= CAUSE_IP3;
+		ctx.cpuState.AddJob( CPU_CHECK_INTERRUPTS );
 	}
 }
 

@@ -29,6 +29,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <mutex>
 #include <cstring>
 
+
 #include "Interface/ConfigOptions.h"
 #include "Interface/Cheats.h"
 #include "Core/Dynamo.h"
@@ -58,6 +59,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern void R4300_Init();
 
+
+// Take advantage of the cooperative multitasking
+// of the PSP to make locking/unlocking as fast as possible.
+
+
+
 //
 //	New dynarec engine
 //
@@ -69,8 +76,6 @@ u64					gTotalInstructionsEmulated = 0;
 #ifdef DAEDALUS_BREAKPOINTS_ENABLED
 std::vector< DBG_BreakPoint > g_BreakPoints;
 #endif
-
-volatile u32 eventQueueLocked = 0;
 
 static bool			gCPURunning   = false;			// CPU is actively running
 u8 *				gLastAddress     = nullptr;
@@ -92,11 +97,8 @@ const  u32			kInitialVIInterruptCycles = 62500;
 static u32			gVerticalInterrupts = 0;
 static u32			VI_INTR_CYCLES(kInitialVIInterruptCycles);
 
-#ifdef USE_SCRATCH_PAD
-SCPUState *gPtrCPUState = (SCPUState*)0x10000;
-#else
- alignas(CACHE_ALIGN) SCPUState gCPUState;
-#endif
+
+
 
 static bool	CPU_IsStateSimple();
 void (* g_pCPUCore)();
@@ -131,22 +133,23 @@ void CPU_UnregisterVblCallback(VblCallbackFn fn, void * arg)
 	}
 }
 
+
 void CPU_SkipToNextEvent()
 {
 	LOCK_EVENT_QUEUE();
 
 #ifdef DAEDALUS_ENABLE_ASSERTS
-	DAEDALUS_ASSERT( gCPUState.NumEvents > 0, "There are no events" );
+	DAEDALUS_ASSERT( ctx.cpuState.NumEvents > 0, "There are no events" );
 	#endif
-	gCPUState.CPUControl[C0_COUNT]._u32 += (gCPUState.Events[ 0 ].mCount - 1);
-	gCPUState.Events[ 0 ].mCount = 1;
+    ctx.cpuState.CPUControl[C0_COUNT]._u32 += (ctx.cpuState.Events[ 0 ].mCount - 1);
+    ctx.cpuState.Events[ 0 ].mCount = 1;
 }
 
 static void CPU_ResetEventList()
 {
-	gCPUState.Events[ 0 ].mCount     = kInitialVIInterruptCycles;
-	gCPUState.Events[ 0 ].mEventType = CPU_EVENT_VBL;
-	gCPUState.NumEvents = 1;
+	ctx.cpuState.Events[ 0 ].mCount     = kInitialVIInterruptCycles;
+	ctx.cpuState.Events[ 0 ].mEventType = CPU_EVENT_VBL;
+	ctx.cpuState.NumEvents = 1;
 
 	RESET_EVENT_QUEUE_LOCK();
 }
@@ -156,12 +159,12 @@ void CPU_AddEvent( s32 count, ECPUEventType event_type )
 	LOCK_EVENT_QUEUE();
 #ifdef DAEDALUS_ENABLE_ASSERTS
 	DAEDALUS_ASSERT( count > 0, "Count is invalid" );
-	DAEDALUS_ASSERT( gCPUState.NumEvents < MAX_CPU_EVENTS, "Too many events" );
+	DAEDALUS_ASSERT( ctx.cpuState.NumEvents < MAX_CPU_EVENTS, "Too many events" );
 #endif
 	u32 event_idx = 0;
-	for( event_idx = 0; event_idx < gCPUState.NumEvents; ++event_idx )
+	for( event_idx = 0; event_idx < ctx.cpuState.NumEvents; ++event_idx )
 	{
-		CPUEvent & event = gCPUState.Events[ event_idx ];
+		CPUEvent & event = ctx.cpuState.Events[ event_idx ];
 
 		if( count <= event.mCount )
 		{
@@ -171,10 +174,10 @@ void CPU_AddEvent( s32 count, ECPUEventType event_type )
 			//
 			event.mCount -= count;
 
-			u32 num_to_copy  = gCPUState.NumEvents - event_idx;
+			u32 num_to_copy  = ctx.cpuState.NumEvents - event_idx;
 			if( num_to_copy > 0 )
 			{
-				memmove( &gCPUState.Events[ event_idx+1 ], &gCPUState.Events[ event_idx ], num_to_copy * sizeof( CPUEvent ) );
+				memmove( &ctx.cpuState.Events[ event_idx+1 ], &ctx.cpuState.Events[ event_idx ], num_to_copy * sizeof( CPUEvent ) );
 			}
 			break;
 		}
@@ -185,11 +188,11 @@ void CPU_AddEvent( s32 count, ECPUEventType event_type )
 		count -= event.mCount;
 	}
 #ifdef DAEDALUS_ENABLE_ASSERTS
-	DAEDALUS_ASSERT( event_idx <= gCPUState.NumEvents, "Invalid idx" );
+	DAEDALUS_ASSERT( event_idx <= ctx.cpuState.NumEvents, "Invalid idx" );
 	#endif
-	gCPUState.Events[ event_idx ].mCount = count;
-	gCPUState.Events[ event_idx ].mEventType = event_type;
-	gCPUState.NumEvents++;
+	ctx.cpuState.Events[ event_idx ].mCount = count;
+	ctx.cpuState.Events[ event_idx ].mEventType = event_type;
+	ctx.cpuState.NumEvents++;
 }
 
 static void CPU_SetCompareEvent( s32 count )
@@ -203,20 +206,20 @@ static void CPU_SetCompareEvent( s32 count )
 		//
 		//	Remove any existing compare events. Need to adjust any subsequent timer's count.
 		//
-		for( u32 i = 0; i < gCPUState.NumEvents; ++i )
+		for( u32 i = 0; i < ctx.cpuState.NumEvents; ++i )
 		{
-			if( gCPUState.Events[ i ].mEventType == CPU_EVENT_COMPARE )
+			if( ctx.cpuState.Events[ i ].mEventType == CPU_EVENT_COMPARE )
 			{
 				//
 				//	Check for a following event, and remove
 				//
-				if( i+1 < gCPUState.NumEvents )
+				if( i+1 < ctx.cpuState.NumEvents )
 				{
-					gCPUState.Events[ i+1 ].mCount += gCPUState.Events[ i ].mCount;
-					u32 num_to_copy = gCPUState.NumEvents - (i+1);
-					memmove( &gCPUState.Events[ i ], &gCPUState.Events[ i+1 ], num_to_copy * sizeof( CPUEvent ) );
+					ctx.cpuState.Events[ i+1 ].mCount += ctx.cpuState.Events[ i ].mCount;
+					u32 num_to_copy = ctx.cpuState.NumEvents - (i+1);
+					memmove( &ctx.cpuState.Events[ i ], &ctx.cpuState.Events[ i+1 ], num_to_copy * sizeof( CPUEvent ) );
 				}
-				gCPUState.NumEvents--;
+				ctx.cpuState.NumEvents--;
 				break;
 			}
 		}
@@ -230,19 +233,19 @@ static ECPUEventType CPU_PopEvent()
 	LOCK_EVENT_QUEUE();
 
 #ifdef DAEDALUS_ENABLE_ASSERTS
-	DAEDALUS_ASSERT( gCPUState.NumEvents > 0, "Event queue empty" );
-	DAEDALUS_ASSERT( gCPUState.Events[ 0 ].mCount <= 0, "Popping event when cycles remain" );
-	//DAEDALUS_ASSERT( gCPUState.Events[ 0 ].mCount == 0, "Popping event with a bit of underflow" );
+	DAEDALUS_ASSERT( ctx.cpuState.NumEvents > 0, "Event queue empty" );
+	DAEDALUS_ASSERT( ctx.cpuState.Events[ 0 ].mCount <= 0, "Popping event when cycles remain" );
+	//DAEDALUS_ASSERT( ctx.cpuState.Events[ 0 ].mCount == 0, "Popping event with a bit of underflow" );
 #endif
 
-	ECPUEventType event_type = gCPUState.Events[ 0 ].mEventType;
+	ECPUEventType event_type = ctx.cpuState.Events[ 0 ].mEventType;
 
-	u32	num_to_copy = gCPUState.NumEvents - 1;
+	u32	num_to_copy = ctx.cpuState.NumEvents - 1;
 	if( num_to_copy > 0 )
 	{
-		memmove( &gCPUState.Events[ 0 ], &gCPUState.Events[ 1 ], num_to_copy * sizeof( CPUEvent ) );
+		memmove( &ctx.cpuState.Events[ 0 ], &ctx.cpuState.Events[ 1 ], num_to_copy * sizeof( CPUEvent ) );
 	}
-	gCPUState.NumEvents--;
+	ctx.cpuState.NumEvents--;
 
 	return event_type;
 }
@@ -250,11 +253,11 @@ static ECPUEventType CPU_PopEvent()
 // XXXX This is for savestate. Looks very suspicious to me
 u32 CPU_GetVideoInterruptEventCount()
 {
-	for( u32 i = 0; i < gCPUState.NumEvents; ++i )
+	for( u32 i = 0; i < ctx.cpuState.NumEvents; ++i )
 	{
-		if(gCPUState.Events[ i ].mEventType == CPU_EVENT_VBL)
+		if(ctx.cpuState.Events[ i ].mEventType == CPU_EVENT_VBL)
 		{
-			return gCPUState.Events[ i ].mCount;
+			return ctx.cpuState.Events[ i ].mCount;
 		}
 	}
 
@@ -264,11 +267,11 @@ u32 CPU_GetVideoInterruptEventCount()
 // XXXX This is for savestate. Looks very suspicious to me
 void CPU_SetVideoInterruptEventCount( u32 count )
 {
-	for( u32 i = 0; i < gCPUState.NumEvents; ++i )
+	for( u32 i = 0; i < ctx.cpuState.NumEvents; ++i )
 	{
-		if(gCPUState.Events[ i ].mEventType == CPU_EVENT_VBL)
+		if(ctx.cpuState.Events[ i ].mEventType == CPU_EVENT_VBL)
 		{
-			gCPUState.Events[ i ].mCount = count;
+			ctx.cpuState.Events[ i ].mCount = count;
 			return;
 		}
 	}
@@ -316,15 +319,15 @@ void SCPUState::Dump()
 		for(int i = 0; i < 32; i += 4)
 		{
 			DBGConsole_Msg(0, "%s:%08X %s:%08X %s:%08X %s:%08X",
-			kRegisterNames[i+0], gCPUState.CPU[i+0]._u32_0,
-			kRegisterNames[i+1], gCPUState.CPU[i+1]._u32_0,
-			kRegisterNames[i+2], gCPUState.CPU[i+2]._u32_0,
-			kRegisterNames[i+3], gCPUState.CPU[i+3]._u32_0);
+			kRegisterNames[i+0], ctx.cpuState.CPU[i+0]._u32_0,
+			kRegisterNames[i+1], ctx.cpuState.CPU[i+1]._u32_0,
+			kRegisterNames[i+2], ctx.cpuState.CPU[i+2]._u32_0,
+			kRegisterNames[i+3], ctx.cpuState.CPU[i+3]._u32_0);
 		}
 
-		DBGConsole_Msg(0, "TargetPC: %08x", gCPUState.TargetPC);
-		DBGConsole_Msg(0, "CurrentPC: %08x", gCPUState.CurrentPC);
-		DBGConsole_Msg(0, "Delay: %08x", gCPUState.Delay);
+		DBGConsole_Msg(0, "TargetPC: %08x", ctx.cpuState.TargetPC);
+		DBGConsole_Msg(0, "CurrentPC: %08x", ctx.cpuState.CurrentPC);
+		DBGConsole_Msg(0, "Delay: %08x", ctx.cpuState.Delay);
 	}
 }
 #endif
@@ -340,18 +343,18 @@ bool CPU_RomOpen()
 	gCPUStopOnSimpleState = false;
 	RESET_EVENT_QUEUE_LOCK();
 
-	memset(&gCPUState, 0, sizeof(gCPUState));
+	memset(&ctx.cpuState, 0, sizeof(ctx.cpuState));
 
 	CPU_SetPC( 0xbfc00000 );
-	gCPUState.MultHi._u64 = 0;
-	gCPUState.MultLo._u64 = 0;
+	ctx.cpuState.MultHi._u64 = 0;
+	ctx.cpuState.MultLo._u64 = 0;
 
 	for(u32 i = 0; i < 32; i++)
 	{
-		gCPUState.CPU[i]._u64        = 0;
-		gCPUState.CPUControl[i]._u32 = 0;
-		gCPUState.FPU[i]._u32        = 0;
-		gCPUState.FPUControl[i]._u32 = 0;
+		ctx.cpuState.CPU[i]._u64        = 0;
+		ctx.cpuState.CPUControl[i]._u32 = 0;
+		ctx.cpuState.FPU[i]._u32        = 0;
+		ctx.cpuState.FPUControl[i]._u32 = 0;
 	}
 
 	// Init TLBs:
@@ -361,14 +364,14 @@ bool CPU_RomOpen()
 	}
 
 	// From R4300 manual
-	gCPUState.CPUControl[C0_RAND]._u32   = 32-1;			// TLBENTRIES-1
-	//gCPUState.CPUControl[C0_SR]._u32   = 0x70400004;	//*SR_FR |*/ SR_ERL | SR_CU2|SR_CU1|SR_CU0;
+	ctx.cpuState.CPUControl[C0_RAND]._u32   = 32-1;			// TLBENTRIES-1
+	//ctx.cpuState.CPUControl[C0_SR]._u32   = 0x70400004;	//*SR_FR |*/ SR_ERL | SR_CU2|SR_CU1|SR_CU0;
 	R4300_SetSR(0x70400004);
-	gCPUState.CPUControl[C0_PRID]._u32   = 0x00000b10;	// Was 0xb00 - test rom reports 0xb10!!
-	gCPUState.CPUControl[C0_CONFIG]._u32 = 0x0006E463;	// 0x00066463;
-	gCPUState.CPUControl[C0_WIRED]._u32  = 0x0;
+	ctx.cpuState.CPUControl[C0_PRID]._u32   = 0x00000b10;	// Was 0xb00 - test rom reports 0xb10!!
+	ctx.cpuState.CPUControl[C0_CONFIG]._u32 = 0x0006E463;	// 0x00066463;
+	ctx.cpuState.CPUControl[C0_WIRED]._u32  = 0x0;
 
-	gCPUState.FPUControl[0]._u32 = 0x00000511;
+	ctx.cpuState.FPUControl[0]._u32 = 0x00000511;
 
 	Memory_MI_SetRegister(MI_VERSION_REG, 0x02020102);
 
@@ -376,8 +379,8 @@ bool CPU_RomOpen()
 
 	R4300_Init();
 
-	gCPUState.Delay = NO_DELAY;
-	gCPUState.ClearStuffToDo();
+	ctx.cpuState.Delay = NO_DELAY;
+	ctx.cpuState.ClearStuffToDo();
 	gVerticalInterrupts = 0;
 
 	// Clear event list:
@@ -407,7 +410,7 @@ static bool	CPU_IsStateSimple()
 {
 	bool rsp_halted = !RSP_IsRunning();
 
-	return rsp_halted && (gCPUState.Delay == NO_DELAY);
+	return rsp_halted && (ctx.cpuState.Delay == NO_DELAY);
 }
 
 void CPU_SelectCore()
@@ -421,11 +424,11 @@ void CPU_SelectCore()
 
 	if( gCPUStopOnSimpleState && CPU_IsStateSimple() )
 	{
-		gCPUState.AddJob( CPU_STOP_RUNNING );
+		ctx.cpuState.AddJob( CPU_STOP_RUNNING );
 	}
 	else
 	{
-		gCPUState.AddJob( CPU_CHANGE_CORE );
+		ctx.cpuState.AddJob( CPU_CHANGE_CORE );
 	}
 }
 
@@ -443,7 +446,7 @@ bool CPU_RequestSaveState( const std::filesystem::path &filename )
 
 	gSaveStateOperation = SSO_SAVE;
 	gSaveStateFilename = filename.string();
-	gCPUState.AddJob(CPU_CHANGE_CORE);
+	ctx.cpuState.AddJob(CPU_CHANGE_CORE);
 
 	return true;
 }
@@ -462,7 +465,7 @@ bool CPU_RequestLoadState( const std::filesystem::path &filename )
 
 	gSaveStateOperation = SSO_LOAD;
 	gSaveStateFilename = filename.string();
-	gCPUState.AddJob(CPU_CHANGE_CORE);
+	ctx.cpuState.AddJob(CPU_CHANGE_CORE);
 
 	return true;	// XXXX could fail
 }
@@ -563,7 +566,7 @@ void CPU_Halt( const char * reason )
 {
 	DBGConsole_Msg( 0, "CPU Halting: %s", reason );
 	gCPUStopOnSimpleState = true;
-	gCPUState.AddJob( CPU_STOP_RUNNING );
+	ctx.cpuState.AddJob( CPU_STOP_RUNNING );
 }
 
 #ifdef DAEDALUS_BREAKPOINTS_ENABLED
@@ -635,7 +638,7 @@ extern "C"
 void CPU_HANDLE_COUNT_INTERRUPT()
 {
 	#ifdef DAEDALUS_ENABLE_ASSERTS
-		DAEDALUS_ASSERT( gCPUState.NumEvents > 0, "Should always have at least one event queued up" );
+		DAEDALUS_ASSERT( ctx.cpuState.NumEvents > 0, "Should always have at least one event queued up" );
 	#endif
 	switch (CPU_PopEvent())
 	{
@@ -691,8 +694,8 @@ void CPU_HANDLE_COUNT_INTERRUPT()
 		break;
 	case CPU_EVENT_COMPARE:
 		{
-			gCPUState.CPUControl[C0_CAUSE]._u32 |= CAUSE_IP8;
-			gCPUState.AddJob( CPU_CHECK_INTERRUPTS );
+			ctx.cpuState.CPUControl[C0_CAUSE]._u32 |= CAUSE_IP8;
+			ctx.cpuState.AddJob( CPU_CHECK_INTERRUPTS );
 		}
 		break;
 	case CPU_EVENT_AUDIO:
@@ -709,21 +712,21 @@ void CPU_HANDLE_COUNT_INTERRUPT()
 	}
 
 	#ifdef DAEDALUS_ENABLE_ASSERTS
-	DAEDALUS_ASSERT( gCPUState.NumEvents > 0, "Should always have at least one event queued up" );
+	DAEDALUS_ASSERT( ctx.cpuState.NumEvents > 0, "Should always have at least one event queued up" );
 	#endif
 }
 }
 
 void CPU_SetCompare(u32 value)
 {
-	gCPUState.CPUControl[C0_CAUSE]._u32 &= ~CAUSE_IP8;
+	ctx.cpuState.CPUControl[C0_CAUSE]._u32 &= ~CAUSE_IP8;
 
 	#ifdef DAEDALUS_PROFILE
 	DPF( DEBUG_REGS, "COMPARE set to 0x%08x.", value );
-	//DBGConsole_Msg(0, "COMPARE set to 0x%08x Count is 0x%08x.", value, gCPUState.CPUControl[C0_COUNT]._u32);
+	//DBGConsole_Msg(0, "COMPARE set to 0x%08x Count is 0x%08x.", value, ctx.cpuState.CPUControl[C0_COUNT]._u32);
 	#endif
 	// Add an event for this compare:
-	if (value == gCPUState.CPUControl[C0_COMPARE]._u32)
+	if (value == ctx.cpuState.CPUControl[C0_COMPARE]._u32)
 	{
 		//DBGConsole_Msg(0, "Clear");
 	}
@@ -733,13 +736,13 @@ void CPU_SetCompare(u32 value)
 		{
 			// NB, value can be less than COUNT here, which indicates that the counter is close to wrapping.
 			// Don't do anything special to handle this - just treat delta as an unsigned value.
-			u32 delta = value - gCPUState.CPUControl[C0_COUNT]._u32;
+			u32 delta = value - ctx.cpuState.CPUControl[C0_COUNT]._u32;
 
 			// This fires a lot for Zelda OoT. It's benign.
 			// If seems to keep setting a delta of 140624981 when the counter is close to wrapping.
-			// if (value < gCPUState.CPUControl[C0_COUNT]._u32)
+			// if (value < ctx.cpuState.CPUControl[C0_COUNT]._u32)
 			// {
-			// 	DBGConsole_Msg(0, "SetCompare wrapping: %d -> %d = %d", gCPUState.CPUControl[C0_COUNT]._u32, value, delta);
+			// 	DBGConsole_Msg(0, "SetCompare wrapping: %d -> %d = %d", ctx.cpuState.CPUControl[C0_COUNT]._u32, value, delta);
 			// }
 			CPU_SetCompareEvent( delta );
 		}
@@ -749,7 +752,7 @@ void CPU_SetCompare(u32 value)
 			//DBGConsole_Msg(0, "[RIgnoring SetCompare 0] - is this right?");
 		}
 		#endif
-		gCPUState.CPUControl[C0_COMPARE]._u32 = value;
+		ctx.cpuState.CPUControl[C0_COMPARE]._u32 = value;
 	}
 }
 
@@ -760,21 +763,21 @@ u32	CPU_ProduceRegisterHash()
 
 	if ( DAED_SYNC_MASK & DAED_SYNC_REG_GPR )
 	{
-		hash = murmur2_hash( (u8*)&(gCPUState.CPU[0]), sizeof( gCPUState.CPU ), hash );
+		hash = murmur2_hash( (u8*)&(ctx.cpuState.CPU[0]), sizeof( ctx.cpuState.CPU ), hash );
 	}
 
 	if ( DAED_SYNC_MASK & DAED_SYNC_REG_CCR0 )
 	{
-		hash = murmur2_hash( (u8*)&(gCPUState.CPUControl[0]), sizeof( gCPUState.CPUControl ), hash );
+		hash = murmur2_hash( (u8*)&(ctx.cpuState.CPUControl[0]), sizeof( ctx.cpuState.CPUControl ), hash );
 	}
 
 	if ( DAED_SYNC_MASK & DAED_SYNC_REG_CPU1 )
 	{
-		hash = murmur2_hash( (u8*)&(gCPUState.FPU[0]), sizeof( gCPUState.FPU ), hash );
+		hash = murmur2_hash( (u8*)&(ctx.cpuState.FPU[0]), sizeof( ctx.cpuState.FPU ), hash );
 	}
 	if ( DAED_SYNC_MASK & DAED_SYNC_REG_CCR1 )
 	{
-		hash = murmur2_hash( (u8*)&(gCPUState.FPUControl[0]), sizeof( gCPUState.FPUControl ), hash );
+		hash = murmur2_hash( (u8*)&(ctx.cpuState.FPUControl[0]), sizeof( ctx.cpuState.FPUControl ), hash );
 	}
 
 	return hash;
@@ -785,16 +788,16 @@ u32	CPU_ProduceRegisterHash()
 // Execute the specified opcode
 void CPU_ExecuteOpRaw( u32 count, u32 address, OpCode op_code, CPU_Instruction p_instruction, bool * p_branch_taken )
 {
-	gCPUState.CurrentPC = address;
+	ctx.cpuState.CurrentPC = address;
 
-	SYNCH_POINT( DAED_SYNC_REG_PC, gCPUState.CurrentPC, "Program Counter doesn't match" );
+	SYNCH_POINT( DAED_SYNC_REG_PC, ctx.cpuState.CurrentPC, "Program Counter doesn't match" );
 	SYNCH_POINT( DAED_SYNC_REG_PC, count, "Count doesn't match" );
 
 	p_instruction( op_code._u32 );
 
 	SYNCH_POINT( DAED_SYNC_REGS, CPU_ProduceRegisterHash(), "Registers don't match" );
 
-	*p_branch_taken = gCPUState.Delay == DO_DELAY;
+	*p_branch_taken = ctx.cpuState.Delay == DO_DELAY;
 }
 #endif
 
@@ -814,7 +817,7 @@ void  CPU_UpdateCounter( u32 ops_executed )
 	const u32 cycles = ops_executed * COUNTER_INCREMENT_PER_OP;
 
 	// Increment count register
-	gCPUState.CPUControl[C0_COUNT]._u32 += cycles;
+	ctx.cpuState.CPUControl[C0_COUNT]._u32 += cycles;
 
 	if( CPU_ProcessEventCycles( cycles ) )
 	{
@@ -837,7 +840,7 @@ void CPU_UpdateCounterNoInterrupt( u32 ops_executed )
 #endif
 
 		// Increment count register
-		gCPUState.CPUControl[C0_COUNT]._u32 += cycles;
+		ctx.cpuState.CPUControl[C0_COUNT]._u32 += cycles;
 
 #ifdef DAEDALUS_ENABLE_ASSERTS
 		bool	ready = CPU_ProcessEventCycles( cycles );
@@ -853,7 +856,7 @@ void CPU_UpdateCounterNoInterrupt( u32 ops_executed )
 bool CPU_CheckStuffToDo()
 {
     // Get jobs to do
-    u32 stuff_to_do = gCPUState.GetStuffToDo();
+    u32 stuff_to_do = ctx.cpuState.GetStuffToDo();
 
     // Early return if nothing to do
     if (stuff_to_do == 0) {
@@ -861,24 +864,24 @@ bool CPU_CheckStuffToDo()
     }
 
     // Process Interrupts/Exceptions on a priority basis using a switch statement
-		if( gCPUState.GetStuffToDo() & CPU_CHECK_INTERRUPTS )
+		if( ctx.cpuState.GetStuffToDo() & CPU_CHECK_INTERRUPTS )
 		{
 			R4300_Handle_Interrupt();
-			gCPUState.ClearJob( CPU_CHECK_INTERRUPTS );
+			ctx.cpuState.ClearJob( CPU_CHECK_INTERRUPTS );
 		}
-		else if( gCPUState.GetStuffToDo() & CPU_CHECK_EXCEPTIONS )
+		else if( ctx.cpuState.GetStuffToDo() & CPU_CHECK_EXCEPTIONS )
 		{
 			R4300_Handle_Exception();
-			gCPUState.ClearJob( CPU_CHECK_EXCEPTIONS );
+			ctx.cpuState.ClearJob( CPU_CHECK_EXCEPTIONS );
 		}
-		else if( gCPUState.GetStuffToDo() & CPU_CHANGE_CORE )
+		else if( ctx.cpuState.GetStuffToDo() & CPU_CHANGE_CORE )
 		{
-			gCPUState.ClearJob( CPU_CHANGE_CORE );
+			ctx.cpuState.ClearJob( CPU_CHANGE_CORE );
 			return true;
 		}
-		else if( gCPUState.GetStuffToDo() & CPU_STOP_RUNNING )
+		else if( ctx.cpuState.GetStuffToDo() & CPU_STOP_RUNNING )
 		{
-			gCPUState.ClearJob( CPU_STOP_RUNNING );
+			ctx.cpuState.ClearJob( CPU_STOP_RUNNING );
 			gCPURunning = false;
 			return true;
 		}
@@ -893,3 +896,4 @@ bool CPU_IsRunning()
 {	
 	return gCPURunning;	
 }
+

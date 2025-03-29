@@ -84,7 +84,7 @@ u32 OS_HLE___osProbeTLB(u32 vaddr)
 {
 	u32 PAddr = ~0;	// Return -1 on failure
 
-	u32 pid = gCPUState.CPUControl[C0_ENTRYHI]._u32 & TLBHI_PIDMASK;
+	u32 pid = ctx.cpuState.CPUControl[C0_ENTRYHI]._u32 & TLBHI_PIDMASK;
 	u32 vpn2 = vaddr & TLBHI_VPN2MASK;
 	u32 pageMask;
 	u32 entryLo;

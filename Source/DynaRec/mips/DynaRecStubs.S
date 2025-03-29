@@ -1,6 +1,6 @@
 #include "as_reg_compat.h"
 
-//The top two defines needs to be adjusted depending on how gCPUState struct is formated in CPU.h!! //Corn
+//The top two defines needs to be adjusted depending on how ctx.cpuState struct is formated in CPU.h!! //Corn
 //
 #define _C0_Count	(0x100 + 9 * 4)	//CPU_Control_base + 9*8(64bit regs) or 9*4(32bit regs)
 #define _AuxBase	0x280	//Base pointer to Aux regs
@@ -100,7 +100,7 @@ invalidate_next:
 #######################################################################################
 #
 #	a0 - fragment function to enter
-#	a1 - gCPUState base pointer
+#	a1 - ctx.cpuState base pointer
 #	a2 - Memory base offset (i.e. g_pu8RamBase - 0x80000000 )
 #	a3 - Memory upper bound (e.g. 0x80400000)
 #
@@ -125,10 +125,10 @@ _EnterDynaRec:
 	or		$fp, $a1, $0	# set frame pointer to Emulated CPU registers
 
 #######################################################################################
-#	Check gCPUState.StuffToDo. If non-zero, performs any required handling then exits
+#	Check ctx.cpuState.StuffToDo. If non-zero, performs any required handling then exits
 #	the dynarec system. If the flag is zero this just returns immediately.
 #	NB: As a significant optinisation the dynarec system patches the first two ops
-#	of this function to return immediately in the case the gCPUState.StuffToDo is not set.
+#	of this function to return immediately in the case the ctx.cpuState.StuffToDo is not set.
 #
 _ReturnFromDynaRecIfStuffToDo:
 

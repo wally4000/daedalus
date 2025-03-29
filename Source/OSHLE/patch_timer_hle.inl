@@ -9,7 +9,7 @@ TEST_DISABLE_TIMER_FUNCS
 	s64 TimeLo = (s64)gGPR[REG_a1]._s32_0;
 	//s64 qwTimeHi = (s64)(s32)gGPR[REG_a0];
 
-	s64 count = (s64)gCPUState.CPUControl[C0_COUNT]._s32;
+	s64 count = (s64)ctx.cpuState.CPUControl[C0_COUNT]._s32;
 
 	Write32Bits(VAR_ADDRESS(osSystemLastCount), (u32)count);
 
@@ -170,7 +170,7 @@ TEST_DISABLE_TIMER_FUNCS
 	u32 TimeLo	   = QuickRead32Bits(pTimeBase, 0x4);
 	u32 TimeHi	   = QuickRead32Bits(pTimeBase, 0x0);
 
-	u32 count	   = gCPUState.CPUControl[C0_COUNT]._u32;
+	u32 count	   = ctx.cpuState.CPUControl[C0_COUNT]._u32;
 
 	TimeLo += count - LastCount;		// Increase by elapsed time
 

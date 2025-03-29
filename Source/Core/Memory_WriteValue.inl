@@ -21,8 +21,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 static void WriteValueInvalid( u32 address, u32 value [[maybe_unused]] )
 {
 	#ifdef DAEDALUS_DEBUG_CONSOLE
-	DPF( DEBUG_MEMORY, "Illegal Memory Access Tried to Write To 0x%08x PC: 0x%08x", address, gCPUState.CurrentPC );
-	DBGConsole_Msg(0, "Illegal Memory Access: Tried to Write To 0x%08x (PC: 0x%08x)", address, gCPUState.CurrentPC);
+	DPF( DEBUG_MEMORY, "Illegal Memory Access Tried to Write To 0x%08x PC: 0x%08x", address, ctx.cpuState.CurrentPC );
+	DBGConsole_Msg(0, "Illegal Memory Access: Tried to Write To 0x%08x (PC: 0x%08x)", address, ctx.cpuState.CurrentPC);
 	#endif
 }
 
@@ -168,7 +168,7 @@ static void WriteValue_8420_842F( u32 address [[maybe_unused]], u32 value [[mayb
 {
 	#ifdef DAEDALUS_DEBUG_CONSOLE
 	DBGConsole_Msg(0, "Write to DP Span Registers is unhandled (0x%08x, PC: 0x%08x)",
-		address, gCPUState.CurrentPC);
+		address, ctx.cpuState.CurrentPC);
 	#endif
 }
 
@@ -269,7 +269,7 @@ static void WriteValue_8440_844F( u32 address, u32 value )
 	#ifdef DAEDALUS_DEBUG_CONSOLE
 		DPF( DEBUG_VI, "VI_CURRENT_REG set to 0x%08x", value );
 		// Any write clears interrupt line...
-		DPF( DEBUG_VI, "VI: Clearing interrupt flag. PC: 0x%08x", gCPUState.CurrentPC );
+		DPF( DEBUG_VI, "VI: Clearing interrupt flag. PC: 0x%08x", ctx.cpuState.CurrentPC );
 		#endif
 		Memory_MI_ClrRegisterBits(MI_INTR_REG, MI_INTR_VI);
 		R4300_Interrupt_UpdateCause3();

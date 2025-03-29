@@ -188,18 +188,18 @@ CTraceRecorder::EUpdateTraceStatus	CTraceRecorder::UpdateTrace( u32 address,
 		else if( !IsConditionalBranch( branch_type ) )
 		{
 			details.Direct = IsBranchTypeDirect( branch_type );
-			details.TargetAddress = gCPUState.TargetPC;
+			details.TargetAddress = ctx.cpuState.TargetPC;
 			details.ConditionalBranchTaken = true;
 
 			mExpectedExitTraceAddress = details.TargetAddress;
 
-			if (!details.Direct || gCPUState.TargetPC <= gCPUState.CurrentPC)
+			if (!details.Direct || ctx.cpuState.TargetPC <= ctx.cpuState.CurrentPC)
 			{
 				// all indirect call will stop the trace
 				mStopTraceAfterDelaySlot = true;
 			}
 
-			if (details.Direct && gCPUState.TargetPC == gCPUState.CurrentPC)
+			if (details.Direct && ctx.cpuState.TargetPC == ctx.cpuState.CurrentPC)
 			{
 				details.SpeedHack = SHACK_POSSIBLE;
 			}
@@ -213,14 +213,14 @@ CTraceRecorder::EUpdateTraceStatus	CTraceRecorder::UpdateTrace( u32 address,
 			if( branch_taken )
 			{
 				// XXXXXX should be able to get this some other way?
-				bool	backwards( gCPUState.TargetPC <= gCPUState.CurrentPC );
+				bool	backwards( ctx.cpuState.TargetPC <= ctx.cpuState.CurrentPC );
 
 				if( backwards )
 				{
 					mStopTraceAfterDelaySlot = true;
 				}
 
-				if (gCPUState.TargetPC == gCPUState.CurrentPC)
+				if (ctx.cpuState.TargetPC == ctx.cpuState.CurrentPC)
 				{
 					details.SpeedHack = SHACK_POSSIBLE;
 				}

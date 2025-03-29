@@ -162,8 +162,8 @@ void CFragment::Execute()
 	#ifdef DAEDALUS_ENABLE_DYNAREC_PROFILE
 	DAEDALUS_PROFILE( "CFragment::Execute" );
 
-	SYNCH_POINT( DAED_SYNC_FRAGMENT_PC, gCPUState.CurrentPC + gCPUState.Delay, "Program Counter/Delay doesn't match on entry to fragment" );
-	DAEDALUS_ASSERT( gCPUState.Delay == NO_DELAY, "Why are we entering with a delay slot active?" );
+	SYNCH_POINT( DAED_SYNC_FRAGMENT_PC, ctx.cpuState.CurrentPC + ctx.cpuState.Delay, "Program Counter/Delay doesn't match on entry to fragment" );
+	DAEDALUS_ASSERT( ctx.cpuState.Delay == NO_DELAY, "Why are we entering with a delay slot active?" );
 #endif
 #ifdef FRAGMENT_SIMULATE_EXECUTION
 
@@ -174,7 +174,7 @@ void CFragment::Execute()
 		CFragment * next = p_fragment->Simulate();
 
 #ifdef DAEDALUS_ENABLE_ASSERTS
-		DAEDALUS_ASSERT( next == nullptr || gCPUState.Delay == NO_DELAY, "Why are we entering with a delay slot active?" );
+		DAEDALUS_ASSERT( next == nullptr || ctx.cpuState.Delay == NO_DELAY, "Why are we entering with a delay slot active?" );
 #endif
 		p_fragment = next;
 	}
@@ -183,19 +183,19 @@ void CFragment::Execute()
 	const void *		p( g_pu8RamBase_8000 );
 	u32					upper( 0x80000000 + gRamSize );
 
-	_EnterDynaRec( mEntryPoint.GetTarget(), &gCPUState, p, upper );
+	_EnterDynaRec( mEntryPoint.GetTarget(), &ctx.cpuState, p, upper );
 #endif // FRAGMENT_SIMULATE_EXECUTION
 
 #ifdef DAEDALUS_DEBUG_DYNAREC
-	SYNCH_POINT( DAED_SYNC_FRAGMENT_PC, gCPUState.CurrentPC + gCPUState.Delay, "Program Counter/Delay doesn't match on exit from fragment" );
+	SYNCH_POINT( DAED_SYNC_FRAGMENT_PC, ctx.cpuState.CurrentPC + ctx.cpuState.Delay, "Program Counter/Delay doesn't match on exit from fragment" );
 #endif
-	//if(gCPUState.Delay != NO_DELAY)
+	//if(ctx.cpuState.Delay != NO_DELAY)
 	//{
-	//	SYNCH_POINT( DAED_SYNC_FRAGMENT_PC, gCPUState.TargetPC, "New Program Counter doesn't match on exit from fragment" );
+	//	SYNCH_POINT( DAED_SYNC_FRAGMENT_PC, ctx.cpuState.TargetPC, "New Program Counter doesn't match on exit from fragment" );
 	//}
 
 	// We have to do this when we exit to make sure the cached read pointer is updated correctly
-	CPU_SetPC( gCPUState.CurrentPC );
+	CPU_SetPC( ctx.cpuState.CurrentPC );
 }
 //*************************************************************************************
 //
@@ -204,18 +204,18 @@ namespace
 {
 	void HandleException()
 	{
-		switch (gCPUState.Delay)
+		switch (ctx.cpuState.Delay)
 		{
 			case DO_DELAY:
-				gCPUState.CurrentPC += 4;
-				gCPUState.Delay = EXEC_DELAY;
+				ctx.cpuState.CurrentPC += 4;
+				ctx.cpuState.Delay = EXEC_DELAY;
 				break;
 			case EXEC_DELAY:
-				gCPUState.CurrentPC = gCPUState.TargetPC;
-				gCPUState.Delay = NO_DELAY;
+				ctx.cpuState.CurrentPC = ctx.cpuState.TargetPC;
+				ctx.cpuState.Delay = NO_DELAY;
 				break;
 			case NO_DELAY:
-				gCPUState.CurrentPC += 4;
+				ctx.cpuState.CurrentPC += 4;
 				break;
 		}
 	}
@@ -232,7 +232,7 @@ namespace
 	}
 	void CheckCop1Usable()
 	{
-		if( (gCPUState.CPUControl[C0_SR]._u32_0 & SR_CU1) == 0 )
+		if( (ctx.cpuState.CPUControl[C0_SR]._u32_0 & SR_CU1) == 0 )
 		{
 			#ifdef DAEDALUS_DEBUG_CONSOLE
 			DAEDALUS_ERROR( "Benign: Cop1 unusable fired - check logic" );
@@ -250,9 +250,9 @@ namespace
 CFragment * CFragment::Simulate()
 {
 	#ifdef DAEDALUS_ENABLE_ASSERTS
-	DAEDALUS_ASSERT( gCPUState.GetStuffToDo() == 0, "Entering when there is stuff to do?" );
-	DAEDALUS_ASSERT( gCPUState.CurrentPC == mEntryAddress, "Why are we entering at the wrong address?" );
-	DAEDALUS_ASSERT( gCPUState.Delay == NO_DELAY, "Why are we entering with a delay slot active?" );
+	DAEDALUS_ASSERT( ctx.cpuState.GetStuffToDo() == 0, "Entering when there is stuff to do?" );
+	DAEDALUS_ASSERT( ctx.cpuState.CurrentPC == mEntryAddress, "Why are we entering at the wrong address?" );
+	DAEDALUS_ASSERT( ctx.cpuState.Delay == NO_DELAY, "Why are we entering with a delay slot active?" );
 #endif
 #ifdef FRAGMENT_RETAIN_ADDITIONAL_INFO
 	mHitCount++;
@@ -267,7 +267,7 @@ CFragment * CFragment::Simulate()
 	u32			branch_taken_address( 0 );
 	bool		checked_cop1_usable( false );
 
-	u32			count_entry( gCPUState.CPUControl[C0_COUNT]._u32_0 );
+	u32			count_entry( ctx.cpuState.CPUControl[C0_COUNT]._u32_0 );
 
 	OpCode		last_executed_op;
 
@@ -284,17 +284,17 @@ CFragment * CFragment::Simulate()
 
 		if( ti.BranchDelaySlot )
 		{
-			gCPUState.Delay = EXEC_DELAY;
+			ctx.cpuState.Delay = EXEC_DELAY;
 		}
 
-		DAEDALUS_ASSERT( gCPUState.Delay == (ti.BranchDelaySlot ? EXEC_DELAY : NO_DELAY), "Delay doesn't match expectations" );
+		DAEDALUS_ASSERT( ctx.cpuState.Delay == (ti.BranchDelaySlot ? EXEC_DELAY : NO_DELAY), "Delay doesn't match expectations" );
 
 		// Check the cop1 usable flag. Do this only once (theoretically it could be toggled mid-fragment but this is unlikely)
 		if( op_code.op == OP_COPRO1 && !checked_cop1_usable )
 		{
 			checked_cop1_usable = true;
 			CheckCop1Usable();
-			if(gCPUState.GetStuffToDo() != 0)
+			if(ctx.cpuState.GetStuffToDo() != 0)
 			{
 				UpdateCountAndHandleException_Counter( instructions_executed );
 				return nullptr;
@@ -310,7 +310,7 @@ CFragment * CFragment::Simulate()
 #endif
 		instructions_executed++;
 
-		if(gCPUState.GetStuffToDo() != 0)
+		if(ctx.cpuState.GetStuffToDo() != 0)
 		{
 			UpdateCountAndHandleException_Counter( instructions_executed );
 			return nullptr;
@@ -333,7 +333,7 @@ CFragment * CFragment::Simulate()
 			}
 			else if( !details.Direct )
 			{
-				exit_trace = (gCPUState.TargetPC != details.TargetAddress);
+				exit_trace = (ctx.cpuState.TargetPC != details.TargetAddress);
 			}
 			else
 			{
@@ -354,7 +354,7 @@ CFragment * CFragment::Simulate()
 			#endif
 			if(ti.BranchDelaySlot)
 			{
-				gCPUState.Delay = NO_DELAY;
+				ctx.cpuState.Delay = NO_DELAY;
 			}
 		}
 	}
@@ -397,7 +397,7 @@ CFragment * CFragment::Simulate()
 				// The branch wasn't taken in our trace, so the original logic is used
 				// We never saw the branch delay slot, so bail out to interpreter
 				exit_delay = EXEC_DELAY;
-				gCPUState.TargetPC = details.TargetAddress;
+				ctx.cpuState.TargetPC = details.TargetAddress;
 				exit_address = branch_taken_address + 4;		// i.e. execute the branch
 
 				// XXXX This is potentially unsafe - we exit with the flag set. The target
@@ -421,14 +421,14 @@ CFragment * CFragment::Simulate()
 				DAEDALUS_ASSERT( instructions_executed == mTraceBuffer.size(), "Why wasn't ERET the last instruction?" );
 				DAEDALUS_ASSERT( details.DelaySlotTraceIndex == -1, "Why does this ERET have a return instruction?" );
 				#endif
-				exit_address = gCPUState.CurrentPC + 4;
+				exit_address = ctx.cpuState.CurrentPC + 4;
 				p_target_fragment = mpIndirectExitMap->LookupIndirectExit( exit_address );
 			}
 			else
 			{
-				exit_address = gCPUState.TargetPC;
+				exit_address = ctx.cpuState.TargetPC;
 
-				p_target_fragment = mpIndirectExitMap->LookupIndirectExit( gCPUState.TargetPC );
+				p_target_fragment = mpIndirectExitMap->LookupIndirectExit( ctx.cpuState.TargetPC );
 			}
 			exit_delay = NO_DELAY;
 		}
@@ -443,13 +443,13 @@ CFragment * CFragment::Simulate()
 			u32 		delay_address( mTraceBuffer[details.DelaySlotTraceIndex].Address );
 
 			bool		dummy_branch_taken;
-			gCPUState.Delay = EXEC_DELAY;
+			ctx.cpuState.Delay = EXEC_DELAY;
 
 			if( delay_op_code.op == OP_COPRO1 && !checked_cop1_usable )
 			{
 				checked_cop1_usable = true;
 				CheckCop1Usable();
-				if(gCPUState.GetStuffToDo() != 0)
+				if(ctx.cpuState.GetStuffToDo() != 0)
 				{
 					UpdateCountAndHandleException_Counter( instructions_executed );
 					return nullptr;
@@ -463,13 +463,13 @@ CFragment * CFragment::Simulate()
 #endif
 			instructions_executed++;
 
-			if(gCPUState.GetStuffToDo() != 0)
+			if(ctx.cpuState.GetStuffToDo() != 0)
 			{
 				UpdateCountAndHandleException_Counter( instructions_executed );
 				return nullptr;
 			}
 
-			gCPUState.Delay = NO_DELAY;
+			ctx.cpuState.Delay = NO_DELAY;
 		}
 	}
 	else
@@ -492,18 +492,18 @@ CFragment * CFragment::Simulate()
 #ifdef DAEDALUS_ENABLE_ASSERTS
 	DAEDALUS_ASSERT( exit_address != u32( ~0 ), "Invalid exit address" );
 #endif
-	gCPUState.CurrentPC = exit_address;
-	gCPUState.Delay = exit_delay;
+	ctx.cpuState.CurrentPC = exit_address;
+	ctx.cpuState.Delay = exit_delay;
 
 	if( exit_address == mEntryAddress )
 	{
 		#ifdef DAEDALUS_ENABLE_ASSERTS
-		DAEDALUS_ASSERT( gCPUState.Delay == NO_DELAY, "Branching to self with delay slot active?" );
+		DAEDALUS_ASSERT( ctx.cpuState.Delay == NO_DELAY, "Branching to self with delay slot active?" );
 		#endif
 		p_target_fragment = this;
 	}
 
-	if( gCPUState.GetStuffToDo() != 0 )
+	if( ctx.cpuState.GetStuffToDo() != 0 )
 	{
 		// Quit to the interpreter if there are CPU jobs to do
 		p_target_fragment = nullptr;
@@ -579,9 +579,9 @@ void CFragment::Assemble( std::shared_ptr<CCodeBufferManager> p_manager,
 	mEntryPoint = p_generator->GetEntryPoint();
 
 #ifdef FRAGMENT_RETAIN_ADDITIONAL_INFO
-	p_generator->Initialise( mEntryAddress, exit_address, &mHitCount, &gCPUState, register_usage );
+	p_generator->Initialise( mEntryAddress, exit_address, &mHitCount, &ctx.cpuState, register_usage );
 #else
-	p_generator->Initialise( mEntryAddress, exit_address, nullptr, &gCPUState, register_usage );
+	p_generator->Initialise( mEntryAddress, exit_address, nullptr, &ctx.cpuState, register_usage );
 #endif
 
 	//Trace: (3 ops, 13 hits)
@@ -846,9 +846,9 @@ void CFragment::Assemble( std::shared_ptr<CCodeBufferManager> p_manager, CCodeLa
 
 
 #ifdef FRAGMENT_RETAIN_ADDITIONAL_INFO
-		p_generator->Initialise( mEntryAddress, 0, &mHitCount, &gCPUState,  register_usage);
+		p_generator->Initialise( mEntryAddress, 0, &mHitCount, &ctx.cpuState,  register_usage);
 #else
-		p_generator->Initialise( mEntryAddress, 0, nullptr, &gCPUState, register_usage );
+		p_generator->Initialise( mEntryAddress, 0, nullptr, &ctx.cpuState, register_usage );
 #endif
 
 	CJumpLocation jump = p_generator->ExecuteNativeFunction(function_ptr, true);

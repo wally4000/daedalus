@@ -173,7 +173,7 @@ inline void SpeedHack(u32 pc, u32 new_pc)
 
 			if (!warned)
 			{
-				DBGConsole_Msg(0, "Missed Speedhack 0x%08x", gCPUState.CurrentPC);
+				DBGConsole_Msg(0, "Missed Speedhack 0x%08x", ctx.cpuState.CurrentPC);
 				warned = true;
 			}
 		}*/
@@ -192,8 +192,8 @@ inline void StoreFPR_Long( u32 reg, u64 value )
 	REG64	r;
 	r._u64 = value;
 
-	gCPUState.FPU[reg+0]._u32 = r._u32_0;
-	gCPUState.FPU[reg+1]._u32 = r._u32_1;
+	ctx.cpuState.FPU[reg+0]._u32 = r._u32_0;
+	ctx.cpuState.FPU[reg+1]._u32 = r._u32_1;
 }
 
 
@@ -203,15 +203,15 @@ inline u64 LoadFPR_Long( u32 reg )
 {
 	REG64 res;
 #ifdef SIM_DOUBLES
-	if (gCPUState.FPU[reg+0]._u32 == SIMULATESIG)
+	if (ctx.cpuState.FPU[reg+0]._u32 == SIMULATESIG)
 	{
-		res._f64 = (f64)gCPUState.FPU[reg+1]._f32;	//Convert f32 -> f64
+		res._f64 = (f64)ctx.cpuState.FPU[reg+1]._f32;	//Convert f32 -> f64
 	}
 	else
 #endif
 	{
-		res._u32_0 = gCPUState.FPU[reg+0]._u32;
-		res._u32_1 = gCPUState.FPU[reg+1]._u32;
+		res._u32_0 = ctx.cpuState.FPU[reg+0]._u32;
+		res._u32_1 = ctx.cpuState.FPU[reg+1]._u32;
 	}
 	return res._u64;
 }
@@ -219,16 +219,16 @@ inline u64 LoadFPR_Long( u32 reg )
 inline d64 LoadFPR_Double( u32 reg )
 {
 #ifdef SIM_DOUBLES
-	if (gCPUState.FPU[reg+0]._u32 == SIMULATESIG)
+	if (ctx.cpuState.FPU[reg+0]._u32 == SIMULATESIG)
 	{
-		return (d64)gCPUState.FPU[reg+1]._f32;
+		return (d64)ctx.cpuState.FPU[reg+1]._f32;
 	}
 	else
 #endif
 	{
 		REG64 res;
-		res._u32_0 = gCPUState.FPU[reg+0]._u32;
-		res._u32_1 = gCPUState.FPU[reg+1]._u32;
+		res._u32_0 = ctx.cpuState.FPU[reg+0]._u32;
+		res._u32_1 = ctx.cpuState.FPU[reg+1]._u32;
 		return (d64)res._f64;	//Converted f64 -> f32
 	}
 }
@@ -236,21 +236,21 @@ inline d64 LoadFPR_Double( u32 reg )
 inline void StoreFPR_Double( u32 reg, d64 value )
 {
 #ifdef SIM_DOUBLES
-	gCPUState.FPU[reg+0]._u32 = SIMULATESIG;
-	gCPUState.FPU[reg+1]._f32 = f32( value );	//No Coversion
+	ctx.cpuState.FPU[reg+0]._u32 = SIMULATESIG;
+	ctx.cpuState.FPU[reg+1]._f32 = f32( value );	//No Coversion
 #else
 	REG64 r;
 	r._f64 = value;
 
-	gCPUState.FPU[reg+0]._u32 = r._u32_0;
-	gCPUState.FPU[reg+1]._u32 = r._u32_1;
+	ctx.cpuState.FPU[reg+0]._u32 = r._u32_0;
+	ctx.cpuState.FPU[reg+1]._u32 = r._u32_1;
 #endif
 }
 
-inline s32 LoadFPR_Word( u32 reg ) { 	return gCPUState.FPU[reg]._s32; }
-inline void StoreFPR_Word( u32 reg, s32 value ) { gCPUState.FPU[reg]._s32 = value;}
-inline f32 LoadFPR_Single( u32 reg ) { return gCPUState.FPU[reg]._f32; }
-inline void StoreFPR_Single( u32 reg, f32 value ) { gCPUState.FPU[reg]._f32 = value; }
+inline s32 LoadFPR_Word( u32 reg ) { 	return ctx.cpuState.FPU[reg]._s32; }
+inline void StoreFPR_Word( u32 reg, s32 value ) { ctx.cpuState.FPU[reg]._s32 = value;}
+inline f32 LoadFPR_Single( u32 reg ) { return ctx.cpuState.FPU[reg]._f32; }
+inline void StoreFPR_Single( u32 reg, f32 value ) { ctx.cpuState.FPU[reg]._f32 = value; }
 
 //	int -> float conversion routines
 inline f32 s32_to_f32( s32 x ) { return (f32)x; }
@@ -317,7 +317,7 @@ inline s32 f32_to_s32_floor( f32 x )	{ SET_ROUND_MODE( RM_FLOOR ); return (s32)f
 inline s32 f32_to_s32( f32 x )
 {
 #ifdef DAEDALUS_ACCURATE_CVT
-	switch ( gCPUState.FPUControl[31]._u32 & FPCSR_RM_MASK )
+	switch ( ctx.cpuState.FPUControl[31]._u32 & FPCSR_RM_MASK )
 	{
 	case FPCSR_RM_RN:		return f32_to_s32_round( x );
 	case FPCSR_RM_RZ:		return f32_to_s32_trunc( x );
@@ -337,7 +337,7 @@ inline s64 f32_to_s64_floor( f32 x )	{ SET_ROUND_MODE( RM_FLOOR ); return (s64)f
 inline s64 f32_to_s64( f32 x )
 {
 #ifdef DAEDALUS_ACCURATE_CVT
-	switch ( gCPUState.FPUControl[31]._u32 & FPCSR_RM_MASK )
+	switch ( ctx.cpuState.FPUControl[31]._u32 & FPCSR_RM_MASK )
 	{
 	case FPCSR_RM_RN:		return f32_to_s64_round( x );
 	case FPCSR_RM_RZ:		return f32_to_s64_trunc( x );
@@ -357,7 +357,7 @@ inline s32 d64_to_s32_floor( d64 x )	{ SET_ROUND_MODE( RM_FLOOR ); return (s32)f
 inline s32 d64_to_s32( d64 x )
 {
 #ifdef DAEDALUS_ACCURATE_CVT
-	switch ( gCPUState.FPUControl[31]._u32 & FPCSR_RM_MASK )
+	switch ( ctx.cpuState.FPUControl[31]._u32 & FPCSR_RM_MASK )
 	{
 	case FPCSR_RM_RN:		return d64_to_s32_round( x );
 	case FPCSR_RM_RZ:		return d64_to_s32_trunc( x );
@@ -377,7 +377,7 @@ inline s64 d64_to_s64_floor( d64 x ) { SET_ROUND_MODE( RM_FLOOR ); return (s64)f
 inline s64 d64_to_s64( d64 x )
 {
 #ifdef DAEDALUS_ACCURATE_CVT
-	switch ( gCPUState.FPUControl[31]._u32 & FPCSR_RM_MASK )
+	switch ( ctx.cpuState.FPUControl[31]._u32 & FPCSR_RM_MASK )
 	{
 	case FPCSR_RM_RN:		return d64_to_s64_round( x );
 	case FPCSR_RM_RZ:		return d64_to_s64_trunc( x );
@@ -410,7 +410,7 @@ static void  R4300_SWC1( R4300_CALL_SIGNATURE );
 static void  R4300_SDC1( R4300_CALL_SIGNATURE );
 
 //	Returns true if the specified opcode handler needs a valid entry in
-//	gCPUState.CurrentPC to function correctly.
+//	ctx.cpuState.CurrentPC to function correctly.
 //	The PC must be set up for all branching instructions, but also
 //	for any instruction that can potentially throw an exception (as it needs
 //	to keep track of the location of the exception)
@@ -520,20 +520,20 @@ bool	R4300_InstructionHandlerNeedsPC( OpCode op_code )
 void  R4300_SetSR( u32 new_value )
 {
 #ifdef DAEDALUS_DEBUG_CONSOLE
-	// if((gCPUState.CPUControl[C0_SR]._u32 & SR_FR) != (new_value & SR_FR))
+	// if((ctx.cpuState.CPUControl[C0_SR]._u32 & SR_FR) != (new_value & SR_FR))
 	// {
 	// 	DBGConsole_Msg(0, "[MChanging FP to %s, STATUS=%08X", (new_value & SR_FR) ? "64bit" : "32bit", (new_value & SR_FR));
 	// }
 #endif
 
-	bool interrupts_enabled_before = (gCPUState.CPUControl[C0_SR]._u32 & SR_IE) != 0;
+	bool interrupts_enabled_before = (ctx.cpuState.CPUControl[C0_SR]._u32 & SR_IE) != 0;
 
-	gCPUState.CPUControl[C0_SR]._u32 = new_value;
+	ctx.cpuState.CPUControl[C0_SR]._u32 = new_value;
 
-	bool interrupts_enabled_after = (gCPUState.CPUControl[C0_SR]._u32 & SR_IE) != 0;
+	bool interrupts_enabled_after = (ctx.cpuState.CPUControl[C0_SR]._u32 & SR_IE) != 0;
 
 	// CHECK COP1 UNUSUABLE
-	if( (gCPUState.CPUControl[C0_SR]._u32 & SR_CU1) == 0 )
+	if( (ctx.cpuState.CPUControl[C0_SR]._u32 & SR_CU1) == 0 )
 	{
 		R4300Instruction[OP_COPRO1] = R4300_CoPro1_Disabled;
 		R4300Instruction[OP_LWC1] = R4300_CoPro1_Disabled;
@@ -553,9 +553,9 @@ void  R4300_SetSR( u32 new_value )
 	// Serve any pending interrupts
 	if ( !interrupts_enabled_before && interrupts_enabled_after )
 	{
-		if (gCPUState.CPUControl[C0_SR]._u32 & gCPUState.CPUControl[C0_CAUSE]._u32 & CAUSE_IPMASK)
+		if (ctx.cpuState.CPUControl[C0_SR]._u32 & ctx.cpuState.CPUControl[C0_CAUSE]._u32 & CAUSE_IPMASK)
 		{
-			gCPUState.AddJob( CPU_CHECK_INTERRUPTS );
+			ctx.cpuState.AddJob( CPU_CHECK_INTERRUPTS );
 		}
 	}
 }
@@ -575,7 +575,7 @@ static void  R4300_CoPro1_Disabled( R4300_CALL_SIGNATURE )
 	// Cop1 Unusable
 	#ifdef DAEDALUS_DEBUG_CONSOLE
 	DBGConsole_Msg(0, "Thread accessing Cop1, throwing COP1 unusuable exception");
-	DAEDALUS_ASSERT( (gCPUState.CPUControl[C0_SR]._u32 & SR_CU1) == 0, "COP1 usable flag in inconsistant state!" );
+	DAEDALUS_ASSERT( (ctx.cpuState.CPUControl[C0_SR]._u32 & SR_CU1) == 0, "COP1 usable flag in inconsistant state!" );
 #endif
 	R4300_Exception_CopUnusuable();
 }
@@ -616,7 +616,7 @@ static void  R4300_DBG_Bkpt( R4300_CALL_SIGNATURE )
 		// Set the temporary disable so we don't execute bp immediately again
 		g_BreakPoints[dwBreakPoint].mTemporaryDisable = true;
 		CPU_Halt("BreakPoint");
-		DBGConsole_Msg(0, "[RBreakPoint at 0x%08x]", gCPUState.CurrentPC);
+		DBGConsole_Msg(0, "[RBreakPoint at 0x%08x]", ctx.cpuState.CurrentPC);
 		DECREMENT_PC();
 	}
 	else
@@ -633,7 +633,7 @@ static void  R4300_J( R4300_CALL_SIGNATURE ) 				// Jump
 {
 	R4300_CALL_MAKE_OP( op_code );
 
-	u32 pc = gCPUState.CurrentPC;
+	u32 pc = ctx.cpuState.CurrentPC;
 	u32 new_pc = (pc & 0xF0000000) | (op_code.target<<2);
 
 	//SpeedHack(pc, new_pc);	// PMario and Tarzan use this, is it worth?
@@ -644,7 +644,7 @@ static void  R4300_JAL( R4300_CALL_SIGNATURE ) 				// Jump And Link
 {
 	R4300_CALL_MAKE_OP( op_code );
 
-	u32 pc = gCPUState.CurrentPC;
+	u32 pc = ctx.cpuState.CurrentPC;
 	gGPR[REG_ra]._s64 = (s64)(s32)(pc + 8);		// Store return address
 	u32	new_pc = (pc & 0xF0000000) | (op_code.target<<2);
 	CPU_TakeBranch( new_pc );
@@ -658,7 +658,7 @@ static void  R4300_BEQ( R4300_CALL_SIGNATURE ) 		// Branch on Equal
 	if ( gGPR[op_code.rs]._u64 == gGPR[op_code.rt]._u64 )
 	{
 		s16 offset = (s16)op_code.immediate;
-		u32 pc = gCPUState.CurrentPC;
+		u32 pc = ctx.cpuState.CurrentPC;
 		u32 new_pc = pc + ((s32)offset<<2) + 4;
 
 		SpeedHack(pc, new_pc);
@@ -674,7 +674,7 @@ static void  R4300_BNE( R4300_CALL_SIGNATURE )             // Branch on Not Equa
 	if ( gGPR[op_code.rs]._u64 != gGPR[op_code.rt]._u64 )
 	{
 		s16 offset = (s16)op_code.immediate;
-		u32 pc = gCPUState.CurrentPC;
+		u32 pc = ctx.cpuState.CurrentPC;
 		u32 new_pc = pc + ((s32)offset<<2) + 4;
 
 		SpeedHack(pc, new_pc);
@@ -689,7 +689,7 @@ static void  R4300_BLEZ( R4300_CALL_SIGNATURE ) 			// Branch on Less than of Equ
 	if (gGPR[op_code.rs]._s64 <= 0)
 	{
 		s16 offset( (s16)op_code.immediate );
-		u32 pc( gCPUState.CurrentPC );
+		u32 pc( ctx.cpuState.CurrentPC );
 		u32 new_pc( pc + ((s32)offset<<2) + 4 );
 
 		SpeedHack(pc, new_pc);
@@ -706,7 +706,7 @@ static void  R4300_BGTZ( R4300_CALL_SIGNATURE ) 			// Branch on Greater than Zer
 	if (gGPR[op_code.rs]._s64 > 0)
 	{
 		s16 offset{ (s16)op_code.immediate };
-		u32 pc{ gCPUState.CurrentPC };
+		u32 pc{ ctx.cpuState.CurrentPC };
 		u32 new_pc{ pc + ((s32)offset<<2) + 4 };
 
 		SpeedHack(pc, new_pc);
@@ -812,7 +812,7 @@ static void  R4300_BEQL( R4300_CALL_SIGNATURE ) 			// Branch on Equal Likely
 	if ( gGPR[op_code.rs]._u64 == gGPR[op_code.rt]._u64 )
 	{
 		s16 offset( (s16)op_code.immediate );
-		u32 pc( gCPUState.CurrentPC );
+		u32 pc( ctx.cpuState.CurrentPC );
 		u32 new_pc( pc + ((s32)offset<<2) + 4 );
 
 		SpeedHack(pc, new_pc);
@@ -833,7 +833,7 @@ static void  R4300_BNEL( R4300_CALL_SIGNATURE ) 			// Branch on Not Equal Likely
 	if ( gGPR[op_code.rs]._u64 != gGPR[op_code.rt]._u64 )
 	{
 		s16 offset = (s16)op_code.immediate;
-		u32 pc = gCPUState.CurrentPC;
+		u32 pc = ctx.cpuState.CurrentPC;
 		u32 new_pc = pc + ((s32)offset<<2) + 4;
 		CPU_TakeBranch( new_pc );
 		SpeedHack(pc, new_pc);
@@ -853,7 +853,7 @@ static void  R4300_BLEZL( R4300_CALL_SIGNATURE ) 		// Branch on Less than or Equ
 	if ( gGPR[op_code.rs]._s64 <= 0 )
 	{
 		s16 offset = (s16)op_code.immediate;
-		u32 pc = gCPUState.CurrentPC;
+		u32 pc = ctx.cpuState.CurrentPC;
 		u32 new_pc = pc + ((s32)offset<<2) + 4;
 
 		SpeedHack(pc, new_pc);
@@ -874,7 +874,7 @@ static void  R4300_BGTZL( R4300_CALL_SIGNATURE ) 		// Branch on Greater than Zer
 	if ( gGPR[op_code.rs]._s64 > 0 )
 	{
 		//ToDo : SpeedHack?
-		u32	new_pc = gCPUState.CurrentPC + ((s32)(s16)op_code.immediate<<2) + 4;
+		u32	new_pc = ctx.cpuState.CurrentPC + ((s32)(s16)op_code.immediate<<2) + 4;
 		CPU_TakeBranch( new_pc );
 	}
 	else
@@ -1285,7 +1285,7 @@ static void  R4300_Special_JALR( R4300_CALL_SIGNATURE ) 		// Jump and Link regis
 
 	// Jump And Link
 	u32	new_pc( gGPR[ op_code.rs ]._u32_0 );
-	gGPR[ op_code.rd ]._s64 = (s64)(s32)(gCPUState.CurrentPC + 8);		// Store return address;
+	gGPR[ op_code.rd ]._s64 = (s64)(s32)(ctx.cpuState.CurrentPC + 8);		// Store return address;
 	CPU_TakeBranch( new_pc );
 }
 
@@ -1297,7 +1297,7 @@ static void  R4300_Special_SYSCALL( R4300_CALL_SIGNATURE )
 static void  R4300_Special_BREAK( R4300_CALL_SIGNATURE ) 	// BREAK
 {
 	#ifdef DAEDALUS_PROFILER
-	DPF( DEBUG_INTR, "BREAK Called. PC: 0x%08x. COUNT: 0x%08x", gCPUState.CurrentPC, gCPUState.CPUControl[C0_COUNT]._u32 );
+	DPF( DEBUG_INTR, "BREAK Called. PC: 0x%08x. COUNT: 0x%08x", ctx.cpuState.CurrentPC, ctx.cpuState.CPUControl[C0_COUNT]._u32 );
 #endif
 	R4300_Exception_Break();
 }
@@ -1308,28 +1308,28 @@ static void  R4300_Special_MFHI( R4300_CALL_SIGNATURE ) 			// Move From MultHI
 {
 	R4300_CALL_MAKE_OP( op_code );
 
-	gGPR[ op_code.rd ]._u64 = gCPUState.MultHi._u64;
+	gGPR[ op_code.rd ]._u64 = ctx.cpuState.MultHi._u64;
 }
 
 static void  R4300_Special_MTHI( R4300_CALL_SIGNATURE ) 			// Move To MultHI
 {
 	R4300_CALL_MAKE_OP( op_code );
 
-	gCPUState.MultHi._u64 = gGPR[ op_code.rs ]._u64;
+	ctx.cpuState.MultHi._u64 = gGPR[ op_code.rs ]._u64;
 }
 
 static void  R4300_Special_MFLO( R4300_CALL_SIGNATURE ) 			// Move From MultLO
 {
 	R4300_CALL_MAKE_OP( op_code );
 
-	gGPR[ op_code.rd ]._u64 = gCPUState.MultLo._u64;
+	gGPR[ op_code.rd ]._u64 = ctx.cpuState.MultLo._u64;
 }
 
 static void  R4300_Special_MTLO( R4300_CALL_SIGNATURE ) 			// Move To MultLO
 {
 	R4300_CALL_MAKE_OP( op_code );
 
-	gCPUState.MultLo._u64 = gGPR[ op_code.rs ]._u64;
+	ctx.cpuState.MultLo._u64 = gGPR[ op_code.rs ]._u64;
 }
 
 // BEGIN MODIFIED BY Lkb - 8/jun/2001 - changed 0x1f to 0x3f because the value to be shifted is 64-bit long
@@ -1365,8 +1365,8 @@ static void  R4300_Special_MULT( R4300_CALL_SIGNATURE ) 			// MULTiply Signed
 	R4300_CALL_MAKE_OP( op_code );
 
 	s64 dwResult = (s64)gGPR[ op_code.rs ]._s32_0 * (s64)gGPR[ op_code.rt ]._s32_0;
-	gCPUState.MultLo._u64 = (s64)(s32)(dwResult & 0xffffffff);
-	gCPUState.MultHi._u64 = (s64)(s32)(dwResult >> 32);
+	ctx.cpuState.MultLo._u64 = (s64)(s32)(dwResult & 0xffffffff);
+	ctx.cpuState.MultHi._u64 = (s64)(s32)(dwResult >> 32);
 
 }
 
@@ -1375,8 +1375,8 @@ static void  R4300_Special_MULTU( R4300_CALL_SIGNATURE ) 		// MULTiply Unsigned
 	R4300_CALL_MAKE_OP( op_code );
 
 	u64 dwResult = (u64)gGPR[ op_code.rs ]._u32_0 * (u64)gGPR[ op_code.rt ]._u32_0;
-	gCPUState.MultLo._u64 = (s64)(s32)(dwResult & 0xffffffff);
-	gCPUState.MultHi._u64 = (s64)(s32)(dwResult >> 32);
+	ctx.cpuState.MultLo._u64 = (s64)(s32)(dwResult & 0xffffffff);
+	ctx.cpuState.MultHi._u64 = (s64)(s32)(dwResult >> 32);
 }
 
 static void  R4300_Special_DIV( R4300_CALL_SIGNATURE ) 			//DIVide
@@ -1388,8 +1388,8 @@ static void  R4300_Special_DIV( R4300_CALL_SIGNATURE ) 			//DIVide
 
 	if (nDivisor)
 	{
-		gCPUState.MultLo._u64 = (s64)(s32)(nDividend / nDivisor);
-		gCPUState.MultHi._u64 = (s64)(s32)(nDividend % nDivisor);
+		ctx.cpuState.MultLo._u64 = (s64)(s32)(nDividend / nDivisor);
+		ctx.cpuState.MultHi._u64 = (s64)(s32)(nDividend % nDivisor);
 	}
 }
 
@@ -1401,8 +1401,8 @@ static void  R4300_Special_DIVU( R4300_CALL_SIGNATURE ) 			// DIVide Unsigned
 	u32 dwDivisor  = gGPR[ op_code.rt ]._u32_0;
 
 	if (dwDivisor) {
-		gCPUState.MultLo._u64 = (s64)(s32)(dwDividend / dwDivisor);
-		gCPUState.MultHi._u64 = (s64)(s32)(dwDividend % dwDivisor);
+		ctx.cpuState.MultLo._u64 = (s64)(s32)(dwDividend / dwDivisor);
+		ctx.cpuState.MultHi._u64 = (s64)(s32)(dwDividend % dwDivisor);
 	}
 }
 
@@ -1412,8 +1412,8 @@ static void  R4300_Special_DMULT( R4300_CALL_SIGNATURE ) 		// Double Multiply
 	// Reserved Instruction exception
 
 #ifndef DAEDALUS_128BIT_MULT
-	gCPUState.MultLo._u64 = gGPR[ op_code.rs ]._s64 * gGPR[ op_code.rt ]._s64;
-	gCPUState.MultHi._u64 = 0;
+	ctx.cpuState.MultLo._u64 = gGPR[ op_code.rs ]._s64 * gGPR[ op_code.rt ]._s64;
+	ctx.cpuState.MultHi._u64 = 0;
 #else
 	s64 rrs = gGPR[ op_code.rs ]._s64;
 	s64 rrt = gGPR[ op_code.rt ]._s64;
@@ -1458,8 +1458,8 @@ s64	hi = (result3 & 0xFFFFFFFF) | (result4 << 32);
 			lo = ~lo + 1;
 	}
 
-	gCPUState.MultLo._s64 = lo;
-	gCPUState.MultHi._s64 = hi;
+	ctx.cpuState.MultLo._s64 = lo;
+	ctx.cpuState.MultHi._s64 = hi;
 #endif
 }
 
@@ -1469,8 +1469,8 @@ static void  R4300_Special_DMULTU( R4300_CALL_SIGNATURE ) 			// Double Multiply 
 	// Reserved Instruction exception
 
 #ifndef DAEDALUS_128BIT_MULT
-	gCPUState.MultLo._u64 = gGPR[ op_code.rs ]._u64 * gGPR[ op_code.rt ]._u64;
-	gCPUState.MultHi._u64 = 0;
+	ctx.cpuState.MultLo._u64 = gGPR[ op_code.rs ]._u64 * gGPR[ op_code.rt ]._u64;
+	ctx.cpuState.MultHi._u64 = 0;
 #else
 	s64 rrs = gGPR[ op_code.rs ]._s64;
 	s64 rrt = gGPR[ op_code.rt ]._s64;
@@ -1490,8 +1490,8 @@ u64	result2 = temp2 + (temp3 & 0xFFFFFFFF);
 u64	result3 = (result2 >> 32) + temp4;
 u64	result4 = (result3 >> 32);
 
-	gCPUState.MultLo._s64 = result1 | (result2 << 32);
-	gCPUState.MultHi._s64 = (result3 & 0xFFFFFFFF) | (result4 << 32);
+	ctx.cpuState.MultLo._s64 = result1 | (result2 << 32);
+	ctx.cpuState.MultHi._s64 = (result3 & 0xFFFFFFFF) | (result4 << 32);
 #endif
 }
 
@@ -1509,8 +1509,8 @@ static void  R4300_Special_DDIV( R4300_CALL_SIGNATURE ) 				// Double Divide
 		// Reserved Instruction exception
 		if (qwDivisor)
 		{
-			gCPUState.MultLo._u64 = qwDividend / qwDivisor;
-			gCPUState.MultHi._u64 = qwDividend % qwDivisor;
+			ctx.cpuState.MultLo._u64 = qwDividend / qwDivisor;
+			ctx.cpuState.MultHi._u64 = qwDividend % qwDivisor;
 		}
 	}
 	else
@@ -1521,8 +1521,8 @@ static void  R4300_Special_DDIV( R4300_CALL_SIGNATURE ) 				// Double Divide
 		// Reserved Instruction exception
 		if (qwDivisor)
 		{
-			gCPUState.MultLo._u64 = qwDividend / qwDivisor;
-			gCPUState.MultHi._u64 = qwDividend % qwDivisor;
+			ctx.cpuState.MultLo._u64 = qwDividend / qwDivisor;
+			ctx.cpuState.MultHi._u64 = qwDividend % qwDivisor;
 		}
 	}
 }
@@ -1540,8 +1540,8 @@ static void  R4300_Special_DDIVU( R4300_CALL_SIGNATURE ) 			// Double Divide Uns
 		// Reserved Instruction exception
 		if (qwDivisor)
 		{
-			gCPUState.MultLo._u64 = qwDividend / qwDivisor;
-			gCPUState.MultHi._u64 = qwDividend % qwDivisor;
+			ctx.cpuState.MultLo._u64 = qwDividend / qwDivisor;
+			ctx.cpuState.MultHi._u64 = qwDividend % qwDivisor;
 		}
 	}
 	else
@@ -1552,8 +1552,8 @@ static void  R4300_Special_DDIVU( R4300_CALL_SIGNATURE ) 			// Double Divide Uns
 		// Reserved Instruction exception
 		if (qwDivisor)
 		{
-			gCPUState.MultLo._u64 = qwDividend / qwDivisor;
-			gCPUState.MultHi._u64 = qwDividend % qwDivisor;
+			ctx.cpuState.MultLo._u64 = qwDividend / qwDivisor;
+			ctx.cpuState.MultHi._u64 = qwDividend % qwDivisor;
 		}
 	}
 }
@@ -1743,7 +1743,7 @@ static void  R4300_RegImm_BLTZ( R4300_CALL_SIGNATURE ) 			// Branch on Less than
 	if ( gGPR[ op_code.rs ]._s64 < 0 )
 	{
 		s16 offset= (s16)op_code.immediate;
-		u32 pc = gCPUState.CurrentPC;
+		u32 pc = ctx.cpuState.CurrentPC;
 		u32 new_pc = pc + ((s32)offset<<2) + 4;
 
 		SpeedHack(pc, new_pc);
@@ -1759,7 +1759,7 @@ static void  R4300_RegImm_BLTZL( R4300_CALL_SIGNATURE ) 			// Branch on Less tha
 	if ( gGPR[ op_code.rs ]._s64 < 0 )
 	{
 		//ToDo: SpeedHack?
-		u32	new_pc = gCPUState.CurrentPC + ((s32)(s16)op_code.immediate<<2) + 4;
+		u32	new_pc = ctx.cpuState.CurrentPC + ((s32)(s16)op_code.immediate<<2) + 4;
 		CPU_TakeBranch( new_pc );
 	}
 	else
@@ -1777,12 +1777,12 @@ static void  R4300_RegImm_BLTZAL( R4300_CALL_SIGNATURE ) 		// Branch on Less tha
 	// Store the return address even if branch not taken
 
 	// Store return address
-	gGPR[REG_ra]._s64 = (s64)(s32)(gCPUState.CurrentPC + 8);		// Store return address
+	gGPR[REG_ra]._s64 = (s64)(s32)(ctx.cpuState.CurrentPC + 8);		// Store return address
 
 	if ( gGPR[ op_code.rs ]._s64 < 0 )
 	{
 		//ToDo: SpeedHack?
-		u32	new_pc = gCPUState.CurrentPC + ((s32)(s16)op_code.immediate<<2) + 4;
+		u32	new_pc = ctx.cpuState.CurrentPC + ((s32)(s16)op_code.immediate<<2) + 4;
 		CPU_TakeBranch( new_pc );
 	}
 }
@@ -1795,7 +1795,7 @@ static void  R4300_RegImm_BGEZ( R4300_CALL_SIGNATURE ) 			// Branch on Greater t
 	if ( gGPR[ op_code.rs ]._s64 >= 0 )
 	{
 		s16 offset = (s16)op_code.immediate;
-		u32 pc = gCPUState.CurrentPC ;
+		u32 pc = ctx.cpuState.CurrentPC ;
 		u32 new_pc = pc + ((s32)offset<<2) + 4;
 
 		SpeedHack(pc, new_pc);
@@ -1811,7 +1811,7 @@ static void  R4300_RegImm_BGEZL( R4300_CALL_SIGNATURE ) 			// Branch on Greater 
 	if ( gGPR[ op_code.rs ]._s64 >= 0 )
 	{
 		//ToDO: SpeedHack?
-		u32	new_pc = gCPUState.CurrentPC + ((s32)(s16)op_code.immediate<<2) + 4;
+		u32	new_pc = ctx.cpuState.CurrentPC + ((s32)(s16)op_code.immediate<<2) + 4;
 		CPU_TakeBranch( new_pc );
 	}
 	else
@@ -1828,12 +1828,12 @@ static void  R4300_RegImm_BGEZAL( R4300_CALL_SIGNATURE ) 		// Branch on Greater 
 	//branch if rs >= 0
 	// This always happens, even if branch not taken
 
-	gGPR[REG_ra]._s64 = (s64)(s32)(gCPUState.CurrentPC + 8);		// Store return address
+	gGPR[REG_ra]._s64 = (s64)(s32)(ctx.cpuState.CurrentPC + 8);		// Store return address
 
 	if ( gGPR[ op_code.rs ]._s64 >= 0 )
 	{
 		//ToDo: SpeedHack?
-		u32	new_pc( gCPUState.CurrentPC + ((s32)(s16)op_code.immediate<<2) + 4 );
+		u32	new_pc( ctx.cpuState.CurrentPC + ((s32)(s16)op_code.immediate<<2) + 4 );
 		CPU_TakeBranch( new_pc );
 	}
 }
@@ -1850,7 +1850,7 @@ static void  R4300_Cop0_MFC0( R4300_CALL_SIGNATURE )
 	if ( op_code.fs == C0_CAUSE )
 	{
 		bool	mi_interrupt_set = (Memory_MI_GetRegister(MI_INTR_MASK_REG) & Memory_MI_GetRegister(MI_INTR_REG)) != 0;
-		bool	cause_int_3_set( (gCPUState.CPUControl[C0_CAUSE]._u32 & CAUSE_IP3) != 0);
+		bool	cause_int_3_set( (ctx.cpuState.CPUControl[C0_CAUSE]._u32 & CAUSE_IP3) != 0);
 
 		DAEDALUS_ASSERT( mi_interrupt_set == cause_int_3_set, "CAUSE_IP3 inconsistant with MI_INTR_REG" );
 
@@ -1861,7 +1861,7 @@ static void  R4300_Cop0_MFC0( R4300_CALL_SIGNATURE )
 	// Never seen a game use C0_RAND - Salvy
 	/*if( op_code.fs == C0_RAND )	// Copy from FS to RT
 	{
-		u32 wired = gCPUState.CPUControl[C0_WIRED]._u32 & 0x1F;
+		u32 wired = ctx.cpuState.CPUControl[C0_WIRED]._u32 & 0x1F;
 
 		// Select a value between wired and 31.
 		// We should use TLB least-recently used here too?
@@ -1871,7 +1871,7 @@ static void  R4300_Cop0_MFC0( R4300_CALL_SIGNATURE )
 	else*/
 	{
 		// No specific handling needs for reads to these registers.
-		gGPR[ op_code.rt ]._s64 = (s64)gCPUState.CPUControl[ op_code.fs ]._s32;
+		gGPR[ op_code.rt ]._s64 = (s64)ctx.cpuState.CPUControl[ op_code.fs ]._s32;
 	}
 }
 
@@ -1888,28 +1888,28 @@ static void  R4300_Cop0_MTC0( R4300_CALL_SIGNATURE )
 	switch ( op_code.fs )
 	{
 		case C0_INX:
-			gCPUState.CPUControl[C0_INX]._u32 = new_value & 0x8000003F;
+			ctx.cpuState.CPUControl[C0_INX]._u32 = new_value & 0x8000003F;
 			//DBGConsole_Msg(0, "Setting EntryL0 register to 0x%08x", new_value);
 			break;
 
 		case C0_ENTRYLO0:
 		case C0_ENTRYLO1:
-			gCPUState.CPUControl[op_code.fs]._u32 = new_value & 0x3FFFFFFF;
+			ctx.cpuState.CPUControl[op_code.fs]._u32 = new_value & 0x3FFFFFFF;
 			//DBGConsole_Msg(0, "Setting EntryL0 register to 0x%08x", new_value);
 			break;
 
 		case C0_PAGEMASK:
-			gCPUState.CPUControl[C0_PAGEMASK]._u32 = new_value & 0x01FFE000;
+			ctx.cpuState.CPUControl[C0_PAGEMASK]._u32 = new_value & 0x01FFE000;
 			//DBGConsole_Msg(0, "Setting PageMask register to 0x%08x", new_value);
 			break;
 
 		case C0_WIRED:
 			// Set to top limit on write to wired
-			gCPUState.CPUControl[C0_RAND]._u32 = 31;
+			ctx.cpuState.CPUControl[C0_RAND]._u32 = 31;
 			#ifdef DAEDALUS_DEBUG_CONSOLE
 			DBGConsole_Msg(0, "Setting Wired register to 0x%08x", new_value);
 			#endif
-			gCPUState.CPUControl[C0_WIRED]._u32 = new_value;
+			ctx.cpuState.CPUControl[C0_WIRED]._u32 = new_value;
 			break;
 
 		case C0_RAND:
@@ -1931,7 +1931,7 @@ static void  R4300_Cop0_MTC0( R4300_CALL_SIGNATURE )
 			DAEDALUS_ASSERT(new_value == 0, "CAUSE register invalid writing");
 			#endif
 			#ifdef DAEDALUS_DEBUG_CONSOLE
-				if ( (new_value&~(CAUSE_SW1|CAUSE_SW2)) != (gCPUState.CPUControl[C0_CAUSE]._u32&~(CAUSE_SW1|CAUSE_SW2))  )
+				if ( (new_value&~(CAUSE_SW1|CAUSE_SW2)) != (ctx.cpuState.CPUControl[C0_CAUSE]._u32&~(CAUSE_SW1|CAUSE_SW2))  )
 				{
 					DBGConsole_Msg( 0, "[MWas previously clobbering CAUSE REGISTER" );
 				}
@@ -1940,8 +1940,8 @@ static void  R4300_Cop0_MTC0( R4300_CALL_SIGNATURE )
 			DPF( DEBUG_REGS, "CAUSE set to 0x%08x (was: 0x%08x)", new_value, gGPR[ op_code.rt ]._u32_0 );
 			#endif
 
-			gCPUState.CPUControl[C0_CAUSE]._u32 &=             ~(CAUSE_SW1|CAUSE_SW2);
-			gCPUState.CPUControl[C0_CAUSE]._u32 |= (new_value & (CAUSE_SW1|CAUSE_SW2));
+			ctx.cpuState.CPUControl[C0_CAUSE]._u32 &=             ~(CAUSE_SW1|CAUSE_SW2);
+			ctx.cpuState.CPUControl[C0_CAUSE]._u32 |= (new_value & (CAUSE_SW1|CAUSE_SW2));
 			break;
 		case C0_SR:
 			// Software can enable/disable interrupts here. We check if Interrupt Enable is
@@ -1956,7 +1956,7 @@ static void  R4300_Cop0_MTC0( R4300_CALL_SIGNATURE )
 				// See comments below for COMPARE.
 				// When this register is set, we need to check whether the next timed interrupt will
 				//  be due to vertical blank or COMPARE
-				gCPUState.CPUControl[C0_COUNT]._u32 = new_value;
+				ctx.cpuState.CPUControl[C0_COUNT]._u32 = new_value;
 				#ifdef DAEDALUS_DEBUG_CONSOLE
 				DBGConsole_Msg(0, "Count set - setting int");
 				#endif
@@ -1978,32 +1978,32 @@ static void  R4300_Cop0_MTC0( R4300_CALL_SIGNATURE )
 		// Probably provide a warning on writes, just so that we know
 		//case C0_WATCHLO:
 		//	DBGConsole_Msg( 0, "[MWROTE TO WATCHLO REGISTER!" );
-		//	gCPUState.CPUControl[ C0_WATCHLO ]._u32 = new_value& 0x0FFFFFC0;
+		//	ctx.cpuState.CPUControl[ C0_WATCHLO ]._u32 = new_value& 0x0FFFFFC0;
 		//	break;
 		//case C0_WATCHHI:
 		//	DBGConsole_Msg( 0, "[MWROTE TO WATCHHI REGISTER!" );
-		//	gCPUState.CPUControl[ C0_WATCHHI ]._u32 = 0;
+		//	ctx.cpuState.CPUControl[ C0_WATCHHI ]._u32 = 0;
 		//	break;
 
 		default:
 			// No specific handling needs for writes to these registers.
-			gCPUState.CPUControl[ op_code.fs ]._u32 = new_value;
+			ctx.cpuState.CPUControl[ op_code.fs ]._u32 = new_value;
 			break;
 	}
 }
 
 static void  R4300_TLB_TLBR( R4300_CALL_SIGNATURE ) 				// TLB Read
 {
-	u32 index = gCPUState.CPUControl[C0_INX]._u32 & 0x1F;
+	u32 index = ctx.cpuState.CPUControl[C0_INX]._u32 & 0x1F;
 
-	gCPUState.CPUControl[C0_PAGEMASK]._u32 = g_TLBs[index].mask;
-	gCPUState.CPUControl[C0_ENTRYHI ]._u32 = g_TLBs[index].hi   & (~g_TLBs[index].pagemask);
-	gCPUState.CPUControl[C0_ENTRYLO0]._u32 = g_TLBs[index].pfne | g_TLBs[index].g;
-	gCPUState.CPUControl[C0_ENTRYLO1]._u32 = g_TLBs[index].pfno | g_TLBs[index].g;
+	ctx.cpuState.CPUControl[C0_PAGEMASK]._u32 = g_TLBs[index].mask;
+	ctx.cpuState.CPUControl[C0_ENTRYHI ]._u32 = g_TLBs[index].hi   & (~g_TLBs[index].pagemask);
+	ctx.cpuState.CPUControl[C0_ENTRYLO0]._u32 = g_TLBs[index].pfne | g_TLBs[index].g;
+	ctx.cpuState.CPUControl[C0_ENTRYLO1]._u32 = g_TLBs[index].pfno | g_TLBs[index].g;
 
 #ifdef DAEDALUS_PROFILER
-	DPF( DEBUG_TLB, "TLBR: INDEX: 0x%04x. PAGEMASK: 0x%08x.", index, gCPUState.CPUControl[C0_PAGEMASK]._u32 );
-	DPF( DEBUG_TLB, "      ENTRYHI: 0x%08x. ENTRYLO1: 0x%08x. ENTRYLO0: 0x%08x", gCPUState.CPUControl[C0_ENTRYHI]._u32, gCPUState.CPUControl[C0_ENTRYLO1]._u32, gCPUState.CPUControl[C0_ENTRYLO0]._u32 );
+	DPF( DEBUG_TLB, "TLBR: INDEX: 0x%04x. PAGEMASK: 0x%08x.", index, ctx.cpuState.CPUControl[C0_PAGEMASK]._u32 );
+	DPF( DEBUG_TLB, "      ENTRYHI: 0x%08x. ENTRYLO1: 0x%08x. ENTRYLO0: 0x%08x", ctx.cpuState.CPUControl[C0_ENTRYHI]._u32, ctx.cpuState.CPUControl[C0_ENTRYLO1]._u32, ctx.cpuState.CPUControl[C0_ENTRYLO0]._u32 );
 #endif
 }
 
@@ -2012,20 +2012,20 @@ static void  R4300_TLB_TLBWI( R4300_CALL_SIGNATURE )			// TLB Write Index
 {
 
 
-	u32 i = gCPUState.CPUControl[C0_INX]._u32 & 0x1F;
+	u32 i = ctx.cpuState.CPUControl[C0_INX]._u32 & 0x1F;
 
  	#ifdef DAEDALUS_PROFILER
 	DPF( DEBUG_TLB, "TLBWI: INDEX: 0x%04x. ", i );
 	#endif
-	g_TLBs[i].UpdateValue(gCPUState.CPUControl[C0_PAGEMASK]._u32,
-						gCPUState.CPUControl[C0_ENTRYHI ]._u32,
-						gCPUState.CPUControl[C0_ENTRYLO1]._u32,
-						gCPUState.CPUControl[C0_ENTRYLO0]._u32);
+	g_TLBs[i].UpdateValue(ctx.cpuState.CPUControl[C0_PAGEMASK]._u32,
+						ctx.cpuState.CPUControl[C0_ENTRYHI ]._u32,
+						ctx.cpuState.CPUControl[C0_ENTRYLO1]._u32,
+						ctx.cpuState.CPUControl[C0_ENTRYLO0]._u32);
 }
 
 static void  R4300_TLB_TLBWR( R4300_CALL_SIGNATURE )
 {
-	u32 wired = gCPUState.CPUControl[C0_WIRED]._u32 & 0x1F;
+	u32 wired = ctx.cpuState.CPUControl[C0_WIRED]._u32 & 0x1F;
 	std::default_random_engine random;
 	std::uniform_int_distribution<u32> d{wired, 31};
 
@@ -2035,16 +2035,16 @@ static void  R4300_TLB_TLBWR( R4300_CALL_SIGNATURE )
 		#ifdef DAEDALUS_PROFILER
 			DPF( DEBUG_TLB, "TLBWR: INDEX: 0x%04x. ", i );
 		#endif
-	g_TLBs[i].UpdateValue(gCPUState.CPUControl[C0_PAGEMASK]._u32,
-						gCPUState.CPUControl[C0_ENTRYHI ]._u32,
-						gCPUState.CPUControl[C0_ENTRYLO1]._u32,
-						gCPUState.CPUControl[C0_ENTRYLO0]._u32);
+	g_TLBs[i].UpdateValue(ctx.cpuState.CPUControl[C0_PAGEMASK]._u32,
+						ctx.cpuState.CPUControl[C0_ENTRYHI ]._u32,
+						ctx.cpuState.CPUControl[C0_ENTRYLO1]._u32,
+						ctx.cpuState.CPUControl[C0_ENTRYLO0]._u32);
 }
 
 
 static void  R4300_TLB_TLBP( R4300_CALL_SIGNATURE ) 				// TLB Probe
 {
-	u32 entryH = gCPUState.CPUControl[C0_ENTRYHI]._u32;
+	u32 entryH = ctx.cpuState.CPUControl[C0_ENTRYHI]._u32;
 
 #ifdef DAEDALUS_PROFILER
 	DPF( DEBUG_TLB, "TLBP: ENTRYHI: 0x%08x", entryH );
@@ -2058,12 +2058,12 @@ static void  R4300_TLB_TLBP( R4300_CALL_SIGNATURE ) 				// TLB Probe
 			#ifdef DAEDALUS_PROFILER
 			DPF( DEBUG_TLB, "   Found matching TLB Entry - 0x%04x", i );
 			#endif
-			gCPUState.CPUControl[C0_INX]._u32 = i;
+			ctx.cpuState.CPUControl[C0_INX]._u32 = i;
 			return;
 		}
     }
 
-	gCPUState.CPUControl[C0_INX]._u32 = TLBINX_PROBE;
+	ctx.cpuState.CPUControl[C0_INX]._u32 = TLBINX_PROBE;
 		#ifdef DAEDALUS_PROFILER
 	DPF( DEBUG_TLB, "   No matching TLB Entry Found for 0x%08x", entryH );
 	#endif
@@ -2072,14 +2072,14 @@ static void  R4300_TLB_TLBP( R4300_CALL_SIGNATURE ) 				// TLB Probe
 static void  R4300_TLB_ERET( R4300_CALL_SIGNATURE )
 {
 
-	if( gCPUState.CPUControl[C0_SR]._u32 & SR_ERL )
+	if( ctx.cpuState.CPUControl[C0_SR]._u32 & SR_ERL )
 	{
 		// Returning from an error trap
 			#ifdef DAEDALUS_PROFILER
 		DPF(DEBUG_INTR, "ERET: Returning from error trap");
 		#endif
-		CPU_SetPC( gCPUState.CPUControl[C0_ERROR_EPC]._u32 );
-		gCPUState.CPUControl[C0_SR]._u32 &= ~SR_ERL;
+		CPU_SetPC( ctx.cpuState.CPUControl[C0_ERROR_EPC]._u32 );
+		ctx.cpuState.CPUControl[C0_SR]._u32 &= ~SR_ERL;
 	}
 	else
 	{
@@ -2087,14 +2087,14 @@ static void  R4300_TLB_ERET( R4300_CALL_SIGNATURE )
 		DPF(DEBUG_INTR, "ERET: Returning from interrupt/exception");
 		#endif
 		// Returning from an exception
-		CPU_SetPC( gCPUState.CPUControl[C0_EPC]._u32 );
-		gCPUState.CPUControl[C0_SR]._u32 &= ~SR_EXL;
+		CPU_SetPC( ctx.cpuState.CPUControl[C0_EPC]._u32 );
+		ctx.cpuState.CPUControl[C0_SR]._u32 &= ~SR_EXL;
 	}
 	// Point to previous instruction (as we increment the pointer immediately afterwards
 	DECREMENT_PC();
 
 	// Ensure we don't execute this in the delay slot
-	gCPUState.Delay = NO_DELAY;
+	ctx.cpuState.Delay = NO_DELAY;
 }
 
 
@@ -2143,8 +2143,8 @@ static void  R4300_Cop1_CFC1( R4300_CALL_SIGNATURE ) 		// move Control word From
 	//Saves a compare //Corn
 	//if( !((op_code.fs + 1) & 0x1E) )
 	{
-		gGPR[ op_code.rt ]._s64 = (s64)gCPUState.FPUControl[ op_code.fs ]._s32;
-		//gGPR[ op_code.rt ]._s32_0 = gCPUState.FPUControl[ op_code.fs ]._s32;  //copy only low part
+		gGPR[ op_code.rt ]._s64 = (s64)ctx.cpuState.FPUControl[ op_code.fs ]._s32;
+		//gGPR[ op_code.rt ]._s32_0 = ctx.cpuState.FPUControl[ op_code.fs ]._s32;  //copy only low part
 	}
 }
 
@@ -2160,14 +2160,14 @@ static void  R4300_Cop1_CTC1( R4300_CALL_SIGNATURE ) 		// move Control word To C
 	// Not needed for 0?
 	/*if ( op_code.fs == 0 )
 	{
-		gCPUState.FPUControl[ op_code.fs ]._u64 = gGPR[ op_code.rt ]._u64;
+		ctx.cpuState.FPUControl[ op_code.fs ]._u64 = gGPR[ op_code.rt ]._u64;
 
 	}*/
 	if ( op_code.fs == 31 )
 	{
-		gCPUState.FPUControl[ 31 ]._u32 = gGPR[ op_code.rt ]._u32_0;
+		ctx.cpuState.FPUControl[ 31 ]._u32 = gGPR[ op_code.rt ]._u32_0;
 
-		u32		fpcr( gCPUState.FPUControl[ 31 ]._u32 );
+		u32		fpcr( ctx.cpuState.FPUControl[ 31 ]._u32 );
 		gRoundingMode = (ERoundingMode)( fpcr & FPCSR_RM_MASK );
 		SET_ROUND_MODE(gRoundingMode);
 	}
@@ -2194,13 +2194,13 @@ static void  R4300_Cop1_CTC1_2( R4300_CALL_SIGNATURE )
 	// Not needed for 0?
 	/*if ( op_code.fs == 0 )
 	{
-		gCPUState.FPUControl[ op_code.fs ]._u64 = gGPR[ op_code.rt ]._u64;
+		ctx.cpuState.FPUControl[ op_code.fs ]._u64 = gGPR[ op_code.rt ]._u64;
 	}*/
 	if ( op_code.fs == 31 )
 	{
-		gCPUState.FPUControl[ 31 ]._u32 = gGPR[ op_code.rt ]._u32_0;
+		ctx.cpuState.FPUControl[ 31 ]._u32 = gGPR[ op_code.rt ]._u32_0;
 
-		u32		fpcr( gCPUState.FPUControl[ 31 ]._u32 );
+		u32		fpcr( ctx.cpuState.FPUControl[ 31 ]._u32 );
 		gRoundingMode = (ERoundingMode)( fpcr & FPCSR_RM_MASK );
 		pspFpuSetRoundmode( gNativeRoundingModes[ gRoundingMode ] );
 	}
@@ -2217,9 +2217,9 @@ static void  R4300_BC1_BC1F( R4300_CALL_SIGNATURE )		// Branch on FPU False
 {
 	R4300_CALL_MAKE_OP( op_code );
 
-	if ( !(gCPUState.FPUControl[31]._u32 & FPCSR_C) )
+	if ( !(ctx.cpuState.FPUControl[31]._u32 & FPCSR_C) )
 	{
-		u32	new_pc = gCPUState.CurrentPC + (s32)(s16)op_code.immediate * 4 + 4;
+		u32	new_pc = ctx.cpuState.CurrentPC + (s32)(s16)op_code.immediate * 4 + 4;
 		CPU_TakeBranch( new_pc );
 	}
 }
@@ -2228,9 +2228,9 @@ static void  R4300_BC1_BC1T( R4300_CALL_SIGNATURE )	// Branch on FPU True
 {
 	R4300_CALL_MAKE_OP( op_code );
 
-	if ( gCPUState.FPUControl[31]._u32 & FPCSR_C )
+	if ( ctx.cpuState.FPUControl[31]._u32 & FPCSR_C )
 	{
-		u32	new_pc = gCPUState.CurrentPC + (s32)(s16)op_code.immediate * 4 + 4;
+		u32	new_pc = ctx.cpuState.CurrentPC + (s32)(s16)op_code.immediate * 4 + 4;
 		CPU_TakeBranch( new_pc );
 	}
 }
@@ -2239,9 +2239,9 @@ static void  R4300_BC1_BC1FL( R4300_CALL_SIGNATURE )	// Branch on FPU False Like
 {
 	R4300_CALL_MAKE_OP( op_code );
 
-	if ( !(gCPUState.FPUControl[31]._u32 & FPCSR_C) )
+	if ( !(ctx.cpuState.FPUControl[31]._u32 & FPCSR_C) )
 	{
-		u32	new_pc = gCPUState.CurrentPC + (s32)(s16)op_code.immediate*4 + 4;
+		u32	new_pc = ctx.cpuState.CurrentPC + (s32)(s16)op_code.immediate*4 + 4;
 		CPU_TakeBranch( new_pc );
 	}
 	else
@@ -2255,9 +2255,9 @@ static void  R4300_BC1_BC1TL( R4300_CALL_SIGNATURE )		// Branch on FPU True Like
 {
 	R4300_CALL_MAKE_OP( op_code );
 
-	if ( gCPUState.FPUControl[31]._u32 & FPCSR_C )
+	if ( ctx.cpuState.FPUControl[31]._u32 & FPCSR_C )
 	{
-		u32	new_pc = gCPUState.CurrentPC + (s32)(s16)op_code.immediate * 4 + 4;
+		u32	new_pc = ctx.cpuState.CurrentPC + (s32)(s16)op_code.immediate * 4 + 4;
 		CPU_TakeBranch( new_pc );
 	}
 	else
@@ -2362,7 +2362,7 @@ static void  R4300_Cop1_S_DIV( R4300_CALL_SIGNATURE )
 	// Causes excitebike to freeze when entering the menu
 	/*if ( fDivisor == 0 )
 	{
-		if ( gCPUState.FPUControl[ 31 ]._u32 & FPCSR_EZ )
+		if ( ctx.cpuState.FPUControl[ 31 ]._u32 & FPCSR_EZ )
 		{
 			// Exception
 			DBGConsole_Msg( 0, "[MShould trigger FPU exception for /0 here" );
@@ -2370,7 +2370,7 @@ static void  R4300_Cop1_S_DIV( R4300_CALL_SIGNATURE )
 		else
 		{
 			//DBGConsole_Msg( 0, "Float divide by zero, setting flag" );
-			gCPUState.FPUControl[ 31 ]._u32 |= FPCSR_FZ;
+			ctx.cpuState.FPUControl[ 31 ]._u32 |= FPCSR_FZ;
 		}
 	}*/
 
@@ -2544,8 +2544,8 @@ static void  R4300_Cop1_S_CVT_D_2( R4300_CALL_SIGNATURE )
 
 	r._f64 = (f64)fX;
 
-	gCPUState.FPU[op_code.fd+0]._u32 = r._u32_0;
-	gCPUState.FPU[op_code.fd+1]._u32 = r._u32_1;
+	ctx.cpuState.FPU[op_code.fd+0]._u32 = r._u32_0;
+	ctx.cpuState.FPU[op_code.fd+1]._u32 = r._u32_1;
 }
 #endif
 
@@ -2557,11 +2557,11 @@ static void  R4300_Cop1_S_EQ( R4300_CALL_SIGNATURE ) 				// Compare for Equality
 	f32 fX = LoadFPR_Single( op_code.fs );
 	f32 fY = LoadFPR_Single( op_code.ft );
 
-	u32 FPUCTRL = gCPUState.FPUControl[31]._u32 & ~FPCSR_C;
+	u32 FPUCTRL = ctx.cpuState.FPUControl[31]._u32 & ~FPCSR_C;
 
 	if( !R4300_IsNaN(fX + fY) && fX == fY ) FPUCTRL |= FPCSR_C;
 
-	gCPUState.FPUControl[31]._u32 = FPUCTRL;
+	ctx.cpuState.FPUControl[31]._u32 = FPUCTRL;
 }
 
 static void  R4300_Cop1_S_LT( R4300_CALL_SIGNATURE ) 				// Compare for Equality
@@ -2572,11 +2572,11 @@ static void  R4300_Cop1_S_LT( R4300_CALL_SIGNATURE ) 				// Compare for Equality
 	f32 fX = LoadFPR_Single( op_code.fs );
 	f32 fY = LoadFPR_Single( op_code.ft );
 
-	u32 FPUCTRL = gCPUState.FPUControl[31]._u32 & ~FPCSR_C;
+	u32 FPUCTRL = ctx.cpuState.FPUControl[31]._u32 & ~FPCSR_C;
 
 	if( fX < fY ) FPUCTRL |= FPCSR_C;
 
-	gCPUState.FPUControl[31]._u32 = FPUCTRL;
+	ctx.cpuState.FPUControl[31]._u32 = FPUCTRL;
 }
 
 static void  R4300_Cop1_S_NGE( R4300_CALL_SIGNATURE )
@@ -2586,11 +2586,11 @@ static void  R4300_Cop1_S_NGE( R4300_CALL_SIGNATURE )
 	f32 fX = LoadFPR_Single( op_code.fs );
 	f32 fY = LoadFPR_Single( op_code.ft );
 
-	u32 FPUCTRL = gCPUState.FPUControl[31]._u32 & ~FPCSR_C;
+	u32 FPUCTRL = ctx.cpuState.FPUControl[31]._u32 & ~FPCSR_C;
 
 	if( fX < fY ) FPUCTRL |= FPCSR_C;
 
-	gCPUState.FPUControl[31]._u32 = FPUCTRL;
+	ctx.cpuState.FPUControl[31]._u32 = FPUCTRL;
 }
 
 static void  R4300_Cop1_S_LE( R4300_CALL_SIGNATURE ) 				// Compare for Equality
@@ -2601,11 +2601,11 @@ static void  R4300_Cop1_S_LE( R4300_CALL_SIGNATURE ) 				// Compare for Equality
 	f32 fX = LoadFPR_Single( op_code.fs );
 	f32 fY = LoadFPR_Single( op_code.ft );
 
-	u32 FPUCTRL = gCPUState.FPUControl[31]._u32 & ~FPCSR_C;
+	u32 FPUCTRL = ctx.cpuState.FPUControl[31]._u32 & ~FPCSR_C;
 
 	if( fX <= fY ) FPUCTRL |= FPCSR_C;
 
-	gCPUState.FPUControl[31]._u32 = FPUCTRL;
+	ctx.cpuState.FPUControl[31]._u32 = FPUCTRL;
 }
 
 static void  R4300_Cop1_S_SEQ( R4300_CALL_SIGNATURE )
@@ -2615,11 +2615,11 @@ static void  R4300_Cop1_S_SEQ( R4300_CALL_SIGNATURE )
 	f32 fX = LoadFPR_Single( op_code.fs );
 	f32 fY = LoadFPR_Single( op_code.ft );
 
-	u32 FPUCTRL = gCPUState.FPUControl[31]._u32 & ~FPCSR_C;
+	u32 FPUCTRL = ctx.cpuState.FPUControl[31]._u32 & ~FPCSR_C;
 
 	if( fX == fY ) FPUCTRL |= FPCSR_C;
 
-	gCPUState.FPUControl[31]._u32 = FPUCTRL;
+	ctx.cpuState.FPUControl[31]._u32 = FPUCTRL;
 }
 
 static void  R4300_Cop1_S_UEQ( R4300_CALL_SIGNATURE )
@@ -2631,11 +2631,11 @@ static void  R4300_Cop1_S_UEQ( R4300_CALL_SIGNATURE )
 
 	// CATCH_NAN_EXCEPTION( "R4300_Cop1_S_UEQ", fX, fY );
 
-	u32 FPUCTRL = gCPUState.FPUControl[31]._u32 & ~FPCSR_C;
+	u32 FPUCTRL = ctx.cpuState.FPUControl[31]._u32 & ~FPCSR_C;
 
 	if( R4300_IsNaN(fX + fY) || fX == fY ) FPUCTRL |= FPCSR_C;
 
-	gCPUState.FPUControl[31]._u32 = FPUCTRL;
+	ctx.cpuState.FPUControl[31]._u32 = FPUCTRL;
 }
 
 static void  R4300_Cop1_S_NGLE( R4300_CALL_SIGNATURE )
@@ -2646,7 +2646,7 @@ static void  R4300_Cop1_S_NGLE( R4300_CALL_SIGNATURE )
 	f32 fX [[maybe_unused]] = LoadFPR_Single( op_code.fs );
 	f32 fY [[maybe_unused]] = LoadFPR_Single( op_code.ft );
 
-	gCPUState.FPUControl[31]._u32 &= ~FPCSR_C;
+	ctx.cpuState.FPUControl[31]._u32 &= ~FPCSR_C;
 }
 
 static void  R4300_Cop1_S_OLE( R4300_CALL_SIGNATURE )
@@ -2656,11 +2656,11 @@ static void  R4300_Cop1_S_OLE( R4300_CALL_SIGNATURE )
 	f32 fX = LoadFPR_Single( op_code.fs );
 	f32 fY = LoadFPR_Single( op_code.ft );
 
-	u32 FPUCTRL = gCPUState.FPUControl[31]._u32 & ~FPCSR_C;
+	u32 FPUCTRL = ctx.cpuState.FPUControl[31]._u32 & ~FPCSR_C;
 
 	if( !R4300_IsNaN(fX + fY) && fX <= fY ) FPUCTRL |= FPCSR_C;
 
-	gCPUState.FPUControl[31]._u32 = FPUCTRL;
+	ctx.cpuState.FPUControl[31]._u32 = FPUCTRL;
 }
 
 static void  R4300_Cop1_S_ULE( R4300_CALL_SIGNATURE )
@@ -2670,11 +2670,11 @@ static void  R4300_Cop1_S_ULE( R4300_CALL_SIGNATURE )
 	f32 fX = LoadFPR_Single( op_code.fs );
 	f32 fY = LoadFPR_Single( op_code.ft );
 
-	u32 FPUCTRL = gCPUState.FPUControl[31]._u32 & ~FPCSR_C;
+	u32 FPUCTRL = ctx.cpuState.FPUControl[31]._u32 & ~FPCSR_C;
 
 	if( R4300_IsNaN(fX + fY) || fX <= fY ) FPUCTRL |= FPCSR_C;
 
-	gCPUState.FPUControl[31]._u32 = FPUCTRL;
+	ctx.cpuState.FPUControl[31]._u32 = FPUCTRL;
 }
 
 static void  R4300_Cop1_S_UN( R4300_CALL_SIGNATURE )
@@ -2684,17 +2684,17 @@ static void  R4300_Cop1_S_UN( R4300_CALL_SIGNATURE )
 	f32 fX = LoadFPR_Single( op_code.fs );
 	f32 fY = LoadFPR_Single( op_code.ft );
 
-	u32 FPUCTRL = gCPUState.FPUControl[31]._u32 & ~FPCSR_C;
+	u32 FPUCTRL = ctx.cpuState.FPUControl[31]._u32 & ~FPCSR_C;
 
 	if( R4300_IsNaN(fX + fY) ) FPUCTRL |= FPCSR_C;
 
-	gCPUState.FPUControl[31]._u32 = FPUCTRL;
+	ctx.cpuState.FPUControl[31]._u32 = FPUCTRL;
 }
 
 static void  R4300_Cop1_S_F( R4300_CALL_SIGNATURE )
 {
 
-	gCPUState.FPUControl[31]._u32 &= ~FPCSR_C;
+	ctx.cpuState.FPUControl[31]._u32 &= ~FPCSR_C;
 }
 
 // Blast Corps fails here.
@@ -2708,11 +2708,11 @@ static void  R4300_Cop1_S_NGT( R4300_CALL_SIGNATURE )
 
 	// CATCH_NAN_EXCEPTION( "R4300_Cop1_S_NGT", fX, fY );
 
-	u32 FPUCTRL = gCPUState.FPUControl[31]._u32 & ~FPCSR_C;
+	u32 FPUCTRL = ctx.cpuState.FPUControl[31]._u32 & ~FPCSR_C;
 
 	if( fX <= fY ) FPUCTRL |= FPCSR_C;
 
-	gCPUState.FPUControl[31]._u32 = FPUCTRL;
+	ctx.cpuState.FPUControl[31]._u32 = FPUCTRL;
 }
 
 static void  R4300_Cop1_S_ULT( R4300_CALL_SIGNATURE )
@@ -2722,11 +2722,11 @@ static void  R4300_Cop1_S_ULT( R4300_CALL_SIGNATURE )
 	f32 fX = LoadFPR_Single( op_code.fs );
 	f32 fY = LoadFPR_Single( op_code.ft );
 
-	u32 FPUCTRL = gCPUState.FPUControl[31]._u32 & ~FPCSR_C;
+	u32 FPUCTRL = ctx.cpuState.FPUControl[31]._u32 & ~FPCSR_C;
 
 	if( R4300_IsNaN(fX + fY) || fX < fY ) FPUCTRL |= FPCSR_C;
 
-	gCPUState.FPUControl[31]._u32 = FPUCTRL;
+	ctx.cpuState.FPUControl[31]._u32 = FPUCTRL;
 }
 
 static void  R4300_Cop1_S_SF( R4300_CALL_SIGNATURE )
@@ -2740,7 +2740,7 @@ static void  R4300_Cop1_S_SF( R4300_CALL_SIGNATURE )
 	// CATCH_NAN_EXCEPTION( "R4300_Cop1_S_SF", fX, fY );
 #endif
 
-	gCPUState.FPUControl[31]._u32 &= ~FPCSR_C;
+	ctx.cpuState.FPUControl[31]._u32 &= ~FPCSR_C;
 }
 
 static void  R4300_Cop1_S_NGL( R4300_CALL_SIGNATURE )
@@ -2750,11 +2750,11 @@ static void  R4300_Cop1_S_NGL( R4300_CALL_SIGNATURE )
 	f32 fX = LoadFPR_Single( op_code.fs );
 	f32 fY = LoadFPR_Single( op_code.ft );
 
-	u32 FPUCTRL = gCPUState.FPUControl[31]._u32 & ~FPCSR_C;
+	u32 FPUCTRL = ctx.cpuState.FPUControl[31]._u32 & ~FPCSR_C;
 
 	if( fX == fY ) FPUCTRL |= FPCSR_C;
 
-	gCPUState.FPUControl[31]._u32 = FPUCTRL;
+	ctx.cpuState.FPUControl[31]._u32 = FPUCTRL;
 }
 
 static void  R4300_Cop1_S_OLT( R4300_CALL_SIGNATURE )
@@ -2766,11 +2766,11 @@ static void  R4300_Cop1_S_OLT( R4300_CALL_SIGNATURE )
 
 	// CATCH_NAN_EXCEPTION( "R4300_Cop1_S_OLT", fX, fY );
 
-	u32 FPUCTRL = gCPUState.FPUControl[31]._u32 & ~FPCSR_C;
+	u32 FPUCTRL = ctx.cpuState.FPUControl[31]._u32 & ~FPCSR_C;
 
 	if( !R4300_IsNaN(fX + fY) && fX < fY ) FPUCTRL |= FPCSR_C;
 
-	gCPUState.FPUControl[31]._u32 = FPUCTRL;
+	ctx.cpuState.FPUControl[31]._u32 = FPUCTRL;
 }
 
 static void  R4300_Cop1_D_Unk( R4300_CALL_SIGNATURE )		{ WARN_NOEXIST("R4300_Cop1_D_Unk"); }
@@ -2804,8 +2804,8 @@ static void  R4300_Cop1_D_ADD_2( R4300_CALL_SIGNATURE )
 	// Use double, float won't work for buck bumble
 	r._f64 = f64( (f64)fX + (f64)fY );
 
-	gCPUState.FPU[op_code.fd+0]._u32 = r._u32_0;
-	gCPUState.FPU[op_code.fd+1]._u32 = r._u32_1;
+	ctx.cpuState.FPU[op_code.fd+0]._u32 = r._u32_0;
+	ctx.cpuState.FPU[op_code.fd+1]._u32 = r._u32_1;
 
 }
 #endif
@@ -2898,8 +2898,8 @@ static void  R4300_Cop1_D_MOV( R4300_CALL_SIGNATURE )
 
 #if 1
 	//Fast way, just copy registers //Corn
-	gCPUState.FPU[op_code.fd+0]._u32 = gCPUState.FPU[op_code.fs+0]._u32;
-	gCPUState.FPU[op_code.fd+1]._u32 = gCPUState.FPU[op_code.fs+1]._u32;
+	ctx.cpuState.FPU[op_code.fd+0]._u32 = ctx.cpuState.FPU[op_code.fs+0]._u32;
+	ctx.cpuState.FPU[op_code.fd+1]._u32 = ctx.cpuState.FPU[op_code.fs+1]._u32;
 #else
 	// fd = fs
 	d64 fX = LoadFPR_Double( op_code.fs );
@@ -3019,11 +3019,11 @@ static void  R4300_Cop1_D_EQ( R4300_CALL_SIGNATURE )				// Compare for Equality
 	d64 fX = LoadFPR_Double( op_code.fs );
 	d64 fY = LoadFPR_Double( op_code.ft );
 
-	u32 FPUCTRL = gCPUState.FPUControl[31]._u32 & ~FPCSR_C;
+	u32 FPUCTRL = ctx.cpuState.FPUControl[31]._u32 & ~FPCSR_C;
 
 	if( !R4300_IsNaN(fX + fY) && fX == fY ) FPUCTRL |= FPCSR_C;
 
-	gCPUState.FPUControl[31]._u32 = FPUCTRL;
+	ctx.cpuState.FPUControl[31]._u32 = FPUCTRL;
 }
 
 static void  R4300_Cop1_D_LE( R4300_CALL_SIGNATURE )				// Compare for Less Than or Equal
@@ -3034,11 +3034,11 @@ static void  R4300_Cop1_D_LE( R4300_CALL_SIGNATURE )				// Compare for Less Than
 	d64 fX = LoadFPR_Double( op_code.fs );
 	d64 fY = LoadFPR_Double( op_code.ft );
 
-	u32 FPUCTRL = gCPUState.FPUControl[31]._u32 & ~FPCSR_C;
+	u32 FPUCTRL = ctx.cpuState.FPUControl[31]._u32 & ~FPCSR_C;
 
 	if( fX <= fY ) FPUCTRL |= FPCSR_C;
 
-	gCPUState.FPUControl[31]._u32 = FPUCTRL;
+	ctx.cpuState.FPUControl[31]._u32 = FPUCTRL;
 }
 
 
@@ -3050,17 +3050,17 @@ static void  R4300_Cop1_D_LT( R4300_CALL_SIGNATURE )
 	d64 fX = LoadFPR_Double( op_code.fs );
 	d64 fY = LoadFPR_Double( op_code.ft );
 
-	u32 FPUCTRL = gCPUState.FPUControl[31]._u32 & ~FPCSR_C;
+	u32 FPUCTRL = ctx.cpuState.FPUControl[31]._u32 & ~FPCSR_C;
 
 	if( fX < fY ) FPUCTRL |= FPCSR_C;
 
-	gCPUState.FPUControl[31]._u32 = FPUCTRL;
+	ctx.cpuState.FPUControl[31]._u32 = FPUCTRL;
 }
 
 static void  R4300_Cop1_D_F( R4300_CALL_SIGNATURE )
 {
 
-	gCPUState.FPUControl[31]._u32 &= ~FPCSR_C;
+	ctx.cpuState.FPUControl[31]._u32 &= ~FPCSR_C;
 }
 
 static void  R4300_Cop1_D_UN( R4300_CALL_SIGNATURE )
@@ -3070,11 +3070,11 @@ static void  R4300_Cop1_D_UN( R4300_CALL_SIGNATURE )
 	d64 fX = LoadFPR_Double( op_code.fs );
 	d64 fY = LoadFPR_Double( op_code.ft );
 
-	u32 FPUCTRL = gCPUState.FPUControl[31]._u32 & ~FPCSR_C;
+	u32 FPUCTRL = ctx.cpuState.FPUControl[31]._u32 & ~FPCSR_C;
 
 	if( R4300_IsNaN(fX + fY) ) FPUCTRL |= FPCSR_C;
 
-	gCPUState.FPUControl[31]._u32 = FPUCTRL;
+	ctx.cpuState.FPUControl[31]._u32 = FPUCTRL;
 }
 
 static void  R4300_Cop1_D_UEQ( R4300_CALL_SIGNATURE )
@@ -3084,11 +3084,11 @@ static void  R4300_Cop1_D_UEQ( R4300_CALL_SIGNATURE )
 	d64 fX = LoadFPR_Double( op_code.fs );
 	d64 fY = LoadFPR_Double( op_code.ft );
 
-	u32 FPUCTRL = gCPUState.FPUControl[31]._u32 & ~FPCSR_C;
+	u32 FPUCTRL = ctx.cpuState.FPUControl[31]._u32 & ~FPCSR_C;
 
 	if( R4300_IsNaN(fX + fY) || fX == fY ) FPUCTRL |= FPCSR_C;
 
-	gCPUState.FPUControl[31]._u32 = FPUCTRL;
+	ctx.cpuState.FPUControl[31]._u32 = FPUCTRL;
 }
 
 static void  R4300_Cop1_D_OLT( R4300_CALL_SIGNATURE )
@@ -3098,11 +3098,11 @@ static void  R4300_Cop1_D_OLT( R4300_CALL_SIGNATURE )
 	d64 fX = LoadFPR_Double( op_code.fs );
 	d64 fY = LoadFPR_Double( op_code.ft );
 
-	u32 FPUCTRL = gCPUState.FPUControl[31]._u32 & ~FPCSR_C;
+	u32 FPUCTRL = ctx.cpuState.FPUControl[31]._u32 & ~FPCSR_C;
 
 	if( !R4300_IsNaN(fX + fY) && fX < fY ) FPUCTRL |= FPCSR_C;
 
-	gCPUState.FPUControl[31]._u32 = FPUCTRL;
+	ctx.cpuState.FPUControl[31]._u32 = FPUCTRL;
 }
 
 static void  R4300_Cop1_D_ULT( R4300_CALL_SIGNATURE )
@@ -3112,11 +3112,11 @@ static void  R4300_Cop1_D_ULT( R4300_CALL_SIGNATURE )
 	d64 fX = LoadFPR_Double( op_code.fs );
 	d64 fY = LoadFPR_Double( op_code.ft );
 
-	u32 FPUCTRL = gCPUState.FPUControl[31]._u32 & ~FPCSR_C;
+	u32 FPUCTRL = ctx.cpuState.FPUControl[31]._u32 & ~FPCSR_C;
 
 	if( R4300_IsNaN(fX + fY) || fX < fY ) FPUCTRL |= FPCSR_C;
 
-	gCPUState.FPUControl[31]._u32 = FPUCTRL;
+	ctx.cpuState.FPUControl[31]._u32 = FPUCTRL;
 }
 
 static void  R4300_Cop1_D_OLE( R4300_CALL_SIGNATURE )
@@ -3126,11 +3126,11 @@ static void  R4300_Cop1_D_OLE( R4300_CALL_SIGNATURE )
 	d64 fX = LoadFPR_Double( op_code.fs );
 	d64 fY = LoadFPR_Double( op_code.ft );
 
-	u32 FPUCTRL = gCPUState.FPUControl[31]._u32 & ~FPCSR_C;
+	u32 FPUCTRL = ctx.cpuState.FPUControl[31]._u32 & ~FPCSR_C;
 
 	if( !R4300_IsNaN(fX + fY) && fX <= fY ) FPUCTRL |= FPCSR_C;
 
-	gCPUState.FPUControl[31]._u32 = FPUCTRL;
+	ctx.cpuState.FPUControl[31]._u32 = FPUCTRL;
 }
 
 static void  R4300_Cop1_D_ULE( R4300_CALL_SIGNATURE )
@@ -3140,11 +3140,11 @@ static void  R4300_Cop1_D_ULE( R4300_CALL_SIGNATURE )
 	d64 fX = LoadFPR_Double( op_code.fs );
 	d64 fY = LoadFPR_Double( op_code.ft );
 
-	u32 FPUCTRL = gCPUState.FPUControl[31]._u32 & ~FPCSR_C;
+	u32 FPUCTRL = ctx.cpuState.FPUControl[31]._u32 & ~FPCSR_C;
 
 	if( R4300_IsNaN(fX + fY) || fX <= fY ) FPUCTRL |= FPCSR_C;
 
-	gCPUState.FPUControl[31]._u32 = FPUCTRL;
+	ctx.cpuState.FPUControl[31]._u32 = FPUCTRL;
 }
 
 static void  R4300_Cop1_D_SF( R4300_CALL_SIGNATURE )
@@ -3158,7 +3158,7 @@ static void  R4300_Cop1_D_SF( R4300_CALL_SIGNATURE )
 	// CATCH_NAN_EXCEPTION( "R4300_Cop1_D_SF", fX, fY );
 #endif
 
-	gCPUState.FPUControl[31]._u32 &= ~FPCSR_C;
+	ctx.cpuState.FPUControl[31]._u32 &= ~FPCSR_C;
 }
 
 // Same as above..
@@ -3173,7 +3173,7 @@ static void  R4300_Cop1_D_NGLE( R4300_CALL_SIGNATURE )
 	// CATCH_NAN_EXCEPTION( "R4300_Cop1_D_NGLE", fX, fY );
 #endif
 
-	gCPUState.FPUControl[31]._u32 &= ~FPCSR_C;
+	ctx.cpuState.FPUControl[31]._u32 &= ~FPCSR_C;
 }
 
 static void  R4300_Cop1_D_SEQ( R4300_CALL_SIGNATURE )
@@ -3185,11 +3185,11 @@ static void  R4300_Cop1_D_SEQ( R4300_CALL_SIGNATURE )
 
 	// CATCH_NAN_EXCEPTION( "R4300_Cop1_D_SEQ", fX, fY );
 
-	u32 FPUCTRL = gCPUState.FPUControl[31]._u32 & ~FPCSR_C;
+	u32 FPUCTRL = ctx.cpuState.FPUControl[31]._u32 & ~FPCSR_C;
 
 	if( fX == fY ) FPUCTRL |= FPCSR_C;
 
-	gCPUState.FPUControl[31]._u32 = FPUCTRL;
+	ctx.cpuState.FPUControl[31]._u32 = FPUCTRL;
 }
 
 // Same as above..
@@ -3202,11 +3202,11 @@ static void  R4300_Cop1_D_NGL( R4300_CALL_SIGNATURE )
 
 	// CATCH_NAN_EXCEPTION( "R4300_Cop1_D_NGL", fX, fY );
 
-	u32 FPUCTRL = gCPUState.FPUControl[31]._u32 & ~FPCSR_C;
+	u32 FPUCTRL = ctx.cpuState.FPUControl[31]._u32 & ~FPCSR_C;
 
 	if( fX == fY ) FPUCTRL |= FPCSR_C;
 
-	gCPUState.FPUControl[31]._u32 = FPUCTRL;
+	ctx.cpuState.FPUControl[31]._u32 = FPUCTRL;
 }
 
 static void  R4300_Cop1_D_NGE( R4300_CALL_SIGNATURE )
@@ -3218,11 +3218,11 @@ static void  R4300_Cop1_D_NGE( R4300_CALL_SIGNATURE )
 
 	// CATCH_NAN_EXCEPTION( "R4300_Cop1_D_NGE", fX, fY );
 
-	u32 FPUCTRL = gCPUState.FPUControl[31]._u32 & ~FPCSR_C;
+	u32 FPUCTRL = ctx.cpuState.FPUControl[31]._u32 & ~FPCSR_C;
 
 	if( fX < fY ) FPUCTRL |= FPCSR_C;
 
-	gCPUState.FPUControl[31]._u32 = FPUCTRL;
+	ctx.cpuState.FPUControl[31]._u32 = FPUCTRL;
 }
 
 static void  R4300_Cop1_D_NGT( R4300_CALL_SIGNATURE )
@@ -3234,11 +3234,11 @@ static void  R4300_Cop1_D_NGT( R4300_CALL_SIGNATURE )
 
 	// CATCH_NAN_EXCEPTION( "R4300_Cop1_D_NGT", fX, fY );
 
-	u32 FPUCTRL = gCPUState.FPUControl[31]._u32 & ~FPCSR_C;
+	u32 FPUCTRL = ctx.cpuState.FPUControl[31]._u32 & ~FPCSR_C;
 
 	if( fX <= fY ) FPUCTRL |= FPCSR_C;
 
-	gCPUState.FPUControl[31]._u32 = FPUCTRL;
+	ctx.cpuState.FPUControl[31]._u32 = FPUCTRL;
 }
 
 #include "R4300_Jump.inl"		// Jump table

@@ -139,12 +139,12 @@ static void DumpInformation(PspDebugRegBlock * regs)
 	{
 		for(int i {0}; i<32; i+=4)
 			fprintf(fp, "\t%s:%08X-%08X %s:%08X-%08X %s:%08X-%08X %s:%08X-%08X\n",
-			regName[i+0], gCPUState.CPU[i+0]._u32_1, gCPUState.CPU[i+0]._u32_0,
-			regName[i+1], gCPUState.CPU[i+1]._u32_1, gCPUState.CPU[i+1]._u32_0,
-			regName[i+2], gCPUState.CPU[i+2]._u32_1, gCPUState.CPU[i+2]._u32_0,
-			regName[i+3], gCPUState.CPU[i+3]._u32_1, gCPUState.CPU[i+3]._u32_0);
+			regName[i+0], ctx.cpuState.CPU[i+0]._u32_1, ctx.cpuState.CPU[i+0]._u32_0,
+			regName[i+1], ctx.cpuState.CPU[i+1]._u32_1, ctx.cpuState.CPU[i+1]._u32_0,
+			regName[i+2], ctx.cpuState.CPU[i+2]._u32_1, ctx.cpuState.CPU[i+2]._u32_0,
+			regName[i+3], ctx.cpuState.CPU[i+3]._u32_1, ctx.cpuState.CPU[i+3]._u32_0);
 
-		fprintf(fp, "Last known PC (N64): %08x\n", gCPUState.CurrentPC);
+		fprintf(fp, "Last known PC (N64): %08x\n", ctx.cpuState.CurrentPC);
 	}
 
 #ifndef DAEDALUS_SILENT
@@ -153,7 +153,7 @@ static void DumpInformation(PspDebugRegBlock * regs)
 	inst_after_epc = 24;
 
 	u8 * p_base;
-	Memory_GetInternalReadAddress(gCPUState.CurrentPC-32, (void**)&p_base);
+	Memory_GetInternalReadAddress(ctx.cpuState.CurrentPC-32, (void**)&p_base);
 	const OpCode * op_start( reinterpret_cast< const OpCode * >( p_base - inst_before_epc * 4) );
 	const OpCode * op_end(   reinterpret_cast< const OpCode * >( p_base + inst_after_epc * 4 ) );
 

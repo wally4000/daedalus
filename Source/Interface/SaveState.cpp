@@ -204,24 +204,24 @@ bool SaveState_SaveToFile( const std::filesystem::path &filename )
 	stream << rom_header;
 	stream << std::max< u32 >(CPU_GetVideoInterruptEventCount(), 1);
 
-	stream << gCPUState.CurrentPC;
+	stream << ctx.cpuState.CurrentPC;
 	stream.write(gGPR, 256);
 	u32 i;
 	for(i = 0; i < 32; i++)
 	{
-		stream << gCPUState.FPU[i]._u32;
+		stream << ctx.cpuState.FPU[i]._u32;
 	}
 	stream.skip(0x80); // used when FPU is in 64-bit mode
 	for(i = 0; i < 32; i++)
 	{
-		stream << gCPUState.CPUControl[i]._u32;
+		stream << ctx.cpuState.CPUControl[i]._u32;
 	}
 	for(i = 0; i < 32; i++)
 	{
-		stream << gCPUState.FPUControl[i]._u32;
+		stream << ctx.cpuState.FPUControl[i]._u32;
 	}
-	stream << gCPUState.MultHi._u64;
-	stream << gCPUState.MultLo._u64;
+	stream << ctx.cpuState.MultHi._u64;
+	stream << ctx.cpuState.MultLo._u64;
 
 	stream.write_memory_buffer(MEM_RD_REG0, 0x28);
 	stream.write_memory_buffer(MEM_SP_REG,  0x28);
@@ -293,7 +293,7 @@ bool SaveState_LoadFromFile( const std::filesystem::path &filename )
 	for(i = 0; i < 32; i++)
 	{
 		stream >> value;
-		gCPUState.FPU[i]._u32 = value;
+		ctx.cpuState.FPU[i]._u32 = value;
 	}
 	stream.skip(0x80); // used when FPU is in 64-bit mode
 	u32 g_dwNewCPR0[32];
@@ -304,10 +304,10 @@ bool SaveState_LoadFromFile( const std::filesystem::path &filename )
 	for(i = 0; i < 32; i++)
 	{
 		stream >> value;
-		gCPUState.FPUControl[i]._u32 = value;
+		ctx.cpuState.FPUControl[i]._u32 = value;
 	}
-	stream >> gCPUState.MultHi._u64;
-	stream >> gCPUState.MultLo._u64;
+	stream >> ctx.cpuState.MultHi._u64;
+	stream >> ctx.cpuState.MultLo._u64;
 	stream.read_memory_buffer(MEM_RD_REG0, 0x28); //, 0x84040000);
 	stream.read_memory_buffer(MEM_SP_REG, 0x28); //, 0x84040000);
 
@@ -359,7 +359,7 @@ bool SaveState_LoadFromFile( const std::filesystem::path &filename )
 		}
 		else
 		{
-			gCPUState.CPUControl[i]._u32 = g_dwNewCPR0[i];
+			ctx.cpuState.CPUControl[i]._u32 = g_dwNewCPR0[i];
 		}
 	}
 	//stream.skip(0x40);

@@ -211,11 +211,11 @@ TEST_DISABLE_THREAD_FUNCS
 	gGPR[REG_ra]._u64 = QuickRead64Bits(pThreadBase, 0x0100);
 #endif
 
-	gCPUState.MultLo._u64 = QuickRead64Bits(pThreadBase, offsetof(OSThread, context.lo));
-	gCPUState.MultHi._u64 = QuickRead64Bits(pThreadBase, offsetof(OSThread, context.hi));
+	ctx.cpuState.MultLo._u64 = QuickRead64Bits(pThreadBase, offsetof(OSThread, context.lo));
+	ctx.cpuState.MultHi._u64 = QuickRead64Bits(pThreadBase, offsetof(OSThread, context.hi));
 
 	// Set the EPC
-	gCPUState.CPUControl[C0_EPC]._u32 = QuickRead32Bits(pThreadBase, offsetof(OSThread, context.pc));
+	ctx.cpuState.CPUControl[C0_EPC]._u32 = QuickRead32Bits(pThreadBase, offsetof(OSThread, context.pc));
 
 	// Set the STATUS register. Normally this would trigger a
 	// Check for pending interrupts, but we're running in kernel mode
@@ -233,13 +233,13 @@ TEST_DISABLE_THREAD_FUNCS
 	if (RestoreFP != 0)
 	{
 		// Restore control reg
-		gCPUState.FPUControl[31]._u32 = QuickRead32Bits(pThreadBase, offsetof(OSThread, context.fpcsr));
+		ctx.cpuState.FPUControl[31]._u32 = QuickRead32Bits(pThreadBase, offsetof(OSThread, context.fpcsr));
 
 		// Floats - can probably optimise this to eliminate 64 bits reads...
 		for (u32 FPReg = 0; FPReg < 16; FPReg++)
 		{
-			gCPUState.FPU[(FPReg*2)+1]._u32 = QuickRead32Bits(pThreadBase, 0x0130 + (FPReg << 3));
-			gCPUState.FPU[(FPReg*2)+0]._u32 = QuickRead32Bits(pThreadBase, 0x0134 + (FPReg << 3));
+			ctx.cpuState.FPU[(FPReg*2)+1]._u32 = QuickRead32Bits(pThreadBase, 0x0130 + (FPReg << 3));
+			ctx.cpuState.FPU[(FPReg*2)+0]._u32 = QuickRead32Bits(pThreadBase, 0x0134 + (FPReg << 3));
 		}
 	}
 
@@ -359,11 +359,11 @@ TEST_DISABLE_THREAD_FUNCS
 #endif
 
 
-	gCPUState.MultLo._u64 = QuickRead64Bits(pThreadBase, offsetof(OSThread, context.lo));
-	gCPUState.MultHi._u64 = QuickRead64Bits(pThreadBase, offsetof(OSThread, context.hi));
+	ctx.cpuState.MultLo._u64 = QuickRead64Bits(pThreadBase, offsetof(OSThread, context.lo));
+	ctx.cpuState.MultHi._u64 = QuickRead64Bits(pThreadBase, offsetof(OSThread, context.hi));
 
 	// Set the EPC
-	gCPUState.CPUControl[C0_EPC]._u32 = QuickRead32Bits(pThreadBase, offsetof(OSThread, context.pc));
+	ctx.cpuState.CPUControl[C0_EPC]._u32 = QuickRead32Bits(pThreadBase, offsetof(OSThread, context.pc));
 
 
 	// Check if the FP unit was used
@@ -371,13 +371,13 @@ TEST_DISABLE_THREAD_FUNCS
 	if (RestoreFP != 0)
 	{
 		// Restore control reg
-		gCPUState.FPUControl[31]._u32 = QuickRead32Bits(pThreadBase, offsetof(OSThread, context.fpcsr));
+		ctx.cpuState.FPUControl[31]._u32 = QuickRead32Bits(pThreadBase, offsetof(OSThread, context.fpcsr));
 
 		// Floats - can probably optimise this to eliminate 64 bits reads...
 		for (u32 FPReg = 0; FPReg < 16; FPReg++)
 		{
-			gCPUState.FPU[(FPReg*2)+1]._u32 = QuickRead32Bits(pThreadBase, 0x0130 + (FPReg << 3));
-			gCPUState.FPU[(FPReg*2)+0]._u32 = QuickRead32Bits(pThreadBase, 0x0134 + (FPReg << 3));
+			ctx.cpuState.FPU[(FPReg*2)+1]._u32 = QuickRead32Bits(pThreadBase, 0x0130 + (FPReg << 3));
+			ctx.cpuState.FPU[(FPReg*2)+0]._u32 = QuickRead32Bits(pThreadBase, 0x0134 + (FPReg << 3));
 		}
 	}
 /*
@@ -597,7 +597,7 @@ TEST_DISABLE_THREAD_FUNCS
 	// Store various registers:
 	// For speed, we cache the base pointer!!!
 
-	u32 status = gCPUState.CPUControl[C0_SR]._u32;
+	u32 status = ctx.cpuState.CPUControl[C0_SR]._u32;
 
 	status |= SR_EXL;
 
@@ -624,13 +624,13 @@ TEST_DISABLE_THREAD_FUNCS
 	if (RestoreFP != 0)
 	{
 		// Save control reg
-		QuickWrite32Bits(pThreadBase, 0x012c, gCPUState.FPUControl[31]._u32);
+		QuickWrite32Bits(pThreadBase, 0x012c, ctx.cpuState.FPUControl[31]._u32);
 
 		// Floats - can probably optimise this to eliminate 64 bits writes...
 		for (u32 FPReg = 0; FPReg < 16; FPReg++)
 		{
-			QuickWrite32Bits(pThreadBase, 0x0130 + (FPReg * 8), gCPUState.FPU[(FPReg*2)+1]._u32);
-			QuickWrite32Bits(pThreadBase, 0x0134 + (FPReg * 8), gCPUState.FPU[(FPReg*2)+0]._u32);
+			QuickWrite32Bits(pThreadBase, 0x0130 + (FPReg * 8), ctx.cpuState.FPU[(FPReg*2)+1]._u32);
+			QuickWrite32Bits(pThreadBase, 0x0134 + (FPReg * 8), ctx.cpuState.FPU[(FPReg*2)+0]._u32);
 		}
 	}
 

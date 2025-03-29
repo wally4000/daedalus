@@ -56,7 +56,7 @@ static const EArmReg gRegistersToUseForCaching[] = {
 	// ArmReg_R9,  this is the memory base register
 	// ArmReg_R10, this is the memory upper bound register
 	ArmReg_R11,
-	// ArmReg_R12, this holds a pointer to gCpuState
+	// ArmReg_R12, this holds a pointer to ctx.cpuState
 	// ArmReg_R13, this is the stack pointer
 	 ArmReg_R14,// this is the link register
 	// ArmReg_R15, this is the PC
@@ -73,18 +73,18 @@ extern "C" { const void * g_MemoryLookupTableReadForDynarec = g_MemoryLookupTabl
 extern "C" { 	
 	void HandleException_extern()
 	{
-		switch (gCPUState.Delay)
+		switch (ctx.cpuState.Delay)
 		{
 			case DO_DELAY:
-				gCPUState.CurrentPC += 4;
-				gCPUState.Delay = EXEC_DELAY;
+				ctx.cpuState.CurrentPC += 4;
+				ctx.cpuState.Delay = EXEC_DELAY;
 				break;
 			case EXEC_DELAY:
-				gCPUState.CurrentPC = gCPUState.TargetPC;
-				gCPUState.Delay = NO_DELAY;
+				ctx.cpuState.CurrentPC = ctx.cpuState.TargetPC;
+				ctx.cpuState.Delay = NO_DELAY;
 				break;
 			case NO_DELAY:
-				gCPUState.CurrentPC += 4;
+				ctx.cpuState.CurrentPC += 4;
 				break;
 		}
 	}
@@ -404,52 +404,52 @@ void	CCodeGeneratorARM::UpdateRegisterCaching(u32 instruction_idx)
 	}
 }
 
-// Loads a variable from memory (must be within offset range of &gCPUState)
+// Loads a variable from memory (must be within offset range of &ctx.cpuState)
 void CCodeGeneratorARM::GetVar(EArmReg arm_reg, const u32* p_var)
 {
-	uint16_t offset = (u32)p_var - (u32)& gCPUState;
+	uint16_t offset = (u32)p_var - (u32)& ctx.cpuState;
 	LDR(arm_reg, ArmReg_R12, offset);
 }
 
-// Stores a variable into memory (must be within offset range of &gCPUState)
+// Stores a variable into memory (must be within offset range of &ctx.cpuState)
 void CCodeGeneratorARM::SetVar( const u32 * p_var, u32 value )
 {
-	uint16_t offset = (u32)p_var - (u32)&gCPUState;
+	uint16_t offset = (u32)p_var - (u32)&ctx.cpuState;
 	MOV32(ArmReg_R4, (u32)value);
 	STR(ArmReg_R4, ArmReg_R12, offset);
 }
 
-// Stores a register into memory (must be within offset range of &gCPUState)
+// Stores a register into memory (must be within offset range of &ctx.cpuState)
 void CCodeGeneratorARM::SetVar(const u32* p_var, EArmReg reg)
 {
-	uint16_t offset = (u32)p_var - (u32)& gCPUState;
+	uint16_t offset = (u32)p_var - (u32)& ctx.cpuState;
 	STR(reg, ArmReg_R12, offset);
 }
 
 void CCodeGeneratorARM::SetFloatVar(const f32* p_var, EArmVfpReg reg)
 {
-	uint16_t offset = (u32)p_var - (u32)&gCPUState;
+	uint16_t offset = (u32)p_var - (u32)&ctx.cpuState;
 	
 	VSTR(reg, ArmReg_R12, offset);
 }
 
 void CCodeGeneratorARM::GetFloatVar( EArmVfpReg dst_reg, const f32 * p_var )
 {
-	uint16_t offset = (u32)p_var - (u32)&gCPUState;
+	uint16_t offset = (u32)p_var - (u32)&ctx.cpuState;
 	
 	VLDR(dst_reg, ArmReg_R12, offset);
 }
 
 void CCodeGeneratorARM::SetDoubleVar(const f64* p_var, EArmVfpReg reg)
 {
-	uint16_t offset = (u32)p_var - (u32)&gCPUState;
+	uint16_t offset = (u32)p_var - (u32)&ctx.cpuState;
 	
 	VSTR_D(reg, ArmReg_R12, offset);
 }
 
 void CCodeGeneratorARM::GetDoubleVar( EArmVfpReg dst_reg, const f64 * p_var )
 {
-	uint16_t offset = (u32)p_var - (u32)&gCPUState;
+	uint16_t offset = (u32)p_var - (u32)&ctx.cpuState;
 	
 	VLDR_D(dst_reg, ArmReg_R12, offset);
 }
@@ -639,7 +639,7 @@ void	CCodeGeneratorARM::FlushAllFloatingPointRegisters( CN64RegisterCacheARM & c
 			#endif
 			EArmVfpReg	arm_reg = EArmVfpReg( n64_reg );
 
-			SetFloatVar( &gCPUState.FPU[n64_reg]._f32, arm_reg );
+			SetFloatVar( &ctx.cpuState.FPU[n64_reg]._f32, arm_reg );
 
 			cache.MarkFPAsDirty( n64_reg, false );
 		}
@@ -678,7 +678,7 @@ void	CCodeGeneratorARM::RestoreAllRegisters(CN64RegisterCacheARM& current_cache,
 		{
 			EArmVfpReg	arm_reg = EArmVfpReg(n64_reg);
 
-			GetFloatVar(arm_reg, &gCPUState.FPU[n64_reg]._f32);
+			GetFloatVar(arm_reg, &ctx.cpuState.FPU[n64_reg]._f32);
 		}
 	}
 }
@@ -776,7 +776,7 @@ EArmVfpReg	CCodeGeneratorARM::GetFloatRegisterAndLoad( EN64FloatReg n64_reg )
 	EArmVfpReg	arm_reg = EArmVfpReg( n64_reg );	// 1:1 mapping
 	if( !mRegisterCache.IsFPValid( n64_reg ) )
 	{
-		GetFloatVar( arm_reg, &gCPUState.FPU[n64_reg]._f32 );
+		GetFloatVar( arm_reg, &ctx.cpuState.FPU[n64_reg]._f32 );
 		mRegisterCache.MarkFPAsValid( n64_reg, true );
 	}
 
@@ -793,18 +793,18 @@ EArmVfpReg	CCodeGeneratorARM::GetDoubleRegisterAndLoad( EN64FloatReg n64_reg )
 	EArmVfpReg arm_reg = EArmVfpReg(n64_reg); // 1:1 mapping
 	if (!mRegisterCache.IsFPValid(n64_reg) && !mRegisterCache.IsFPValid(EN64FloatReg(n64_reg + 1)) )
 	{
-		GetDoubleVar(EArmVfpReg(arm_reg/2), (f64*)&gCPUState.FPU[n64_reg]._f32);
+		GetDoubleVar(EArmVfpReg(arm_reg/2), (f64*)&ctx.cpuState.FPU[n64_reg]._f32);
 		mRegisterCache.MarkFPAsValid( n64_reg, true );
 		mRegisterCache.MarkFPAsValid( EN64FloatReg(n64_reg+1), true );
 	}
 	else if (!mRegisterCache.IsFPValid(n64_reg))
 	{
-		GetFloatVar( arm_reg, &gCPUState.FPU[n64_reg]._f32 );
+		GetFloatVar( arm_reg, &ctx.cpuState.FPU[n64_reg]._f32 );
 		mRegisterCache.MarkFPAsValid( n64_reg, true );
 	}
 	else if (!mRegisterCache.IsFPValid(EN64FloatReg(n64_reg+1)))
 	{
-		GetFloatVar( EArmVfpReg(arm_reg+1), &gCPUState.FPU[n64_reg+1]._f32 );
+		GetFloatVar( EArmVfpReg(arm_reg+1), &ctx.cpuState.FPU[n64_reg+1]._f32 );
 		mRegisterCache.MarkFPAsValid( EN64FloatReg(n64_reg+1), true );
 	}
 
@@ -917,8 +917,8 @@ CJumpLocation CCodeGeneratorARM::GenerateExitCode( u32 exit_address, u32 jump_ad
 		FlushAllFloatingPointRegisters( mRegisterCache, false );
 
 		// Check if we're ok to continue, without flushing any registers
-		GetVar( ArmReg_R0, &gCPUState.CPUControl[C0_COUNT]._u32 );
-		GetVar( ArmReg_R1, (const u32*)&gCPUState.Events[0].mCount );
+		GetVar( ArmReg_R0, &ctx.cpuState.CPUControl[C0_COUNT]._u32 );
+		GetVar( ArmReg_R1, (const u32*)&ctx.cpuState.Events[0].mCount );
 
 		//
 		//	Pull in any registers which may have been flushed for whatever reason.
@@ -944,20 +944,20 @@ CJumpLocation CCodeGeneratorARM::GenerateExitCode( u32 exit_address, u32 jump_ad
 		// Assuming we don't need to set CurrentPC/Delay flags before we branch to the top..
 		//
 		ADD_IMM( ArmReg_R0, ArmReg_R0, num_instructions, ArmReg_R2 );
-		SetVar( &gCPUState.CPUControl[C0_COUNT]._u32, ArmReg_R0 );
+		SetVar( &ctx.cpuState.CPUControl[C0_COUNT]._u32, ArmReg_R0 );
 
 		//
 		//	If the event counter is still positive, just jump directly to the top of our loop
 		//
 		SUB_IMM( ArmReg_R1, ArmReg_R1, s16(num_instructions), ArmReg_R2 );
-		SetVar( (u32*)&gCPUState.Events[0].mCount, ArmReg_R1 );
+		SetVar( (u32*)&ctx.cpuState.Events[0].mCount, ArmReg_R1 );
 		CMP_IMM(ArmReg_R1, 0);
 		BX_IMM( mLoopTop, GT );
 
 		FlushAllRegisters( mRegisterCache, true );
 
-		SetVar( &gCPUState.CurrentPC, exit_address );
-		SetVar( &gCPUState.Delay, NO_DELAY );	// ASSUMES store is done in just a single op.
+		SetVar( &ctx.cpuState.CurrentPC, exit_address );
+		SetVar( &ctx.cpuState.Delay, NO_DELAY );	// ASSUMES store is done in just a single op.
 		
 		CALL( CCodeLabel( reinterpret_cast< const void * >( CPU_HANDLE_COUNT_INTERRUPT ) ));
 
@@ -1074,7 +1074,7 @@ CJumpLocation	CCodeGeneratorARM::GenerateBranchAlways( CCodeLabel target )
 //*****************************************************************************
 CJumpLocation	CCodeGeneratorARM::GenerateBranchIfSet( const u32 * p_var, CCodeLabel target )
 {
-	s32 diff = (u8*)p_var - (u8*)&gCPUState;
+	s32 diff = (u8*)p_var - (u8*)&ctx.cpuState;
 	
 	// if this is in range of CPUState, just load it
 	if (diff <= 0xFFF && diff >= -0xFFF)
@@ -1097,7 +1097,7 @@ CJumpLocation	CCodeGeneratorARM::GenerateBranchIfSet( const u32 * p_var, CCodeLa
 //*****************************************************************************
 CJumpLocation	CCodeGeneratorARM::GenerateBranchIfNotSet( const u32 * p_var, CCodeLabel target )
 {
-	s32 diff = (u8*)p_var - (u8*)&gCPUState;
+	s32 diff = (u8*)p_var - (u8*)&ctx.cpuState;
 	
 	// if this is in range of CPUState, just load it
 	if (diff <= 0xFFF && diff >= -0xFFF)
@@ -1119,7 +1119,7 @@ CJumpLocation	CCodeGeneratorARM::GenerateBranchIfNotSet( const u32 * p_var, CCod
 //*****************************************************************************
 CJumpLocation	CCodeGeneratorARM::GenerateBranchIfEqual( const u32 * p_var, u32 value, CCodeLabel target )
 {
-	s32 diff = (u8*)p_var - (u8*)&gCPUState;
+	s32 diff = (u8*)p_var - (u8*)&ctx.cpuState;
 	
 	// if this is in range of CPUState, just load it
 	if (diff <= 0xFFF && diff >= -0xFFF)
@@ -1140,7 +1140,7 @@ CJumpLocation	CCodeGeneratorARM::GenerateBranchIfEqual( const u32 * p_var, u32 v
 
 CJumpLocation	CCodeGeneratorARM::GenerateBranchIfNotEqual( const u32 * p_var, u32 value, CCodeLabel target )
 {
-	s32 diff = (u8*)p_var - (u8*)&gCPUState;
+	s32 diff = (u8*)p_var - (u8*)&ctx.cpuState;
 	
 	// if this is in range of CPUState, just load it
 	if (diff <= 0xFFF && diff >= -0xFFF)
@@ -1176,14 +1176,14 @@ CJumpLocation	CCodeGeneratorARM::GenerateOpCode( const STraceEntry& ti, bool bra
 	{
 		if( branch_delay_slot )
 		{
-			SetVar(&gCPUState.Delay, NO_DELAY);
+			SetVar(&ctx.cpuState.Delay, NO_DELAY);
 		}
 		return CJumpLocation( NULL);
 	}
 
 	if( branch_delay_slot )
 	{
-		SetVar(&gCPUState.Delay, EXEC_DELAY);
+		SetVar(&ctx.cpuState.Delay, EXEC_DELAY);
 	}
 
 	mQuickLoad = ti.Usage.Access8000;
@@ -1404,7 +1404,7 @@ CJumpLocation	CCodeGeneratorARM::GenerateOpCode( const STraceEntry& ti, bool bra
 
 		if( R4300_InstructionHandlerNeedsPC( op_code ) )
 		{
-			SetVar(&gCPUState.CurrentPC, address);
+			SetVar(&ctx.cpuState.CurrentPC, address);
 			exception = true;
 		}
 
@@ -1412,7 +1412,7 @@ CJumpLocation	CCodeGeneratorARM::GenerateOpCode( const STraceEntry& ti, bool bra
 
 		if( exception )
 		{
-			exception_handler = GenerateBranchIfSet( const_cast< u32 * >( &gCPUState.StuffToDo ), no_target );
+			exception_handler = GenerateBranchIfSet( const_cast< u32 * >( &ctx.cpuState.StuffToDo ), no_target );
 		}
 
 		// Check whether we want to invert the status of this branch
@@ -1425,11 +1425,11 @@ CJumpLocation	CCodeGeneratorARM::GenerateOpCode( const STraceEntry& ti, bool bra
 			{
 				if( p_branch->ConditionalBranchTaken )
 				{
-					*p_branch_jump = GenerateBranchIfNotEqual( &gCPUState.Delay, DO_DELAY, no_target );
+					*p_branch_jump = GenerateBranchIfNotEqual( &ctx.cpuState.Delay, DO_DELAY, no_target );
 				}
 				else
 				{
-					*p_branch_jump = GenerateBranchIfEqual( &gCPUState.Delay, DO_DELAY, no_target );
+					*p_branch_jump = GenerateBranchIfEqual( &ctx.cpuState.Delay, DO_DELAY, no_target );
 				}
 			}
 			else
@@ -1441,7 +1441,7 @@ CJumpLocation	CCodeGeneratorARM::GenerateOpCode( const STraceEntry& ti, bool bra
 				}
 				else
 				{
-					*p_branch_jump = GenerateBranchIfNotEqual( &gCPUState.TargetPC, p_branch->TargetAddress, no_target );
+					*p_branch_jump = GenerateBranchIfNotEqual( &ctx.cpuState.TargetPC, p_branch->TargetAddress, no_target );
 				}
 			}
 		}
@@ -1449,7 +1449,7 @@ CJumpLocation	CCodeGeneratorARM::GenerateOpCode( const STraceEntry& ti, bool bra
 		{
 			if( branch_delay_slot )
 			{
-				SetVar( &gCPUState.Delay, NO_DELAY );
+				SetVar( &ctx.cpuState.Delay, NO_DELAY );
 			}
 		}
 	}
@@ -1457,12 +1457,12 @@ CJumpLocation	CCodeGeneratorARM::GenerateOpCode( const STraceEntry& ti, bool bra
 	{
 		if(exception)
 		{
-			exception_handler = GenerateBranchIfSet( const_cast< u32 * >( &gCPUState.StuffToDo ), CCodeLabel(NULL) );
+			exception_handler = GenerateBranchIfSet( const_cast< u32 * >( &ctx.cpuState.StuffToDo ), CCodeLabel(NULL) );
 		}
 
 		if( p_branch && branch_delay_slot )
 		{
-			SetVar( &gCPUState.Delay, NO_DELAY );
+			SetVar( &ctx.cpuState.Delay, NO_DELAY );
 		}
 	}
 
@@ -1909,7 +1909,7 @@ void CCodeGeneratorARM::GenerateJR( EN64Reg rs, const SBranchDetails * p_branch,
 {
 	EArmReg reg = GetRegisterAndLoadLo(rs, ArmReg_R0);
 	MOV32(ArmReg_R1, p_branch->TargetAddress);
-	SetVar(&gCPUState.TargetPC, reg);
+	SetVar(&ctx.cpuState.TargetPC, reg);
 	CMP(reg, ArmReg_R1);
 	*p_branch_jump = BX_IMM(CCodeLabel(nullptr), NE);
 }
@@ -1920,7 +1920,7 @@ void CCodeGeneratorARM::GenerateJALR( EN64Reg rs, EN64Reg rd, u32 address, const
 	
 	EArmReg reg = GetRegisterAndLoadLo(rs, ArmReg_R0);
 	MOV32(ArmReg_R1, p_branch->TargetAddress);
-	SetVar(&gCPUState.TargetPC, reg);
+	SetVar(&ctx.cpuState.TargetPC, reg);
 	CMP(reg, ArmReg_R1);
 	*p_branch_jump = BX_IMM(CCodeLabel(nullptr), NE);
 }
@@ -2395,17 +2395,17 @@ void CCodeGeneratorARM::GenerateMULT( EN64Reg rs, EN64Reg rt, bool is_unsigned )
 
 
 	MOV_ASR_IMM(ArmReg_R1, ArmReg_R0, 0x1F);
-	SetVar(&gCPUState.MultLo._u32_0, ArmReg_R0);
-	SetVar(&gCPUState.MultLo._u32_1, ArmReg_R1);
+	SetVar(&ctx.cpuState.MultLo._u32_0, ArmReg_R0);
+	SetVar(&ctx.cpuState.MultLo._u32_1, ArmReg_R1);
 
 	MOV_ASR_IMM(ArmReg_R0, ArmReg_R4, 0x1F);
-	SetVar(&gCPUState.MultHi._u32_0, ArmReg_R4);
-	SetVar(&gCPUState.MultHi._u32_1, ArmReg_R0);
+	SetVar(&ctx.cpuState.MultHi._u32_0, ArmReg_R4);
+	SetVar(&ctx.cpuState.MultHi._u32_1, ArmReg_R0);
 }
 
 void CCodeGeneratorARM::GenerateMFLO( EN64Reg rd )
 {
-	//gGPR[ op_code.rd ]._u64 = gCPUState.MultLo._u64;
+	//gGPR[ op_code.rd ]._u64 = ctx.cpuState.MultLo._u64;
 
 	EArmReg regd_lo = GetRegisterNoLoadLo(rd, ArmReg_R0);
 	LDR(regd_lo, ArmReg_R12, offsetof(SCPUState, MultLo._u32_0));
@@ -2433,7 +2433,7 @@ void CCodeGeneratorARM::GenerateMFHI( EN64Reg rd )
 
 void CCodeGeneratorARM::GenerateMTLO( EN64Reg rs )
 {
-	//gCPUState.MultLo._u64 = gGPR[ op_code.rs ]._u64;
+	//ctx.cpuState.MultLo._u64 = gGPR[ op_code.rs ]._u64;
 	EArmReg regs_lo = GetRegisterAndLoadLo(rs, ArmReg_R0);
 	STR(regs_lo, ArmReg_R12, offsetof(SCPUState, MultLo._u32_0));
 
@@ -2443,7 +2443,7 @@ void CCodeGeneratorARM::GenerateMTLO( EN64Reg rs )
 
 void CCodeGeneratorARM::GenerateMTHI( EN64Reg rs )
 {
-	//gCPUState.MultHi._u64 = gGPR[ op_code.rs ]._u64;
+	//ctx.cpuState.MultHi._u64 = gGPR[ op_code.rs ]._u64;
 	EArmReg regs_lo = GetRegisterAndLoadLo(rs, ArmReg_R0);
 	STR(regs_lo, ArmReg_R12, offsetof(SCPUState, MultHi._u32_0));
 
@@ -2894,7 +2894,7 @@ inline void	CCodeGeneratorARM::GenerateMFC0( EN64Reg rt, u32 fs )
 	#endif
 	EArmReg reg_dst( GetRegisterNoLoadLo( rt, ArmReg_R0 ) );
 
-	GetVar( reg_dst, &gCPUState.CPUControl[ fs ]._u32 );
+	GetVar( reg_dst, &ctx.cpuState.CPUControl[ fs ]._u32 );
 	UpdateRegister( rt, reg_dst, URO_HI_SIGN_EXTEND );
 }
 

@@ -22,6 +22,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <memory>
  #include "RomFile/RomFileCache.h"
  #include "Core/ROM.h" 
+ #include "Core/CPUState.h"
+
+ 
 #ifdef DAEDALUS_PSP
 class CVideoMemoryManager;
 #endif
@@ -39,7 +42,7 @@ class CDebugConsole;
 class CController;
 class CTextureCache;
 class BaseRenderer;
-
+struct SCPUState;
 
 struct SystemContext {
     SystemContext(); 
@@ -55,7 +58,8 @@ struct SystemContext {
     std::unique_ptr<CTextureCache> textureCache;
     std::unique_ptr<CGraphicsContext> graphicsContext;
     std::unique_ptr<BaseRenderer> renderer;
-
+    SCPUState cpuState;
+    volatile u32 eventQueueLocked;
 
     #ifdef DAEDALUS_PSP
     std::unique_ptr<CVideoMemoryManager> videoMemoryManager;

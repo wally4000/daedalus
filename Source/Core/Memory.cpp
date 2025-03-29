@@ -841,7 +841,7 @@ void MemoryUpdatePI( u32 value )
 	{
 		// What to do when is busy?
 			#ifdef DAEDALUS_DEBUG_CONSOLE
-		DPF( DEBUG_PI, "PI: Resetting Status. PC: 0x%08x", gCPUState.CurrentPC );
+		DPF( DEBUG_PI, "PI: Resetting Status. PC: 0x%08x", ctx.cpuState.CurrentPC );
 		#endif
 		// Reset PIC here
 		Memory_PI_SetRegister(PI_STATUS_REG, 0);
@@ -849,7 +849,7 @@ void MemoryUpdatePI( u32 value )
 	if (value & PI_STATUS_CLR_INTR)
 	{
 			#ifdef DAEDALUS_DEBUG_CONSOLE
-		DPF( DEBUG_PI, "PI: Clearing interrupt flag. PC: 0x%08x", gCPUState.CurrentPC );
+		DPF( DEBUG_PI, "PI: Clearing interrupt flag. PC: 0x%08x", ctx.cpuState.CurrentPC );
 		#endif
 		Memory_MI_ClrRegisterBits(MI_INTR_REG, MI_INTR_PI);
 		R4300_Interrupt_UpdateCause3();

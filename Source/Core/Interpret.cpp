@@ -48,7 +48,7 @@ template< bool TranslateOp > inline void CPU_EXECUTE_OP()
 {
 	u8 * p_Instruction = 0;
 
-	CPU_FETCH_INSTRUCTION( p_Instruction, gCPUState.CurrentPC );
+	CPU_FETCH_INSTRUCTION( p_Instruction, ctx.cpuState.CurrentPC );
 	OpCode op_code = *(OpCode*)p_Instruction;
 
 	// Cache instruction base pointer (used for SpeedHack() @ R4300.0)
@@ -79,10 +79,10 @@ template< bool TranslateOp > inline void CPU_EXECUTE_OP()
 	}
 #endif
 
-	SYNCH_POINT( DAED_SYNC_REG_PC, gCPUState.CurrentPC, "Program Counter doesn't match" );
-	SYNCH_POINT( DAED_SYNC_FRAGMENT_PC, gCPUState.CurrentPC + gCPUState.Delay, "Program Counter/Delay doesn't match while interpreting" );
+	SYNCH_POINT( DAED_SYNC_REG_PC, ctx.cpuState.CurrentPC, "Program Counter doesn't match" );
+	SYNCH_POINT( DAED_SYNC_FRAGMENT_PC, ctx.cpuState.CurrentPC + ctx.cpuState.Delay, "Program Counter/Delay doesn't match while interpreting" );
 
-	SYNCH_POINT( DAED_SYNC_REG_PC, gCPUState.CPUControl[C0_COUNT]._u32, "Count doesn't match" );
+	SYNCH_POINT( DAED_SYNC_REG_PC, ctx.cpuState.CPUControl[C0_COUNT]._u32, "Count doesn't match" );
 
 	R4300_ExecuteInstruction(op_code);
 	gGPR[0]._u64 = 0;	//Ensure r0 is zero
@@ -94,29 +94,29 @@ template< bool TranslateOp > inline void CPU_EXECUTE_OP()
 	SYNCH_POINT( DAED_SYNC_REGS, CPU_ProduceRegisterHash(), "Registers don't match" );
 
 	// Increment count register
-	gCPUState.CPUControl[C0_COUNT]._u32 = gCPUState.CPUControl[C0_COUNT]._u32 + COUNTER_INCREMENT_PER_OP;
+	ctx.cpuState.CPUControl[C0_COUNT]._u32 = ctx.cpuState.CPUControl[C0_COUNT]._u32 + COUNTER_INCREMENT_PER_OP;
 
 	if (CPU_ProcessEventCycles( COUNTER_INCREMENT_PER_OP ) )
 	{
 		CPU_HANDLE_COUNT_INTERRUPT();
 	}
 
-	switch (gCPUState.Delay)
+	switch (ctx.cpuState.Delay)
 	{
 	case DO_DELAY:
 		// We've got a delayed instruction to execute. Increment
 		// PC as normal, so that subsequent instruction is executed
 		INCREMENT_PC();
-		gCPUState.Delay = EXEC_DELAY;
+		ctx.cpuState.Delay = EXEC_DELAY;
 
 		break;
 	case EXEC_DELAY:
 		{
-			//bool	backwards( gCPUState.TargetPC <= gCPUState.CurrentPC );
+			//bool	backwards( ctx.cpuState.TargetPC <= ctx.cpuState.CurrentPC );
 
-			// We've just executed the delayed instr. Now carry out jump as stored in gCPUState.TargetPC;
-			CPU_SetPC(gCPUState.TargetPC);
-			gCPUState.Delay = NO_DELAY;
+			// We've just executed the delayed instr. Now carry out jump as stored in ctx.cpuState.TargetPC;
+			CPU_SetPC(ctx.cpuState.TargetPC);
+			ctx.cpuState.Delay = NO_DELAY;
 
 		}
 		break;
@@ -129,7 +129,7 @@ template< bool TranslateOp > inline void CPU_EXECUTE_OP()
 
 
 //*****************************************************************************
-// Keep executing instructions until there are other tasks to do (i.e. gCPUState.GetStuffToDo() is set)
+// Keep executing instructions until there are other tasks to do (i.e. ctx.cpuState.GetStuffToDo() is set)
 // Process these tasks and loop
 //*****************************************************************************
 void CPU_Go()
@@ -141,12 +141,12 @@ void CPU_Go()
 		//
 		// Keep executing ops as long as there's nothing to do
 		//
-		u32	stuff_to_do( gCPUState.GetStuffToDo() );
+		u32	stuff_to_do( ctx.cpuState.GetStuffToDo() );
 		while(stuff_to_do == 0)
 		{
 			CPU_EXECUTE_OP< false >();
 
-			stuff_to_do = gCPUState.GetStuffToDo();
+			stuff_to_do = ctx.cpuState.GetStuffToDo();
 		}
 
 		if (CPU_CheckStuffToDo())

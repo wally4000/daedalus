@@ -28,9 +28,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Core/TLB.h"
 #include "System/SpinLock.h"
 #include "Utility/Paths.h"
-//*****************************************************************************
-//
-//*****************************************************************************
+#include "System/SystemInit.h"
+#include "Core/CPUState.h"
+
+
+#define LOCK_EVENT_QUEUE() CSpinLock _lock( &ctx.eventQueueLocked )
+#define RESET_EVENT_QUEUE_LOCK() ctx.eventQueueLocked = 0;
+
 enum EDelayType
 {
 	NO_DELAY = 0,
@@ -66,92 +70,7 @@ struct DBG_BreakPoint
 extern std::vector< DBG_BreakPoint > g_BreakPoints;
 #endif
 
-// Arbitrary unique numbers for different timing related events:
-enum	ECPUEventType
-{
-	CPU_EVENT_VBL = 1,
-	CPU_EVENT_COMPARE,
-	CPU_EVENT_AUDIO,
-	CPU_EVENT_SPINT,
-};
-
-// In practice there should only ever be 2
-#define MAX_CPU_EVENTS 4
-
-struct CPUEvent
-{
-	s32						mCount;
-	ECPUEventType			mEventType;
-};
-#ifdef DAEDALUS_ENABLE_ASSERTS
-DAEDALUS_STATIC_ASSERT( sizeof( CPUEvent ) == 8 );
-#endif
-
-using register_32x64 = REG64[32];
-using register_16x64 = REG64[16];
-using register_32x32 = std::array<REG32,32>;
-//
-//	We declare various bits of the CPU state in a struct.
-//	During dynarec compilation we can keep the base address of this
-//	structure cached in a spare register to avoid expensive
-//	address-calculations (primarily on the PSP)
-//
-//	Make sure to reflect changes here to DynaRecStubs.S as well //Corn
-//
-//	Define to use scratch pad memory located at 0x10000
-//
-//#define	USE_SCRATCH_PAD
-
-#ifdef USE_SCRATCH_PAD
-struct SCPUState
-#else
-struct alignas(CACHE_ALIGN) SCPUState
-#endif
-{
-	register_32x64	CPU;				// 0x000 .. 0x100
-	register_32x32	CPUControl;			// 0x100 .. 0x180
-	union
-	{
-		register_32x32	FPU;			// 0x180 .. 0x200	Access FPU as 32 x floats
-		register_16x64	FPUD;			// 0x180 .. 0x200	Access FPU as 16 x doubles
-	};
-	register_32x32	FPUControl;			// 0x200 .. 0x280
-	u32				CurrentPC;			// 0x280 ..			The current program counter
-	u32				TargetPC;			// 0x284 ..			The PC to branch to
-	u32				Delay;				// 0x288 ..			Delay state (NO_DELAY, EXEC_DELAY, DO_DELAY)
-	volatile u32	StuffToDo;			// 0x28c ..			CPU jobs (see above)
-
-	REG64			MultLo;				// 0x290 ..
-	REG64			MultHi;				// 0x298
-
-	REG32			Temp1;				// 0x2A0	Temp storage Dynarec
-	REG32			Temp2;				// 0x2A4	Temp storage Dynarec
-	REG32			Temp3;				// 0x2A8	Temp storage Dynarec
-	REG32			Temp4;				// 0x2AC	Temp storage Dynarec
-
-	std::array<CPUEvent, MAX_CPU_EVENTS> Events;
-	// CPUEvent		Events[ MAX_CPU_EVENTS ];	// 0x2B0 //In practice there should only ever be 2 CPU_EVENTS
-	u32				NumEvents;
-
-	void			AddJob( u32 job );
-	void			ClearJob( u32 job );
-	inline u32		GetStuffToDo() const			{ return StuffToDo; }
-	inline bool		IsJobSet( u32 job ) const		{ return ( StuffToDo & job ) != 0; }
-	void			ClearStuffToDo();
-#ifdef DAEDALUS_ENABLE_SYNCHRONISATION
-	void			Dump();
-#endif
-};
-
-#ifdef USE_SCRATCH_PAD
-extern SCPUState *gPtrCPUState;
-#define gCPUState (*gPtrCPUState)
-#else	//USE_SCRATCH_PAD
-extern struct SCPUState gCPUState;
-// ALIGNED_EXTERN(SCPUState, gCPUState, CACHE_ALIGN);
-#endif //USE_SCRATCH_PAD
-
-#define gGPR (gCPUState.CPU)
+#define gGPR (ctx.cpuState.CPU)
 //*****************************************************************************
 //
 //*****************************************************************************
@@ -178,6 +97,7 @@ bool	CPU_IsRunning();
 void	CPU_AddEvent( s32 count, ECPUEventType event_type );
 void	CPU_SkipToNextEvent();
 bool	CPU_CheckStuffToDo();
+
 using VblCallbackFn = void(*) (void * arg);
 
 void CPU_RegisterVblCallback(VblCallbackFn fn, void * arg);
@@ -190,24 +110,17 @@ void CPU_UnregisterVblCallback(VblCallbackFn fn, void * arg);
 #define CPU_KeepRunning() (CPU_IsRunning())
 #endif
 
-inline void CPU_SetPC( u32 pc )		{ gCPUState.CurrentPC = pc; }
-inline void INCREMENT_PC()			{ gCPUState.CurrentPC += 4; }
-inline void DECREMENT_PC()			{ gCPUState.CurrentPC -= 4; }
+inline void CPU_SetPC( u32 pc )		{ ctx.cpuState.CurrentPC = pc; }
+inline void INCREMENT_PC()			{ ctx.cpuState.CurrentPC += 4; }
+inline void DECREMENT_PC()			{ ctx.cpuState.CurrentPC -= 4; }
 
-inline void CPU_TakeBranch( u32 new_pc ) { gCPUState.TargetPC = new_pc; gCPUState.Delay = DO_DELAY; }
+inline void CPU_TakeBranch( u32 new_pc ) { ctx.cpuState.TargetPC = new_pc; ctx.cpuState.Delay = DO_DELAY; }
 
 
 #define COUNTER_INCREMENT_PER_OP			1
 
 extern u8 *		gLastAddress;
 
-// Take advantage of the cooperative multitasking
-// of the PSP to make locking/unlocking as fast as possible.
-//
-extern volatile u32 eventQueueLocked;
-
-#define LOCK_EVENT_QUEUE() CSpinLock _lock( &eventQueueLocked )
-#define RESET_EVENT_QUEUE_LOCK() eventQueueLocked = 0;
 
 #ifdef FRAGMENT_SIMULATE_EXECUTION
 void	CPU_ExecuteOpRaw( u32 count, u32 address, OpCode op_code, CPU_Instruction p_instruction, bool * p_branch_taken );
@@ -241,23 +154,12 @@ extern	void (* g_pCPUCore)();
 	{																\
 /* ROM or TLB and possible trigger for an exception (Slow)*/		\
 		ptr = (u8*)m.ReadFunc( pc );								\
-		if( gCPUState.GetStuffToDo() )								\
+		if( ctx.cpuState.GetStuffToDo() )								\
 			return;													\
 	}
 
 //***********************************************
-//This function gets called *alot* //Corn
-//CPU_ProcessEventCycles
-//***********************************************
-inline bool CPU_ProcessEventCycles( u32 cycles )
-{
-	LOCK_EVENT_QUEUE();
-#ifdef DAEDALUS_ENABLE_ASSERTS
-	DAEDALUS_ASSERT( gCPUState.NumEvents > 0, "There are no events" );
-	#endif
-	gCPUState.Events[ 0 ].mCount -= cycles;
-	return gCPUState.Events[ 0 ].mCount <= 0;
-}
+
 
 #ifdef DAEDALUS_PROFILE_EXECUTION
 extern u64									gTotalInstructionsExecuted;
@@ -268,5 +170,19 @@ extern u32									g_HardwareInterrupt;
 #ifdef DAEDALUS_ENABLE_SYNCHRONISATION
 extern u32 CPU_ProduceRegisterHash();
 #endif
+
+//This function gets called *alot* //Corn
+//CPU_ProcessEventCycles
+//***********************************************
+inline bool CPU_ProcessEventCycles( u32 cycles )
+{
+	LOCK_EVENT_QUEUE();
+#ifdef DAEDALUS_ENABLE_ASSERTS
+	DAEDALUS_ASSERT( ctx.cpuState.NumEvents > 0, "There are no events" );
+	#endif
+	ctx.cpuState.Events[ 0 ].mCount -= cycles;
+	return ctx.cpuState.Events[ 0 ].mCount <= 0;
+}
+
 
 #endif // CORE_CPU_H_

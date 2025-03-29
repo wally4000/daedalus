@@ -215,7 +215,7 @@ class CAssemblyWriterX64
 
 		inline void EmitADDR(const void* ptr)
 		{
-			s64 diff = (intptr_t)ptr - (intptr_t)&gCPUState;
+			s64 diff = (intptr_t)ptr - (intptr_t)&ctx.cpuState;
 			DAEDALUS_ASSERT(diff < INT32_MAX && diff > INT32_MIN, "address offset range is too big to fit");
 			mpAssemblyBuffer->EmitDWORD((s32)diff);
 		}

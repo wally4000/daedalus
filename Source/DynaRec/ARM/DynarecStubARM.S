@@ -1,6 +1,6 @@
 .arm
 
-//The top two defines needs to be adjusted depending on how gCPUState struct is formated in CPU.h!! //Corn
+//The top two defines needs to be adjusted depending on how ctx.cpuState struct is formated in CPU.h!! //Corn
 //
 #define _C0_Count	(0x100 + 9 * 4)	//CPU_Control_base + 9*8(64bit regs) or 9*4(32bit regs)
 #define _AuxBase	0x280	//Base pointer to Aux regs

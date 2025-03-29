@@ -518,7 +518,7 @@ void Patch_RecurseAndFind()
 #endif
 
 	// Loops through all symbols, until name is nullptr
-	for (u32 i = 0; i < nPatchSymbols && !gCPUState.IsJobSet( CPU_STOP_RUNNING ); i++)
+	for (u32 i = 0; i < nPatchSymbols && !ctx.cpuState.IsJobSet( CPU_STOP_RUNNING ); i++)
 	{
 
 #ifdef DAEDALUS_DEBUG_CONSOLE
@@ -549,7 +549,7 @@ void Patch_RecurseAndFind()
 			nFound++;
 	}
 
-	if ( gCPUState.IsJobSet( CPU_STOP_RUNNING ) )
+	if ( ctx.cpuState.IsJobSet( CPU_STOP_RUNNING ) )
 	{
 #ifdef DAEDALUS_DEBUG_CONSOLE
 		gDebugConsole->MsgOverwrite( 0, "OS HLE: Aborted" );
@@ -1076,50 +1076,50 @@ static u32 RET_NOT_PROCESSED(PatchSymbol* ps)
 	#ifdef DAEDALUS_ENABLE_ASSERTS
 	DAEDALUS_ASSERT( ps != nullptr, "Not Supported" );
 	#endif
-	gCPUState.CurrentPC = PHYS_TO_K0(ps->Location);
-	//DBGConsole_Msg(0, "%s RET_NOT_PROCESSED PC=0x%08x RA=0x%08x", ps->Name, gCPUState.TargetPC, gGPR[REG_ra]._u32_0);
+	ctx.cpuState.CurrentPC = PHYS_TO_K0(ps->Location);
+	//DBGConsole_Msg(0, "%s RET_NOT_PROCESSED PC=0x%08x RA=0x%08x", ps->Name, ctx.cpuState.TargetPC, gGPR[REG_ra]._u32_0);
 
-	gCPUState.Delay = NO_DELAY;
-	gCPUState.TargetPC = gCPUState.CurrentPC;
+	ctx.cpuState.Delay = NO_DELAY;
+	ctx.cpuState.TargetPC = ctx.cpuState.CurrentPC;
 
 	// Simulate the first op then return to dynarec. so we still can leverage dynarec.
 	OpCode op_code;
-	op_code._u32 = Read32Bits(gCPUState.CurrentPC);
+	op_code._u32 = Read32Bits(ctx.cpuState.CurrentPC);
 	R4300_ExecuteInstruction(op_code);
 	#ifdef DAEDALUS_ENABLE_ASSERTS
-	DAEDALUS_ASSERT(gCPUState.Delay == NO_DELAY, "OS functions' first op is a JUMP??");
+	DAEDALUS_ASSERT(ctx.cpuState.Delay == NO_DELAY, "OS functions' first op is a JUMP??");
 	#endif
 	INCREMENT_PC();
-	gCPUState.TargetPC = gCPUState.CurrentPC;
+	ctx.cpuState.TargetPC = ctx.cpuState.CurrentPC;
 
 	return 1;
 }
 
 inline u32 RET_JR_RA()
 {
-		gCPUState.TargetPC = gGPR[REG_ra]._u32_0;
+		ctx.cpuState.TargetPC = gGPR[REG_ra]._u32_0;
 		return 1;
 }
 
 static u32 RET_JR_ERET()
 {
-	if( gCPUState.CPUControl[C0_SR]._u32 & SR_ERL )
+	if( ctx.cpuState.CPUControl[C0_SR]._u32 & SR_ERL )
 	{
 		// Returning from an error trap
-		CPU_SetPC( gCPUState.CPUControl[C0_ERROR_EPC]._u32 );
-		gCPUState.CPUControl[C0_SR]._u32 &= ~SR_ERL;
+		CPU_SetPC( ctx.cpuState.CPUControl[C0_ERROR_EPC]._u32 );
+		ctx.cpuState.CPUControl[C0_SR]._u32 &= ~SR_ERL;
 	}
 	else
 	{
 		// Returning from an exception
-		CPU_SetPC( gCPUState.CPUControl[C0_EPC]._u32 );
-		gCPUState.CPUControl[C0_SR]._u32 &= ~SR_EXL;
+		CPU_SetPC( ctx.cpuState.CPUControl[C0_EPC]._u32 );
+		ctx.cpuState.CPUControl[C0_SR]._u32 &= ~SR_EXL;
 	}
 	// Point to previous instruction (as we increment the pointer immediately afterwards
 	DECREMENT_PC();
 
 	// Ensure we don't execute this in the delay slot
-	gCPUState.Delay = NO_DELAY;
+	ctx.cpuState.Delay = NO_DELAY;
 
 	return 0;
 }

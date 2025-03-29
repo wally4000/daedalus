@@ -20,8 +20,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 static const void * ReadInvalid( u32 address )
 {
 	#ifdef DAEDALUS_DEBUG_CONSOLE
-	DPF( DEBUG_MEMORY, "Illegal Memory Access - Tried to Read From 0x%08x (PC: 0x%08x)", address, gCPUState.CurrentPC );
-	DBGConsole_Msg(0, "Illegal Memory Access - Tried to Read From 0x%08x (PC: 0x%08x)", address, gCPUState.CurrentPC);
+	DPF( DEBUG_MEMORY, "Illegal Memory Access - Tried to Read From 0x%08x (PC: 0x%08x)", address, ctx.cpuState.CurrentPC );
+	DBGConsole_Msg(0, "Illegal Memory Access - Tried to Read From 0x%08x (PC: 0x%08x)", address, ctx.cpuState.CurrentPC);
 	#endif
 
 	u8* temp = (u8 *)g_pMemoryBuffers[MEM_UNUSED];
@@ -104,7 +104,7 @@ static const void * Read_8410_841F( u32 address )
 static const void * Read_8420_842F( u32 address )
 {
 	#ifdef DAEDALUS_DEBUG_CONSOLE
-	DBGConsole_Msg( 0, "Read from DP Span Registers is unhandled (0x%08x, PC: 0x%08x)", address, gCPUState.CurrentPC );
+	DBGConsole_Msg( 0, "Read from DP Span Registers is unhandled (0x%08x, PC: 0x%08x)", address, ctx.cpuState.CurrentPC );
 	#endif
 	return ReadInvalid(address);
 }
@@ -129,7 +129,7 @@ static const void * Read_8440_844F( u32 address )
 
 	if (offset == 0x10)	// VI_CURRENT_REG
 	{
-		//u64 count_to_vbl = (VID_CLOCK-1) - (g_qwNextVBL - gCPUState.CPUControl[C0_COUNT]);
+		//u64 count_to_vbl = (VID_CLOCK-1) - (g_qwNextVBL - ctx.cpuState.CPUControl[C0_COUNT]);
 		//vi_pos = (u32)((count_to_vbl*512)/VID_CLOCK);
 		u32 vi_pos = Memory_VI_GetRegister(VI_CURRENT_REG);
 		vi_pos = (vi_pos + 2) % 512;

@@ -80,7 +80,7 @@ bool Save_Reset()
 		std::ifstream file(gSaveFileName, std::ios::in | std::ios::binary);
 		if (file.is_open())
 		{
-			DBGConsole_Msg(0, "Loading save from [C%s]", gSaveFileName.string().c_str());
+			DBGConsole_Msg(0, "Loading save from [C%s]", gSaveFileName.string());
 
 			u8 buffer[2048];
 			u8 * dst = (u8*)g_pMemoryBuffers[MEM_SAVE];
@@ -98,7 +98,7 @@ bool Save_Reset()
 		}
 		else
 		{
-			DBGConsole_Msg(0, "Save File [C%s] cannot be found.", gSaveFileName.string().c_str());
+			DBGConsole_Msg(0, "Save File [C%s] cannot be found.", gSaveFileName.string());
 		}
 	}
 
@@ -112,14 +112,14 @@ bool Save_Reset()
 		std::fstream file(gMempackFileName, std::ios::in | std::ios::out | std::ios::binary);
 		if (!file)
 		{
-			DBGConsole_Msg(0, "MemPack File [C%s] cannot be found.", gMempackFileName.string().c_str());
+			DBGConsole_Msg(0, "MemPack File [C%s] cannot be found.", gMempackFileName.string());
 			 InitMempackContent();
 			 gMempackDirty = true;
 
 		}
 		else
 			{
-				DBGConsole_Msg(0, "Loading MemPack from [C%s]", gMempackFileName.string().c_str());
+				DBGConsole_Msg(0, "Loading MemPack from [C%s]", gMempackFileName.string());
 				file.read(static_cast<char*>(g_pMemoryBuffers[MEM_MEMPACK]), MemoryRegionSizes[MEM_MEMPACK]);
 				gMempackDirty = false;
 			}
@@ -153,7 +153,7 @@ void Save_Flush()
 	if (gSaveDirty && ctx.romInfo->settings.SaveType != SAVE_TYPE_UNKNOWN)
 	{
 
-		DBGConsole_Msg(0, "Saving to [C%s]", gSaveFileName.string().c_str());
+		DBGConsole_Msg(0, "Saving to [C%s]", gSaveFileName.string());
 		std::ofstream fp(gSaveFileName, std::ios::binary);
 		if (fp.is_open())
 		{
@@ -176,7 +176,7 @@ void Save_Flush()
 	{
 		// XXX We could have file generate on write and initiaise if not already done.
 
-		DBGConsole_Msg(0, "Saving MemPack to [C%s]", gMempackFileName.string().c_str());
+		DBGConsole_Msg(0, "Saving MemPack to [C%s]", gMempackFileName.string());
 		std::ofstream fp(gMempackFileName, std::ios::out );
 		if (fp.is_open())
 		{

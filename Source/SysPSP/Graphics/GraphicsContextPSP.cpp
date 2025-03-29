@@ -522,10 +522,7 @@ void IGraphicsContext::StoreSaveScreenData()
 	char pngbuffer[128*1024];
 
 
-	extern std::string	gSaveStateFilename;
-
-	// snprintf( pngfile, sizeof(pngfile), "%s.png", gSaveStateFilename.c_str() );	//Add .png to filename
-	std::filesystem::path pngfile = std::format("{}.png", gSaveStateFilename);
+	std::filesystem::path pngfile = std::format("{}.png", ctx.saveStateFilename.string());
 	u32		display_width = 0;
 	u32		display_height= 0;
 

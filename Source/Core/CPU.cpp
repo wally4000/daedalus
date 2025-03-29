@@ -26,7 +26,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <algorithm>
 #include <string>
 #include <vector>
-#include <mutex>
 #include <cstring>
 
 
@@ -54,7 +53,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Debug/PrintOpCode.h"
 #include "Debug/Synchroniser.h"
 #include "System/Thread.h"
-
+#include "System/SpinLock.h"
 
 
 extern void R4300_Init();
@@ -79,10 +78,10 @@ std::vector< DBG_BreakPoint > g_BreakPoints;
 
 static bool			gCPURunning   = false;			// CPU is actively running
 u8 *				gLastAddress     = nullptr;
-std::string			gSaveStateFilename  = "";
+
 
 static bool			gCPUStopOnSimpleState = false;			// When stopping, try to stop in a 'simple' state (i.e. no RSP running and not in a branch delay slot)
-static std::mutex		gSaveStateMutex;
+
 
 enum ESaveStateOperation
 {
@@ -157,12 +156,14 @@ static void CPU_ResetEventList()
 void CPU_AddEvent( s32 count, ECPUEventType event_type )
 {
 	LOCK_EVENT_QUEUE();
+
 #ifdef DAEDALUS_ENABLE_ASSERTS
 	DAEDALUS_ASSERT( count > 0, "Count is invalid" );
 	DAEDALUS_ASSERT( ctx.cpuState.NumEvents < MAX_CPU_EVENTS, "Too many events" );
 #endif
+
 	u32 event_idx = 0;
-	for( event_idx = 0; event_idx < ctx.cpuState.NumEvents; ++event_idx )
+	for( ; event_idx < ctx.cpuState.NumEvents; ++event_idx )
 	{
 		CPUEvent & event = ctx.cpuState.Events[ event_idx ];
 
@@ -174,17 +175,15 @@ void CPU_AddEvent( s32 count, ECPUEventType event_type )
 			//
 			event.mCount -= count;
 
-			u32 num_to_copy  = ctx.cpuState.NumEvents - event_idx;
-			if( num_to_copy > 0 )
+
+			if (event_idx < ctx.cpuState.NumEvents )
 			{
-				memmove( &ctx.cpuState.Events[ event_idx+1 ], &ctx.cpuState.Events[ event_idx ], num_to_copy * sizeof( CPUEvent ) );
+				std::memmove( &ctx.cpuState.Events[ event_idx+1 ], &ctx.cpuState.Events[ event_idx ], (ctx.cpuState.NumEvents - event_idx) * sizeof( CPUEvent ) );
 			}
 			break;
 		}
 
-		//
 		//	Decrease counter by that for this event
-		//
 		count -= event.mCount;
 	}
 #ifdef DAEDALUS_ENABLE_ASSERTS
@@ -240,10 +239,9 @@ static ECPUEventType CPU_PopEvent()
 
 	ECPUEventType event_type = ctx.cpuState.Events[ 0 ].mEventType;
 
-	u32	num_to_copy = ctx.cpuState.NumEvents - 1;
-	if( num_to_copy > 0 )
+	if( ctx.cpuState.NumEvents > 1 )
 	{
-		memmove( &ctx.cpuState.Events[ 0 ], &ctx.cpuState.Events[ 1 ], num_to_copy * sizeof( CPUEvent ) );
+		std::memcpy( &ctx.cpuState.Events[ 0 ], &ctx.cpuState.Events[ 1 ], (ctx.cpuState.NumEvents -1) * sizeof( CPUEvent ) );
 	}
 	ctx.cpuState.NumEvents--;
 
@@ -436,7 +434,7 @@ bool CPU_RequestSaveState( const std::filesystem::path &filename )
 {
 	// Call SaveState_SaveToFile directly if the CPU is not running.
 	DAEDALUS_ASSERT(gCPURunning, "Expecting the CPU to be running at this point");
-	std::scoped_lock lock(gSaveStateMutex);
+	LOCK_EVENT_QUEUE();
 
 	// Abort if already in the process of loading/saving
 	if( gSaveStateOperation != SSO_NONE )
@@ -445,7 +443,7 @@ bool CPU_RequestSaveState( const std::filesystem::path &filename )
 	}
 
 	gSaveStateOperation = SSO_SAVE;
-	gSaveStateFilename = filename.string();
+	ctx.saveStateFilename = filename.string();
 	ctx.cpuState.AddJob(CPU_CHANGE_CORE);
 
 	return true;
@@ -455,7 +453,7 @@ bool CPU_RequestLoadState( const std::filesystem::path &filename )
 {
 	// Call SaveState_SaveToFile directly if the CPU is not running.
 	DAEDALUS_ASSERT(gCPURunning, "Expecting the CPU to be running at this point");
-	std::scoped_lock lock(gSaveStateMutex);
+	LOCK_EVENT_QUEUE();
 
 	// Abort if already in the process of loading/saving
 	if( gSaveStateOperation != SSO_NONE )
@@ -464,7 +462,7 @@ bool CPU_RequestLoadState( const std::filesystem::path &filename )
 	}
 
 	gSaveStateOperation = SSO_LOAD;
-	gSaveStateFilename = filename.string();
+	ctx.saveStateFilename = filename.string();
 	ctx.cpuState.AddJob(CPU_CHANGE_CORE);
 
 	return true;	// XXXX could fail
@@ -475,7 +473,7 @@ static void HandleSaveStateOperationOnVerticalBlank()
 	DAEDALUS_ASSERT(gCPURunning, "Expecting the CPU to be running at this point");
 	if( gSaveStateOperation == SSO_NONE )
 		return;
-	std::scoped_lock lock(gSaveStateMutex);
+		LOCK_EVENT_QUEUE();
 
 	//
 	// Handle the save state
@@ -486,18 +484,18 @@ static void HandleSaveStateOperationOnVerticalBlank()
 		DAEDALUS_ERROR( "Unreachable" );
 		break;
 	case SSO_SAVE:
-		DBGConsole_Msg(0, "Saving '%s'\n", gSaveStateFilename.c_str());
-		SaveState_SaveToFile( gSaveStateFilename );
+		DBGConsole_Msg(0, "Saving '%s'\n", ctx.saveStateFilename.c_str());
+		SaveState_SaveToFile( ctx.saveStateFilename );
 		gSaveStateOperation = SSO_NONE;
 		break;
 	case SSO_LOAD:
-		DBGConsole_Msg(0, "Loading '%s'\n", gSaveStateFilename.c_str());
+		DBGConsole_Msg(0, "Loading '%s'\n", ctx.saveStateFilename.c_str());
 		// Try to load the savestate immediately. If this fails, it
 		// usually means that we're running the correct rom (we should have a
 		// separate return code to check this case). In that case we
 		// stop the cpu and handle the load in
 		// HandleSaveStateOperationOnCPUStopRunning.
-		if (SaveState_LoadFromFile( gSaveStateFilename ))
+		if (SaveState_LoadFromFile( ctx.saveStateFilename ))
 		{
 			CPU_ResetFragmentCache();
 			gSaveStateOperation = SSO_NONE;
@@ -518,20 +516,20 @@ static bool HandleSaveStateOperationOnCPUStopRunning()
 	if (gSaveStateOperation != SSO_LOAD)
 		return false;
 
-	std::scoped_lock lock(gSaveStateMutex);
+		LOCK_EVENT_QUEUE();
 
 	gSaveStateOperation = SSO_NONE;
 
-	std::string rom_filename = SaveState_GetRom(gSaveStateFilename);
+	std::filesystem::path rom_filename = SaveState_GetRom(ctx.saveStateFilename);
 	if (!rom_filename.empty())
 	{
 		System_Close();
 		System_Open(rom_filename);
-		SaveState_LoadFromFile(gSaveStateFilename);
+		SaveState_LoadFromFile(ctx.saveStateFilename);
 	}
 	else
 	{
-		DBGConsole_Msg(0, "Couldn't find matching rom for %s\n", gSaveStateFilename.c_str());
+		DBGConsole_Msg(0, "Couldn't find matching rom for %s\n", ctx.saveStateFilename.c_str());
 		// Keep running with the current rom.
 	}
 

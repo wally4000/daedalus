@@ -1,5 +1,5 @@
 #pragma once
-
+#include "Input/InputManager.h"
 class IInputManager : public CInputManager
 {
 public:

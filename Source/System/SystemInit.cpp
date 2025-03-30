@@ -127,7 +127,6 @@ bool Init_Audio(SystemContext& ctx)
     }
 
     ctx.audioPlugin->SetMode(mode);
-    ctx.audioPlugin->StartEmulation();
 
     return true;
 }

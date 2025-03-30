@@ -99,9 +99,7 @@ CGraphicsPlugin::CGraphicsPlugin()
 {
 }
 
-CGraphicsPlugin::~CGraphicsPlugin()
-{
-}
+CGraphicsPlugin::~CGraphicsPlugin() {}
 
 
 bool ShowFPSonmenu = false;

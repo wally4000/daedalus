@@ -80,7 +80,7 @@ bool Save_Reset()
 		std::ifstream file(gSaveFileName, std::ios::in | std::ios::binary);
 		if (file.is_open())
 		{
-			DBGConsole_Msg(0, "Loading save from [C%s]", gSaveFileName.string());
+			DBGConsole_Msg(0, "Loading save from [C%s]", gSaveFileName.string().c_str());
 
 			u8 buffer[2048];
 			u8 * dst = (u8*)g_pMemoryBuffers[MEM_SAVE];
@@ -119,7 +119,7 @@ bool Save_Reset()
 		}
 		else
 			{
-				DBGConsole_Msg(0, "Loading MemPack from [C%s]", gMempackFileName.string());
+				DBGConsole_Msg(0, "Loading MemPack from [C%s]", gMempackFileName.string().c_str());
 				file.read(static_cast<char*>(g_pMemoryBuffers[MEM_MEMPACK]), MemoryRegionSizes[MEM_MEMPACK]);
 				gMempackDirty = false;
 			}
@@ -153,7 +153,7 @@ void Save_Flush()
 	if (gSaveDirty && ctx.romInfo->settings.SaveType != SAVE_TYPE_UNKNOWN)
 	{
 
-		DBGConsole_Msg(0, "Saving to [C%s]", gSaveFileName.string());
+		DBGConsole_Msg(0, "Saving to [C%s]", gSaveFileName.string().c_str());
 		std::ofstream fp(gSaveFileName, std::ios::binary);
 		if (fp.is_open())
 		{
@@ -176,7 +176,7 @@ void Save_Flush()
 	{
 		// XXX We could have file generate on write and initiaise if not already done.
 
-		DBGConsole_Msg(0, "Saving MemPack to [C%s]", gMempackFileName.string());
+		DBGConsole_Msg(0, "Saving MemPack to [C%s]", gMempackFileName.string().c_str());
 		std::ofstream fp(gMempackFileName, std::ios::out );
 		if (fp.is_open())
 		{

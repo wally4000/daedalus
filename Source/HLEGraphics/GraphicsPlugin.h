@@ -29,12 +29,12 @@ class CGraphicsPlugin
 	CGraphicsPlugin();		
 	~CGraphicsPlugin();
 
-		bool		StartEmulation() { return true;};
 
 		[[maybe_unused]] void		ViStatusChanged() {}; // Not implemented
 		[[maybe_unused]] void		ViWidthChanged() {}; // Not implemented but seen in Memory_WriteValue.inl
 
 		void		UpdateScreen();
+
 
 	private:
 		u32 LastOrigin; 

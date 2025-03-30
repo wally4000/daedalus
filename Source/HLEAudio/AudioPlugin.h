@@ -37,7 +37,6 @@ class CAudioPlugin {
 public:
   virtual ~CAudioPlugin() {}
 
-  virtual bool StartEmulation() = 0;
   virtual void StopEmulation() = 0;
 
   enum ESystemType {

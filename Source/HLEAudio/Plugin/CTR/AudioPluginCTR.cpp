@@ -117,11 +117,6 @@ void	AudioPlugin::SetAdaptFrequecy( bool adapt )
 }
 */
 
-bool AudioPlugin::StartEmulation()
-{
-	return true;
-}
-
 
 void AudioPlugin::StopEmulation()
 {

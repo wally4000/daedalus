@@ -152,10 +152,6 @@ AudioPlugin::~AudioPlugin( )
   pspAudioEnd();
 }
 
-bool		AudioPlugin::StartEmulation()
-{
-	return true;
-}
 
 
 void	AudioPlugin::StopEmulation()

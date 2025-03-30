@@ -32,7 +32,7 @@ public:
 AudioPlugin();
 
 	virtual ~AudioPlugin();
-	virtual bool			StartEmulation();
+
 	virtual void			StopEmulation();
 
 	virtual void			DacrateChanged( int SystemType );

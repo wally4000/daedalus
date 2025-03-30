@@ -35,10 +35,6 @@ void AudioPlugin::SetMode(EAudioPluginMode mode)
 }
 
 
-bool AudioPlugin::StartEmulation()
-{
-    return true;
-}
 
 void AudioPlugin::StopEmulation()
 {

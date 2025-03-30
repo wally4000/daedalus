@@ -58,9 +58,6 @@ void Destroy_DebugConsole()
 	gDebugConsole.reset();
 }
 
-CDebugConsole::~CDebugConsole()
-{
-}
 void IDebugConsole::Msg(u32 type, const char* format, ...)
 {
     // Buffer to hold formatted string

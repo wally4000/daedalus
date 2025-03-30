@@ -98,7 +98,7 @@ bool Save_Reset()
 		}
 		else
 		{
-			DBGConsole_Msg(0, "Save File [C%s] cannot be found.", gSaveFileName.string());
+			DBGConsole_Msg(0, "Save File [C%s] cannot be found.", gSaveFileName.string().c_str());
 		}
 	}
 
@@ -112,7 +112,7 @@ bool Save_Reset()
 		std::fstream file(gMempackFileName, std::ios::in | std::ios::out | std::ios::binary);
 		if (!file)
 		{
-			DBGConsole_Msg(0, "MemPack File [C%s] cannot be found.", gMempackFileName.string());
+			DBGConsole_Msg(0, "MemPack File [C%s] cannot be found.", gMempackFileName.string().c_str());
 			 InitMempackContent();
 			 gMempackDirty = true;
 

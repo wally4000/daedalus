@@ -27,6 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
 #include <3ds.h>
+#include <cstring>
 
 #include "AudioPluginCTR.h"
 #include "AudioOutput.h"
@@ -52,6 +53,20 @@ static bool _runThread = false;
 
 static Thread asyncThread;
 static Handle audioRequest;
+extern u32 gSoundSync;
+
+static const u32 DESIRED_OUTPUT_FREQUENCY = 44100;
+
+static const u32 CTR_BUFFER_SIZE  = 1024 * 2;
+static const u32 CTR_BUFFER_COUNT = 6;
+static const u32 CTR_NUM_SAMPLES  = 512;
+
+
+static ndspWaveBuf waveBuf[CTR_BUFFER_COUNT];
+static unsigned int waveBuf_id;
+
+bool audioOpen = false;
+
 
 static void asyncProcess(void *arg)
 {
@@ -62,18 +77,15 @@ static void asyncProcess(void *arg)
 	}
 }
 
-//*****************************************************************************
-//
-//*****************************************************************************
+
 //bool gAdaptFrequency( false );
 
-//*****************************************************************************
-//
-//*****************************************************************************
-CAudioPluginCTR::CAudioPluginCTR()
-:	mAudioOutput( new AudioOutput )
-{
 
+AudioPlugin::AudioPlugin()	
+:	mAudioPlaying( false )
+,	mFrequency( 44100 )
+{
+	mAudioBuffer = new CAudioBuffer( CTR_BUFFER_SIZE );
 	if(isN3DS)
 	{
 		_runThread = true;
@@ -83,10 +95,8 @@ CAudioPluginCTR::CAudioPluginCTR()
 	}
 }
 
-//*****************************************************************************
-//
-//*****************************************************************************
-CAudioPluginCTR::~CAudioPluginCTR()
+
+AudioPlugin::~AudioPlugin()
 {
 	if(isN3DS)
 	{
@@ -95,87 +105,78 @@ CAudioPluginCTR::~CAudioPluginCTR()
 		svcSignalEvent(audioRequest);
 		threadJoin(asyncThread, U64_MAX);
 	}
-
-	delete mAudioOutput;
+	StopAudio();
+	delete mAudioBuffer;
 }
 
-//*****************************************************************************
-//
-//*****************************************************************************
-std::unique_ptr<CAudioPluginCTR>	CAudioPluginCTR::Create()
-{
-	return std::make_unique<CAudioPluginCTR>();
-}
-
-//*****************************************************************************
-//
 //*****************************************************************************
 /*
-void	CAudioPluginCTR::SetAdaptFrequecy( bool adapt )
+void	AudioPlugin::SetAdaptFrequecy( bool adapt )
 {
-	mAudioOutput->SetAdaptFrequency( adapt );
+	etAdaptFrequency( adapt );
 }
 */
-//*****************************************************************************
-//
-//*****************************************************************************
-bool		CAudioPluginCTR::StartEmulation()
+
+bool AudioPlugin::StartEmulation()
 {
 	return true;
 }
 
-//*****************************************************************************
-//
-//*****************************************************************************
-void	CAudioPluginCTR::StopEmulation()
+
+void AudioPlugin::StopEmulation()
 {
 	Audio_Reset();
-	mAudioOutput->StopAudio();
+	StopAudio();
 }
 
-void	CAudioPluginCTR::DacrateChanged( int SystemType )
+void AudioPlugin::SetMode(EAudioPluginMode mode)
+{
+	audioPluginmode = mode;
+}
+
+EAudioPluginMode AudioPlugin::GetMode() const
+{
+	return audioPluginmode;
+}
+
+
+void	AudioPlugin::DacrateChanged( int SystemType )
 {
 //	printf( "DacrateChanged( %s )\n", (SystemType == ST_NTSC) ? "NTSC" : "PAL" );
 	u32 type = (u32)((SystemType == ST_NTSC) ? VI_NTSC_CLOCK : VI_PAL_CLOCK);
 	u32 dacrate = Memory_AI_GetRegister(AI_DACRATE_REG);
 	u32	frequency = type / (dacrate + 1);
 
-	mAudioOutput->SetFrequency( frequency );
+	SetFrequency( frequency );
 }
 
 
-//*****************************************************************************
-//
-//*****************************************************************************
-void	CAudioPluginCTR::LenChanged()
+
+void	AudioPlugin::LenChanged()
 {
-	if( ctx.audioPlugin && ctx.audioPlugin->GetMode() > APM_DISABLED )
+	if( GetMode() > APM_DISABLED )
 	{
-		//mAudioOutput->SetAdaptFrequency( gAdaptFrequency );
+		//SetAdaptFrequency( gAdaptFrequency );
 
 		u32		address( Memory_AI_GetRegister(AI_DRAM_ADDR_REG) & 0xFFFFFF );
 		u32		length(Memory_AI_GetRegister(AI_LEN_REG));
 
-		mAudioOutput->AddBuffer( g_pu8RamBase + address, length );
+		AddBuffer( g_pu8RamBase + address, length );
 	}
 	else
 	{
-		mAudioOutput->StopAudio();
+		StopAudio();
 	}
 }
 
-//*****************************************************************************
-//
-//*****************************************************************************
-u32		CAudioPluginCTR::ReadLength()
+
+u32		AudioPlugin::ReadLength()
 {
 	return 0;
 }
 
-//*****************************************************************************
-//
-//*****************************************************************************
-EProcessResult	CAudioPluginCTR::ProcessAList()
+
+EProcessResult	AudioPlugin::ProcessAList()
 {
 	Memory_SP_SetRegisterBits(SP_STATUS_REG, SP_STATUS_HALT);
 
@@ -208,10 +209,120 @@ EProcessResult	CAudioPluginCTR::ProcessAList()
 	return result;
 }
 
-//*****************************************************************************
-//
-//*****************************************************************************
-std::unique_ptr<CAudioPlugin>		CreateAudioPlugin()
+
+
+
+static void audioCallback(void *arg)
 {
-	return CAudioPluginCTR::Create();
+	(void)arg;
+	AudioPlugin* plugin = static_cast<AudioPlugin*>(arg);
+	u32 samples_written = 0;
+
+	if(waveBuf[waveBuf_id].status == NDSP_WBUF_DONE)
+	{
+		samples_written = plugin->mAudioBuffer->Drain( reinterpret_cast< Sample * >( waveBuf[waveBuf_id].data_pcm16 ), CTR_NUM_SAMPLES );
+
+		if(samples_written != 0)
+			waveBuf[waveBuf_id].nsamples = samples_written;
+
+		DSP_FlushDataCache(waveBuf[waveBuf_id].data_pcm16, CTR_NUM_SAMPLES << 2);
+		ndspChnWaveBufAdd( 0, &waveBuf[waveBuf_id] );
+
+		waveBuf_id = (waveBuf_id + 1) % CTR_BUFFER_COUNT;
+	}
+}
+
+static void AudioInit(AudioPlugin *plugin)
+{
+	if (ndspInit() != 0)
+		return;
+
+	ndspSetOutputMode(NDSP_OUTPUT_STEREO);
+	ndspChnSetFormat(0, NDSP_FORMAT_STEREO_PCM16);
+	ndspChnSetRate(0, DESIRED_OUTPUT_FREQUENCY);
+
+	for(u32 i = 0; i < CTR_BUFFER_COUNT; i++)
+	{
+		waveBuf[i].data_vaddr = linearAlloc(CTR_NUM_SAMPLES * 4);
+		waveBuf[i].nsamples = CTR_NUM_SAMPLES;
+		waveBuf[i].status = 0;
+
+		memset(waveBuf[i].data_pcm16, 0, CTR_NUM_SAMPLES * 4);
+
+		ndspChnWaveBufAdd(0, &waveBuf[i]);
+	}
+
+	waveBuf_id = 0;
+
+	ndspSetCallback(&audioCallback, plugin);
+
+	// Everything OK
+	audioOpen = true;
+}
+
+static void AudioExit()
+{
+	// Stop stream
+	ndspChnWaveBufClear(0);
+	ndspExit();
+
+	for(u32 i = 0; i < CTR_BUFFER_COUNT; i++)
+	{
+		linearFree((void*)waveBuf[i].data_vaddr);
+	}
+
+	audioOpen = false;
+}
+
+
+void AudioPlugin::SetFrequency( u32 frequency )
+{
+	mFrequency = frequency;
+}
+
+void AudioPlugin::AddBuffer( u8 *start, u32 length )
+{
+	if (length == 0)
+		return;
+
+	if (!mAudioPlaying)
+		StartAudio();
+
+	u32 num_samples = length / sizeof( Sample );
+
+	u32 output_freq = DESIRED_OUTPUT_FREQUENCY;
+
+	/*if (gAudioRateMatch)
+	{
+		if (gSoundSync > DESIRED_OUTPUT_FREQUENCY * 2)	
+			output_freq = DESIRED_OUTPUT_FREQUENCY * 2;	//limit upper rate
+		else if (gSoundSync < DESIRED_OUTPUT_FREQUENCY)
+			output_freq = DESIRED_OUTPUT_FREQUENCY;	//limit lower rate
+		else
+			output_freq = gSoundSync;
+	}*/
+
+	mAudioBuffer->AddSamples( reinterpret_cast< const Sample * >( start ), num_samples, mFrequency, output_freq );
+}
+
+void AudioPlugin::StartAudio()
+{
+	if (mAudioPlaying)
+		return;
+
+	mAudioPlaying = true;
+
+	AudioInit(this);
+
+	audioOpen = true;
+}
+
+void AudioPlugin::StopAudio()
+{
+	if (!mAudioPlaying)
+		return;
+
+	mAudioPlaying = false;
+
+	AudioExit();
 }

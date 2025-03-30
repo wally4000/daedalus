@@ -8,6 +8,7 @@
 #include "HLEAudio/AudioPlugin.h"
 #include "HLEAudio/HLEAudioInternal.h"
 #include "System/Timing.h"
+#include "HLEAudio/Plugin/SDL/AudioPluginSDL.h"
 
 // EAudioPluginMode gAudioPluginEnabled = APM_ENABLED_ASYNC;
 
@@ -19,68 +20,33 @@ void* Audio_UcodeEntry(void* arg) {
     return nullptr;
 }
 
-
-struct Sample {
-    s16 L;
-    s16 R;
-};
-
-class AudioPluginSDL : public CAudioPlugin
-{
-public:
-    AudioPluginSDL();
-    virtual ~AudioPluginSDL();
-
-    virtual bool            StartEmulation();
-    virtual void            StopEmulation();
-
-    virtual void            DacrateChanged(int system_type);
-    virtual void            LenChanged();
-    virtual u32             ReadLength()            { return 0; }
-    virtual EProcessResult  ProcessAList();
-
-    void                    AddBuffer(void * ptr, u32 length);   // Uploads a new buffer and returns status
-    void                    StopAudio();                        // Stops the Audio PlayBack (as if paused)
-    void                    StartAudio();                       // Starts the Audio PlayBack (as if unpaused)
-
-    static void             AudioSyncFunction(void * arg);
-    static int              AudioThread(void * arg);
-
-    void SetMode(EAudioPluginMode mode) override {
-        DBGConsole_Msg(0, "[AudioPluginSDL] SetMode: %d", mode);
-        audioPluginmode = mode;
-    }
-    EAudioPluginMode GetMode() const override { return audioPluginmode; }
-
-private:
-    u32                     mFrequency;
-    SDL_Thread*             mAudioThread;
-    SDL_AudioDeviceID       mAudioDevice;
-    EAudioPluginMode audioPluginmode = APM_DISABLED;
-};
-
-
-AudioPluginSDL::AudioPluginSDL()
-:   mFrequency(44100), mAudioThread(nullptr)
+AudioPlugin::AudioPlugin()
+    : mFrequency(44100), mAudioThread(nullptr), mAudioDevice(0)
 {}
 
-AudioPluginSDL::~AudioPluginSDL()
+AudioPlugin::~AudioPlugin()
 {
     StopAudio();
 }
 
-bool AudioPluginSDL::StartEmulation()
+void AudioPlugin::SetMode(EAudioPluginMode mode)
+{
+    audioPluginmode = mode;
+}
+
+
+bool AudioPlugin::StartEmulation()
 {
     return true;
 }
 
-void AudioPluginSDL::StopEmulation()
+void AudioPlugin::StopEmulation()
 {
     Audio_Reset();
     StopAudio();
 }
 
-void AudioPluginSDL::DacrateChanged(int system_type)
+void AudioPlugin::DacrateChanged(int system_type)
 {
     u32 clock      = (system_type == ST_NTSC) ? VI_NTSC_CLOCK : VI_PAL_CLOCK;
     u32 dacrate    = Memory_AI_GetRegister(AI_DACRATE_REG);
@@ -89,7 +55,7 @@ void AudioPluginSDL::DacrateChanged(int system_type)
     mFrequency = frequency;
 }
 
-void AudioPluginSDL::LenChanged()
+void AudioPlugin::LenChanged()
 {
     if (GetMode() > APM_DISABLED)
     {
@@ -100,26 +66,31 @@ void AudioPluginSDL::LenChanged()
     }
 }
 
-EProcessResult AudioPluginSDL::ProcessAList()
+EProcessResult AudioPlugin::ProcessAList()
 {
     Memory_SP_SetRegisterBits(SP_STATUS_REG, SP_STATUS_HALT);
 
     EProcessResult result = PR_NOT_STARTED;
 
-    switch (audioPluginmode > APM_DISABLED)
+    switch (GetMode())
     {
         case APM_DISABLED:
             result = PR_COMPLETED;
             break;
+            
         case APM_ENABLED_ASYNC:
-            Asyncthread = SDL_CreateThread((SDL_ThreadFunction)Audio_UcodeEntry, "Audio_UcodeThread", nullptr);
-            if (Asyncthread == nullptr) {
-                DBGConsole_Msg(0, "Failed to create Async thread", SDL_GetError());
-            } else {
-                SDL_DetachThread(Asyncthread);
+            if (!Asyncthread) 
+            {
+                Asyncthread = SDL_CreateThread((SDL_ThreadFunction)Audio_UcodeEntry, "Audio_UcodeThread", nullptr);
+                if (Asyncthread == nullptr) {
+                    DBGConsole_Msg(0, "Failed to create Async thread: %s", SDL_GetError());
+                } else {
+                    SDL_DetachThread(Asyncthread);
+                }
             }
             result = PR_COMPLETED;
             break;
+            
         case APM_ENABLED_SYNC:
             Audio_Ucode();
             result = PR_COMPLETED;
@@ -129,7 +100,8 @@ EProcessResult AudioPluginSDL::ProcessAList()
     return result;
 }
 
-void AudioPluginSDL::AddBuffer(void * ptr, u32 length)
+
+void AudioPlugin::AddBuffer(void * ptr, u32 length)
 {
     if (length == 0)
         return;
@@ -146,9 +118,9 @@ void AudioPluginSDL::AddBuffer(void * ptr, u32 length)
     }
 }
 
-int AudioPluginSDL::AudioThread(void * arg)
+int AudioPlugin::AudioThread(void * arg)
 {
-    AudioPluginSDL * plugin = static_cast<AudioPluginSDL *>(arg);
+    AudioPlugin * plugin = static_cast<AudioPlugin *>(arg);
 
     SDL_AudioSpec audio_spec;
     SDL_zero(audio_spec);
@@ -170,7 +142,7 @@ int AudioPluginSDL::AudioThread(void * arg)
     return 0;
 }
 
-void AudioPluginSDL::StartAudio()
+void AudioPlugin::StartAudio()
 {
     mAudioThread = SDL_CreateThread(&AudioThread, "Audio", this);
 
@@ -181,7 +153,7 @@ void AudioPluginSDL::StartAudio()
     }
 }
 
-void AudioPluginSDL::StopAudio()
+void AudioPlugin::StopAudio()
 {
     if (mAudioThread == nullptr)
         return;
@@ -199,9 +171,4 @@ void AudioPluginSDL::StopAudio()
         SDL_CloseAudioDevice(mAudioDevice);
         mAudioDevice = 0;
     }
-}
-
-std::unique_ptr<CAudioPlugin> CreateAudioPlugin()
-{
-    return std::make_unique<AudioPluginSDL>();
 }

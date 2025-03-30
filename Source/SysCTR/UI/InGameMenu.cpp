@@ -234,10 +234,20 @@ bool UI::DrawOptionsPage(RomID mRomID)
 	{
 		const char* audioOptions[] = { "Disabled", "Asynchronous", "Synchronous" };
 		ImGui::Text("Audio Plugin");
-		currentSelection = (int)romPreferences.AudioEnabled;
-		ImGui::Combo("##audio_combo", &currentSelection, audioOptions, 3);
-		romPreferences.AudioEnabled = EAudioPluginMode(currentSelection);
-
+		currentSelection = static_cast<int>(romPreferences.AudioEnabled);
+	
+		if (ImGui::Combo("##audio_combo", &currentSelection, audioOptions, 3))
+		{
+			// Apply the new setting to the preferences
+			romPreferences.AudioEnabled = static_cast<EAudioPluginMode>(currentSelection);
+	
+			// If the audio plugin exists, apply the setting immediately
+			if (ctx.audioPlugin)
+			{
+				ctx.audioPlugin->SetMode(romPreferences.AudioEnabled);
+			}
+		}
+	
 		ImGui::EndTabItem();
 	}
 

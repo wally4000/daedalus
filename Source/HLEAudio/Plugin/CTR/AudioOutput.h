@@ -33,20 +33,7 @@ class AudioOutput
 		~AudioOutput();
 
 		// Buffer Functions for the Audio Code
-		void				SetFrequency( u32 frequency );			// Sets the Nintendo64 Game Audio Frequency
-		void				AddBuffer( u8 * start, u32 length );	// Uploads a new buffer
 
-		// Management functions
-		void				StopAudio( );						// Stops the Audio PlayBack (as if paused)
-		void				StartAudio( );						// Starts the Audio PlayBack (as if unpaused)
-
-	public:
-		void				FillBuffer( Sample * buffer, u32 num_samples );
-
-	private:
-		bool				mAudioPlaying;
-		bool				mExitAudioThread;
-		u32					mFrequency;
 };
 
 #endif // SYSCTR_HLEAUDIO_AUDIOOUTPUT_H_

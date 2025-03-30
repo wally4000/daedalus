@@ -24,16 +24,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 class AudioOutput;
 
-class CAudioPluginCTR : public CAudioPlugin
+class AudioPlugin : public CAudioPlugin
 {
 private:
 
 public:
-	CAudioPluginCTR();
-	static std::unique_ptr<CAudioPluginCTR> 		Create();
+AudioPlugin();
 
-
-	virtual ~CAudioPluginCTR();
+	virtual ~AudioPlugin();
 	virtual bool			StartEmulation();
 	virtual void			StopEmulation();
 
@@ -41,14 +39,30 @@ public:
 	virtual void			LenChanged();
 	virtual u32				ReadLength();
 	virtual EProcessResult	ProcessAList();
-	void SetMode(EAudioPluginMode mode) override { audioPluginmode = mode; }
-	EAudioPluginMode GetMode() const override { return audioPluginmode; }	
+	virtual void SetMode(EAudioPluginMode mode) override;
+	virtual EAudioPluginMode GetMode() const override;
 
+
+
+public:
+	void				FillBuffer( Sample * buffer, u32 num_samples );
+	void				SetFrequency( u32 frequency );			// Sets the Nintendo64 Game Audio Frequency
+	void				AddBuffer( u8 * start, u32 length );	// Uploads a new buffer
+
+	// Management functions
+	void				StopAudio( );						// Stops the Audio PlayBack (as if paused)
+	void				StartAudio( );						// Starts the Audio PlayBack (as if unpaused)
+	CAudioBuffer * mAudioBuffer;
+private:
+	bool				mAudioPlaying;
+	bool				mExitAudioThread;
+	u32					mFrequency;
 //			void			SetAdaptFrequecy( bool adapt );
 
 private:
-	AudioOutput *			mAudioOutput;
-	EAudioPluginMode audioPluginmode = APM_ENABLED_ASYNC;
+
+
+	EAudioPluginMode audioPluginmode = APM_DISABLED;
 };
 
 

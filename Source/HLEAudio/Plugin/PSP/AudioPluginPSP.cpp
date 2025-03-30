@@ -48,6 +48,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // #include "SysPSP/Utility/JobManager.h"
 #include "Utility/FramerateLimiter.h"
 #include "System/Thread.h"
+#include "HLEAudio/Plugin/PSP/AudioPluginPSP.h"
 
 #ifdef DAEDALUS_PSP_USE_ME
 
@@ -101,54 +102,18 @@ static const u32	MAX_OUTPUT_FREQUENCY = kOutputFrequency * 4;
 static const u32	kAudioBufferSize = 1024 * 2; // OSX uses a circular buffer length, 1024 * 1024
 
 
-class AudioPluginPSP : public CAudioPlugin
-{
-public:
 
- AudioPluginPSP();
-	virtual ~AudioPluginPSP();
-	virtual bool			StartEmulation();
-	virtual void			StopEmulation();
-
-	virtual void			DacrateChanged( int system_type );
-	virtual void			LenChanged();
-	virtual u32				ReadLength() {return 0;}
-	virtual EProcessResult	ProcessAList();
-
-	//virtual void SetFrequency(u32 frequency);
-	virtual void AddBuffer( u8 * start, u32 length);
-	virtual void FillBuffer( Sample * buffer, u32 num_samples);
-
-	virtual void StopAudio();
-	virtual void StartAudio();
-	virtual void SetMode(EAudioPluginMode mode) override;
-	virtual EAudioPluginMode GetMode() const override;
-public:
-  CAudioBuffer *		mAudioBufferUncached;
-
-private:
-	CAudioBuffer * mAudioBuffer;
-	bool mKeepRunning;
-	bool mExitAudioThread;
-	u32 mFrequency;
-	s32 mAudioThread;
-	s32 mSemaphore;
-//	u32 mBufferLenMs;
-	bool audio_open = false;
-	EAudioPluginMode audioPluginmode = APM_DISABLED;
-};
-
-void AudioPluginPSP::SetMode(EAudioPluginMode mode)
+void AudioPlugin::SetMode(EAudioPluginMode mode)
 {
 	audioPluginmode = mode;
 }
 
-EAudioPluginMode AudioPluginPSP::GetMode() const
+EAudioPluginMode AudioPlugin::GetMode() const
 {
 	return audioPluginmode;
 }
 
-void AudioPluginPSP::FillBuffer(Sample * buffer, u32 num_samples)
+void AudioPlugin::FillBuffer(Sample * buffer, u32 num_samples)
 {
 	sceKernelWaitSema( mSemaphore, 1, nullptr );
 
@@ -158,11 +123,11 @@ void AudioPluginPSP::FillBuffer(Sample * buffer, u32 num_samples)
 }
 
 
-AudioPluginPSP::AudioPluginPSP()
+AudioPlugin::AudioPlugin()
 :mKeepRunning (false)
 //: mAudioBuffer( kAudioBufferSize )
 , mFrequency( 44100 )
-,	mSemaphore( sceKernelCreateSema( "AudioPluginPSP", 0, 1, 1, nullptr ) )
+,	mSemaphore( sceKernelCreateSema( "AudioPlugin", 0, 1, 1, nullptr ) )
 //, mAudioThread ( kInvalidThreadHandle )
 //, mKeepRunning( false )
 //, mBufferLenMs ( 0 )
@@ -179,7 +144,7 @@ AudioPluginPSP::AudioPluginPSP()
 	#endif
 }
 
-AudioPluginPSP::~AudioPluginPSP( )
+AudioPlugin::~AudioPlugin( )
 {
 	mAudioBuffer->~CAudioBuffer();
   free(mAudioBuffer);
@@ -187,13 +152,13 @@ AudioPluginPSP::~AudioPluginPSP( )
   pspAudioEnd();
 }
 
-bool		AudioPluginPSP::StartEmulation()
+bool		AudioPlugin::StartEmulation()
 {
 	return true;
 }
 
 
-void	AudioPluginPSP::StopEmulation()
+void	AudioPlugin::StopEmulation()
 {
     Audio_Reset();
   	StopAudio();
@@ -205,7 +170,7 @@ void	AudioPluginPSP::StopEmulation()
 
 }
 
-void	AudioPluginPSP::DacrateChanged( int system_type )
+void	AudioPlugin::DacrateChanged( int system_type )
 {
 u32 clock = (system_type == ST_NTSC) ? VI_NTSC_CLOCK : VI_PAL_CLOCK;
 u32 dacrate = Memory_AI_GetRegister(AI_DACRATE_REG);
@@ -218,7 +183,7 @@ mFrequency = frequency;
 }
 
 
-void	AudioPluginPSP::LenChanged()
+void	AudioPlugin::LenChanged()
 {
 	if( GetMode() > APM_DISABLED )
 	{
@@ -234,7 +199,7 @@ void	AudioPluginPSP::LenChanged()
 }
 
 
-EProcessResult	AudioPluginPSP::ProcessAList()
+EProcessResult	AudioPlugin::ProcessAList()
 {
 	Memory_SP_SetRegisterBits(SP_STATUS_REG, SP_STATUS_HALT);
 
@@ -275,13 +240,13 @@ EProcessResult	AudioPluginPSP::ProcessAList()
 
 void audioCallback( void * buf, unsigned int length, void * userdata )
 {
-	AudioPluginPSP * ac( reinterpret_cast< AudioPluginPSP * >( userdata ) );
+	AudioPlugin * ac( reinterpret_cast< AudioPlugin * >( userdata ) );
 
 	ac->FillBuffer( reinterpret_cast< Sample * >( buf ), length );
 }
 
 
-void AudioPluginPSP::StartAudio()
+void AudioPlugin::StartAudio()
 {
 	if (mKeepRunning)
 		return;
@@ -296,7 +261,7 @@ void AudioPluginPSP::StartAudio()
 	audio_open = true;
 }
 
-void AudioPluginPSP::AddBuffer( u8 *start, u32 length )
+void AudioPlugin::AddBuffer( u8 *start, u32 length )
 {
 	if (length == 0)
 		return;
@@ -336,7 +301,7 @@ void AudioPluginPSP::AddBuffer( u8 *start, u32 length )
 	*/
 }
 
-void AudioPluginPSP::StopAudio()
+void AudioPlugin::StopAudio()
 {
 	if (!mKeepRunning)
 		return;
@@ -344,9 +309,4 @@ void AudioPluginPSP::StopAudio()
 	mKeepRunning = false;
 
 	audio_open = false;
-}
-
-std::unique_ptr<CAudioPlugin> CreateAudioPlugin()
-{
-	return std::make_unique<AudioPluginPSP>();
 }

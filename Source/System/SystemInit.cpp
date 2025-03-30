@@ -41,18 +41,22 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Input/PSP/InputManagerPSP.h"
 #include "SysPSP/Graphics/GraphicsContextPSP.h"
 #include "SysPSP/HLEGraphics/RendererPSP.h"
+#include "HLEAudio/Plugin/PSP/AudioPluginPSP.h"
 #elif defined(DAEDALUS_CTR) 
 #include "Input/CTR/InputManagerCTR.h"
 #include "SysCTR/Graphics/GraphicsContextCTR.h"
 #include "SysCTR/HLEGraphics/RendererCTR.h"
+#include "HLEAudio/Plugin/CTR/AudioPluginCTR.h"
 #elif defined(DAEDALUS_GL)
 #include "Input/SDL/InputManagerSDL.h"
 #include "SysGL/Graphics/GraphicsContextGL.h"
 #include "SysGL/HLEGraphics/RendererGL.h"
+#include "HLEAudio/Plugin/SDL/AudioPluginSDL.h"
 #elif defined (DAEDALUS_GLES)
 #include "Input/SDL/InputManagerSDL.h"
 #include "SysGL/Graphics/GraphicsContextGLES.h"
 #include "SysGLES/HLEGraphics/RendererGL.h"
+#include "HLEAudio/Plugin/SDL/AudioPluginSDL.h"
 #endif
 
 
@@ -109,32 +113,23 @@ struct RomEntityEntry
 // Completed
 bool Init_Audio(SystemContext& ctx)
 {
-	std::unique_ptr<CAudioPlugin> audio_plugin = CreateAudioPlugin();
-	if (audio_plugin)
-	{
-		// Apply audio mode from preferences (if available)
-		if (ctx.preferences)
-		{
-			SRomPreferences rom_prefs;
-			if (ctx.preferences->GetRomPreferences(ctx.romInfo->mRomID, &rom_prefs))
-			{
-				audio_plugin->SetMode(rom_prefs.AudioEnabled);
-			}
-			else
-			{
-				audio_plugin->SetMode(APM_DISABLED);
-			}
-		}
-		else
-		{
-			audio_plugin->SetMode(APM_DISABLED);
-		}
+    ctx.audioPlugin = std::make_unique<AudioPlugin>();
 
-		ctx.audioPlugin = std::move(audio_plugin);
-		ctx.audioPlugin->StartEmulation();
-		return true;
-	}
-	return false;
+    EAudioPluginMode mode = APM_DISABLED; // Default mode if preferences are unavailable
+
+    if (ctx.preferences && ctx.romInfo)
+    {
+        SRomPreferences rom_prefs;
+        if (ctx.preferences->GetRomPreferences(ctx.romInfo->mRomID, &rom_prefs))
+        {
+            mode = rom_prefs.AudioEnabled; // Load mode from preferences if available
+        }
+    }
+
+    ctx.audioPlugin->SetMode(mode);
+    ctx.audioPlugin->StartEmulation();
+
+    return true;
 }
 
  void Dispose_Audio(SystemContext& ctx)

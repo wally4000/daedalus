@@ -122,28 +122,12 @@ static void	UpdateFramerate()
 }
 
 
-CGraphicsPlugin::~CGraphicsPlugin()
-{
-}
+CGraphicsPlugin::~CGraphicsPlugin() {}
 
 CGraphicsPlugin::CGraphicsPlugin()
 :	LastOrigin( 0 )
-{
-}
+{}
 
-
-
-void CGraphicsPlugin::ProcessDList()
-{
-#ifdef DAEDALUS_DEBUG_DISPLAYLIST
-	if (!DLDebugger_Process())
-	{
-		DLParser_Process();
-	}
-#else
-	DLParser_Process();
-#endif
-}
 
 #ifdef DAEDALUS_DEBUG_DISPLAYLIST
 extern u32 gNumInstructionsExecuted;
@@ -230,18 +214,4 @@ void CGraphicsPlugin::UpdateScreen()
 
 		last_origin = current_origin;
 	}
-}
-
-void CGraphicsPlugin::RomClosed()
-{
-	#ifdef DAEDALUS_DEBUG_CONSOLE
-	DBGConsole_Msg(0, "Finalising PSPGraphics");
-	#endif
-	DLParser_Finalise();
-	if (ctx.textureCache)
-	{
-		ctx.textureCache->Clear();
-		ctx.textureCache.reset();
-	}
-
 }

@@ -33,11 +33,8 @@ class CGraphicsPlugin
 
 		[[maybe_unused]] void		ViStatusChanged() {}; // Not implemented
 		[[maybe_unused]] void		ViWidthChanged() {}; // Not implemented but seen in Memory_WriteValue.inl
-		void		ProcessDList();
 
 		void		UpdateScreen();
-
-		void		RomClosed() ;
 
 	private:
 		u32 LastOrigin; 

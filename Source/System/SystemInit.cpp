@@ -176,7 +176,7 @@ void Destroy_GraphicsPlugin(SystemContext& ctx)
 {
 	if (ctx.graphicsPlugin)
 	{
-		ctx.graphicsPlugin->RomClosed();
+		DLParser_Finalise(); // This does nothing anyway
 		ctx.graphicsPlugin.reset();
 		ctx.textureCache.reset();
 	}

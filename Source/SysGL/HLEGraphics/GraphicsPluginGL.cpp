@@ -104,18 +104,6 @@ CGraphicsPlugin::~CGraphicsPlugin()
 }
 
 
-void CGraphicsPlugin::ProcessDList()
-{
-#ifdef DAEDALUS_DEBUG_DISPLAYLIST
-	if (!DLDebugger_Process())
-	{
-		DLParser_Process();
-	}
-#else
-	DLParser_Process();
-#endif
-}
-
 bool ShowFPSonmenu = false;
 
 
@@ -139,22 +127,3 @@ void CGraphicsPlugin::UpdateScreen()
 	}
 }
 
-void CGraphicsPlugin::RomClosed()
-{
-	DBGConsole_Msg(0, "Finalising GLGraphics");
-
-	DLParser_Finalise();
-	ctx.textureCache.reset();
-}
-
-//  std::unique_ptr<CGraphicsPlugin>	CreateGraphicsPlugin()
-// {
-// 	DBGConsole_Msg( 0, "Initialising Graphics Plugin [CGL]" );
-// 	auto plugin = std::make_unique<CGraphicsPlugin>();
-// 	if (!plugin->Initialise())
-// 	{
-// 		plugin = nullptr;
-// 	}
-
-// 	return plugin;
-// }

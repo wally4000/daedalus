@@ -124,17 +124,6 @@ CGraphicsPlugin::CGraphicsPlugin():	LastOrigin( 0 )
 CGraphicsPlugin::~CGraphicsPlugin() {}
 
 
-void CGraphicsPlugin::ProcessDList()
-{
-#ifdef DAEDALUS_DEBUG_DISPLAYLIST
-	if (!DLDebugger_Process())
-	{
-		DLParser_Process();
-	}
-#else
-	DLParser_Process();
-#endif
-}
 
 #ifdef DAEDALUS_DEBUG_DISPLAYLIST
 extern u32 gNumInstructionsExecuted;
@@ -201,11 +190,3 @@ void CGraphicsPlugin::UpdateScreen()
 	}
 }
 
-void CGraphicsPlugin::RomClosed()
-{
-	#ifdef DAEDALUS_DEBUG_CONSOLE
-	DBGConsole_Msg(0, "Finalising Graphics");
-	#endif
-	DLParser_Finalise();
-	ctx.textureCache.reset();
-}

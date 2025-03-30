@@ -21,8 +21,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Base/Types.h"
 #include <cstring> 
 #include <fstream>
-
+#include <iostream>
 #include "Core/RSP_HLE.h"
+#include "HLEGraphics/DLParser.h"
 
 #include "Core/Interrupt.h"
 #include "Core/Memory.h"
@@ -138,7 +139,14 @@ static EProcessResult RSP_HLE_Graphics()
 
 	if (gGraphicsEnabled && ctx.graphicsPlugin != nullptr)
 	{
-		ctx.graphicsPlugin->ProcessDList();
+		#ifndef DAEDALUS_DEBUG_DISPLAYLIST
+		DLParser_Process();
+		#else
+		if (!DLDebugger_Process())
+		{
+			DLParser_Process();
+		}
+		#endif
 	}
 	else
 	{

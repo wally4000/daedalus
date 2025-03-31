@@ -54,8 +54,6 @@ static const u32	kMaximumMemSize = MEMORY_8_MEG;
 static void DisplayVIControlInfo( u32 control_reg );
 #endif
 
-// VirtualAlloc is only supported on Win32 architectures
-if
 
 void MemoryUpdateSPStatus( u32 flags );
 void MemoryUpdateMI( u32 value );
@@ -134,11 +132,8 @@ bool Memory_Init()
 	}
 
 	g_pu8RamBase_8000 = (g_pMemoryBuffers[MEM_RD_RAM].get()) - 0x80000000;
-
 	g_RomWritten = false;
-
 	Memory_InitTables();
-
 	return true;
 }
 
@@ -151,7 +146,6 @@ void Memory_Fini(void)
 	{
 		g_pMemoryBuffers[m].reset();
 	}
-#endif
 
 	g_pu8RamBase_8000 = nullptr;
 	//g_pu8RamBase_A000 = nullptr;

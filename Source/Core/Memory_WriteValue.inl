@@ -210,7 +210,7 @@ static void WriteValue_8440_844F( u32 address, u32 value )
 		return;
 	}
 
-	*reinterpret_cast<u32 *>(g_pMemoryBuffers[MEM_VI_REG] + offset) = value;
+	*reinterpret_cast<u32 *>(g_pMemoryBuffers[MEM_VI_REG].get() + offset) = value;
 }
 #else
 extern void RenderFrameBuffer(u32);

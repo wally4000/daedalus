@@ -145,7 +145,6 @@ else()
 
 	elseif(WIN32)
 		option(DAEDALUS_SDL "SDL Build" ON)
-		option(DAED_USE_VIRTUAL_ALLOC "Use Windows Memory specifiers" ON) # We probably need to remove and simplfy this using modern C++
 		option(DAEDALUS_ACCURATE_CVT "Convert using the rounding mode specified in the Floating Control/Status register (FCSR)" ON)
 		option(DAEDALUS_W32 "Windows specific Options" ON)
 		option(DAEDALUS_ACCURATE_TMEM "Accurate TMEM" ON)

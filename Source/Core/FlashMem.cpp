@@ -63,7 +63,7 @@ bool DMA_FLASH_CopyToDRAM(u32 dest, u32 StartOffset, u32 len)
 	case FLASHRAM_MODE_READ:
 		{
 			StartOffset = StartOffset << 1;
-			return DMA_HandleTransfer( g_pu8RamBase, dest, gRamSize, (u8*)g_pMemoryBuffers[MEM_SAVE], StartOffset, MemoryRegionSizes[MEM_SAVE], len );
+			return DMA_HandleTransfer( g_pu8RamBase, dest, gRamSize, g_pMemoryBuffers[MEM_SAVE].get(), StartOffset, MemoryRegionSizes[MEM_SAVE], len );
 		}
 	case FLASHRAM_MODE_STATUS:
 		DAEDALUS_ASSERT(len == sizeof(u32) * 2, "Len is not correct when fetch status.");
@@ -97,11 +97,11 @@ void Flash_DoCommand(u32 FlashRAM_Command)
 			case FLASHRAM_MODE_STATUS:
 				break;
 			case FLASHRAM_MODE_ERASE:
-				memset((u8*)g_pMemoryBuffers[MEM_SAVE] + FlashRAM_Offset, 0xFF, 128);
+				memset(g_pMemoryBuffers[MEM_SAVE].get() + FlashRAM_Offset, 0xFF, 128);
 				Save_MarkSaveDirty();
 				break;
 			case FLASHRAM_MODE_WRITE:
-				memcpy((u8*)g_pMemoryBuffers[MEM_SAVE] + FlashRAM_Offset, FlashBlock, 128);
+				memcpy(g_pMemoryBuffers[MEM_SAVE].get() + FlashRAM_Offset, FlashBlock, 128);
 				Save_MarkSaveDirty();
 				break;
 			default:

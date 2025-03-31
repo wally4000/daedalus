@@ -143,8 +143,8 @@ void DMA_SP_CopyToRDRAM()
 void DMA_SI_CopyFromDRAM( )
 {
 	u32 mem  = Memory_SI_GetRegister(SI_DRAM_ADDR_REG) & 0x1fffffff;
-	u32 * dst = (u32 *)g_pMemoryBuffers[MEM_PIF_RAM];
-	u32 * src = (u32 *)(g_pu8RamBase + mem);
+	u32 * dst = reinterpret_cast<u32 *>(g_pMemoryBuffers[MEM_PIF_RAM].get());
+	u32 * src = reinterpret_cast<u32 *>((g_pu8RamBase + mem));
 
 	DPF( DEBUG_MEMORY_PIF, "DRAM (0x%08x) -> PIF Transfer ", mem );
 
@@ -169,8 +169,8 @@ void DMA_SI_CopyToDRAM( )
 		ctx.pifController->Process();
 	}
 	u32 mem = Memory_SI_GetRegister(SI_DRAM_ADDR_REG) & 0x1fffffff;
-	u32 * src = (u32 *)g_pMemoryBuffers[MEM_PIF_RAM];
-	u32 * dst = (u32 *)(g_pu8RamBase + mem);
+	u32 * src = reinterpret_cast<u32 *>(g_pMemoryBuffers[MEM_PIF_RAM].get());
+	u32 * dst = reinterpret_cast<u32 *>(g_pu8RamBase + mem);
 
 	DPF( DEBUG_MEMORY_PIF, "PIF -> DRAM (0x%08x) Transfer ", mem );
 
@@ -263,7 +263,7 @@ void DMA_PI_CopyToRDRAM()
 	if ( IsDom2Addr1( cart_address ))
 	{
 		//DBGConsole_Msg(0, "[YReading from Cart domain 2/addr1]");
-		const u8* p_src    = (const u8*)g_pMemoryBuffers[MEM_SAVE];
+		const u8* p_src    = g_pMemoryBuffers[MEM_SAVE].get();
 		u32       src_size = (MemoryRegionSizes[MEM_SAVE]);
 		cart_address -= PI_DOM2_ADDR1;
 		copy_succeeded = DMA_HandleTransfer( g_pu8RamBase, mem_address, gRamSize, p_src, cart_address, src_size, pi_length_reg );
@@ -278,7 +278,7 @@ void DMA_PI_CopyToRDRAM()
 	else if ( IsDom2Addr2( cart_address ) )
 	{
 		//DBGConsole_Msg(0, "[YReading from Cart domain 2/addr2]");
-		const u8* p_src    = (const u8*)g_pMemoryBuffers[MEM_SAVE];
+		const u8* p_src    = g_pMemoryBuffers[MEM_SAVE].get();
 		u32       src_size = (MemoryRegionSizes[MEM_SAVE]);
 		cart_address -= PI_DOM2_ADDR2;
 
@@ -349,7 +349,7 @@ void DMA_PI_CopyFromRDRAM()
 	if ( IsDom2Addr1( cart_address ) )
 	{
 		//DBGConsole_Msg(0, "[YWriting to Cart domain 2/addr1]");
-		u8 * p_dst = (u8 *)g_pMemoryBuffers[MEM_SAVE];
+		u8 * p_dst = g_pMemoryBuffers[MEM_SAVE].get();
 		u32	dst_size = MemoryRegionSizes[MEM_SAVE];
 		cart_address -= PI_DOM2_ADDR1;
 
@@ -365,7 +365,7 @@ void DMA_PI_CopyFromRDRAM()
 	else if ( IsDom2Addr2( cart_address ) )
 	{
 		//DBGConsole_Msg(0, "[YWriting to Cart domain 2/addr2]");
-		u8 * p_dst = (u8 *)g_pMemoryBuffers[MEM_SAVE];
+		u8 * p_dst = g_pMemoryBuffers[MEM_SAVE].get();
 		u32	dst_size = MemoryRegionSizes[MEM_SAVE];
 		cart_address -= PI_DOM2_ADDR2;
 

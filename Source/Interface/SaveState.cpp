@@ -60,7 +60,7 @@ public:
 
 	inline void write_memory_buffer(int buffernum, u32 size = 0)
 	{
-		write(g_pMemoryBuffers[buffernum], size ? std::min(MemoryRegionSizes[buffernum], size) : MemoryRegionSizes[buffernum]);
+		write(g_pMemoryBuffers[buffernum].get(), size ? std::min(MemoryRegionSizes[buffernum], size) : MemoryRegionSizes[buffernum]);
 		if(size > MemoryRegionSizes[buffernum])
 			skip(size - MemoryRegionSizes[buffernum]);
 	}
@@ -68,7 +68,7 @@ public:
 	// I had to add this as the PIF ram now lies in the same chunk as the PIF rom.
 	inline void write_memory_buffer_offset(int buffernum, u32 offset, u32 size )
 	{
-		write((u8*)g_pMemoryBuffers[buffernum] + offset, size ? std::min(MemoryRegionSizes[buffernum], size) : MemoryRegionSizes[buffernum]);
+		write(g_pMemoryBuffers[buffernum].get() + offset, size ? std::min(MemoryRegionSizes[buffernum], size) : MemoryRegionSizes[buffernum]);
 		if(size > MemoryRegionSizes[buffernum])
 			skip(size - MemoryRegionSizes[buffernum]);
 	}
@@ -134,14 +134,14 @@ public:
 
 	inline void read_memory_buffer(int buffernum, u32 size = 0)
 	{
-		read(g_pMemoryBuffers[buffernum], size ? std::min(MemoryRegionSizes[buffernum], size) : MemoryRegionSizes[buffernum]);
+		read(g_pMemoryBuffers[buffernum].get(), size ? std::min(MemoryRegionSizes[buffernum], size) : MemoryRegionSizes[buffernum]);
 		if(size > MemoryRegionSizes[buffernum])
 			skip(size - MemoryRegionSizes[buffernum]);
 	}
 
 	inline void read_memory_buffer_offset(int buffernum, u32 offset, u32 size )
 	{
-		read((u8*)g_pMemoryBuffers[buffernum] + offset, size ? std::min(MemoryRegionSizes[buffernum], size) : MemoryRegionSizes[buffernum]);
+		read(g_pMemoryBuffers[buffernum].get() + offset, size ? std::min(MemoryRegionSizes[buffernum], size) : MemoryRegionSizes[buffernum]);
 		if(size > MemoryRegionSizes[buffernum])
 			skip(size - MemoryRegionSizes[buffernum]);
 	}
@@ -246,8 +246,8 @@ bool SaveState_SaveToFile( const std::filesystem::path &filename )
 		stream << (u32)g_TLBs[i].pfno;
 	}
 
-	stream.write( g_pMemoryBuffers[MEM_PIF_RAM], 0x40);
-	stream.write( g_pMemoryBuffers[MEM_RD_RAM], gRamSize);
+	stream.write( g_pMemoryBuffers[MEM_PIF_RAM].get(), 0x40);
+	stream.write( g_pMemoryBuffers[MEM_RD_RAM].get(), gRamSize);
 	stream.write_memory_buffer(MEM_SP_MEM);
 	return true;
 }
@@ -313,21 +313,21 @@ bool SaveState_LoadFromFile( const std::filesystem::path &filename )
 
 	u8* dpcRegData = new u8[MemoryRegionSizes[MEM_DPC_REG]];
 	stream.read(dpcRegData, MemoryRegionSizes[MEM_DPC_REG]);
-	memcpy(g_pMemoryBuffers[MEM_DPC_REG], dpcRegData, MemoryRegionSizes[MEM_DPC_REG]);
+	memcpy(g_pMemoryBuffers[MEM_DPC_REG].get(), dpcRegData, MemoryRegionSizes[MEM_DPC_REG]);
 
 	stream.skip(8); // PJ64 stores 10 MEM_DP_COMMAND_REGs
 
 	u8* miRegData = new u8[MemoryRegionSizes[MEM_MI_REG]];
 	stream.read(miRegData, MemoryRegionSizes[MEM_MI_REG]);
-	memcpy(g_pMemoryBuffers[MEM_MI_REG], miRegData, MemoryRegionSizes[MEM_MI_REG]);
+	memcpy(g_pMemoryBuffers[MEM_MI_REG].get(), miRegData, MemoryRegionSizes[MEM_MI_REG]);
 
 	stream.read_memory_buffer_write_value(MEM_VI_REG, 0x84400000); // call WriteValue to update global and GFX plugin data
 	stream.read_memory_buffer_write_value(MEM_AI_REG, 0x84500000); // call WriteValue to update audio plugin data
 
 	// here to undo any modifications done by plugins
-	memcpy(g_pMemoryBuffers[MEM_DPC_REG], dpcRegData, MemoryRegionSizes[MEM_DPC_REG]);
+	memcpy(g_pMemoryBuffers[MEM_DPC_REG].get(), dpcRegData, MemoryRegionSizes[MEM_DPC_REG]);
 	delete [] dpcRegData;
-	memcpy(g_pMemoryBuffers[MEM_MI_REG], miRegData, MemoryRegionSizes[MEM_MI_REG]);
+	memcpy(g_pMemoryBuffers[MEM_MI_REG].get(), miRegData, MemoryRegionSizes[MEM_MI_REG]);
 	delete [] miRegData;
 
 	stream.read_memory_buffer(MEM_PI_REG); //, 0x84600000);
@@ -364,8 +364,8 @@ bool SaveState_LoadFromFile( const std::filesystem::path &filename )
 	}
 	//stream.skip(0x40);
 
-	stream.read(g_pMemoryBuffers[MEM_PIF_RAM], 0x40);
-	stream.read(g_pMemoryBuffers[MEM_RD_RAM], gRamSize);
+	stream.read(g_pMemoryBuffers[MEM_PIF_RAM].get(), 0x40);
+	stream.read(g_pMemoryBuffers[MEM_RD_RAM].get(), gRamSize);
 	stream.read_memory_buffer(MEM_SP_MEM); //, 0x84000000);
 
 #ifdef DAEDALUS_ENABLE_OS_HOOKS

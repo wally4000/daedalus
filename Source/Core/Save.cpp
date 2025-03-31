@@ -83,7 +83,7 @@ bool Save_Reset()
 			DBGConsole_Msg(0, "Loading save from [C%s]", gSaveFileName.string().c_str());
 
 			u8 buffer[2048];
-			u8 * dst = (u8*)g_pMemoryBuffers[MEM_SAVE];
+			u8 * dst = g_pMemoryBuffers[MEM_SAVE].get();
 
 			for (u32 d = 0; d < gSaveSize; d += sizeof(buffer))
 			{
@@ -120,7 +120,7 @@ bool Save_Reset()
 		else
 			{
 				DBGConsole_Msg(0, "Loading MemPack from [C%s]", gMempackFileName.string().c_str());
-				file.read(static_cast<char*>(g_pMemoryBuffers[MEM_MEMPACK]), MemoryRegionSizes[MEM_MEMPACK]);
+				file.read(reinterpret_cast<char*>(g_pMemoryBuffers[MEM_MEMPACK].get()), MemoryRegionSizes[MEM_MEMPACK]);
 				gMempackDirty = false;
 			}
 		}
@@ -158,7 +158,7 @@ void Save_Flush()
 		if (fp.is_open())
 		{
 			u8 buffer[2048];
-			u8 * src = (u8*)g_pMemoryBuffers[MEM_SAVE];
+			u8 * src = g_pMemoryBuffers[MEM_SAVE].get();
 
 			for (u32 d = 0; d < gSaveSize; d += sizeof(buffer))
 			{
@@ -182,7 +182,7 @@ void Save_Flush()
 		{
 			std::cout << "File opened successfully." << std::endl;
             std::cout << "Writing " << MemoryRegionSizes[MEM_MEMPACK] << " bytes to the file." << std::endl;
-			fp.write(reinterpret_cast<char*>(g_pMemoryBuffers[MEM_MEMPACK]), MemoryRegionSizes[MEM_MEMPACK]);	
+			fp.write(reinterpret_cast<char*>(g_pMemoryBuffers[MEM_MEMPACK].get()), MemoryRegionSizes[MEM_MEMPACK]);	
 		}
 		gMempackDirty = false;
 	}
@@ -218,7 +218,7 @@ static void InitMempackContent()
 {
 	for (size_t dst_off = 0; dst_off < MemoryRegionSizes[MEM_MEMPACK]; dst_off += 32 * 1024)
 	{
-		u8 * mempack = static_cast<u8*>(g_pMemoryBuffers[MEM_MEMPACK]) + dst_off;
+		u8 * mempack = g_pMemoryBuffers[MEM_MEMPACK].get() + dst_off;
 		for (u32 i = 0; i < 0x8000; i += 2)
 		{
 			mempack[i + 0] = 0x00;

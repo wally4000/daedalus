@@ -55,9 +55,7 @@ static void DisplayVIControlInfo( u32 control_reg );
 #endif
 
 // VirtualAlloc is only supported on Win32 architectures
-#ifdef DAEDALUS_W32
-#define DAED_USE_VIRTUAL_ALLOC
-#endif
+if
 
 void MemoryUpdateSPStatus( u32 flags );
 void MemoryUpdateMI( u32 value );
@@ -100,10 +98,6 @@ u32			gTLBReadHit  = 0;
 u32			gTLBWriteHit = 0;
 #endif
 
-#ifdef DAED_USE_VIRTUAL_ALLOC
-static void *	gMemBase = nullptr;				// Virtual memory base
-#endif
-
 // ROM write support
 u32	  g_pWriteRom;
 bool  g_RomWritten;
@@ -114,7 +108,7 @@ u8 * g_pu8RamBase_8000 = nullptr;
 
 MemFuncRead  	g_MemoryLookupTableRead[0x4000];
 MemFuncWrite 	g_MemoryLookupTableWrite[0x4000];
-void * 			g_pMemoryBuffers[NUM_MEM_BUFFERS];
+std::array<MemoryBuffer, NUM_MEM_BUFFERS> g_pMemoryBuffers;
 
 
 #include "Memory_Read.inl"
@@ -128,64 +122,20 @@ bool Memory_Init()
 {
 	gRamSize = kMaximumMemSize;
 
-#ifdef DAED_USE_VIRTUAL_ALLOC
-	gMemBase = VirtualAlloc(0, 512*1024*1024, MEM_RESERVE, PAGE_READWRITE);
-	if (gMemBase == nullptr)
-	{
-		return false;
-	}
-
-	uintptr_t base = reinterpret_cast<uintptr_t>(gMemBase);
-
-	g_pMemoryBuffers[ MEM_RD_RAM    ] = (u8*)VirtualAlloc( (void*)(base+0x00000000),	8*1024*1024,MEM_COMMIT, PAGE_READWRITE );
-	g_pMemoryBuffers[ MEM_SP_MEM    ] = (u8*)VirtualAlloc( (void*)(base+0x04000000),	0x2000,		MEM_COMMIT, PAGE_READWRITE );
-	g_pMemoryBuffers[ MEM_RD_REG0   ] = (u8*)VirtualAlloc( (void*)(base+0x03F00000),	0x30,		MEM_COMMIT, PAGE_READWRITE );
-	g_pMemoryBuffers[ MEM_SP_REG    ] = (u8*)VirtualAlloc( (void*)(base+0x04040000),	0x20,		MEM_COMMIT, PAGE_READWRITE );
-	g_pMemoryBuffers[ MEM_SP_PC_REG ] = (u8*)VirtualAlloc( (void*)(base+0x04080000),	0x08,		MEM_COMMIT, PAGE_READWRITE );
-	g_pMemoryBuffers[ MEM_DPC_REG   ] = (u8*)VirtualAlloc( (void*)(base+0x04100000),	0x20,		MEM_COMMIT, PAGE_READWRITE );
-	g_pMemoryBuffers[ MEM_MI_REG    ] = (u8*)VirtualAlloc( (void*)(base+0x04300000),	0x10,		MEM_COMMIT, PAGE_READWRITE );
-	g_pMemoryBuffers[ MEM_VI_REG    ] = (u8*)VirtualAlloc( (void*)(base+0x04400000),	0x38,		MEM_COMMIT, PAGE_READWRITE );
-	g_pMemoryBuffers[ MEM_AI_REG    ] = (u8*)VirtualAlloc( (void*)(base+0x04500000),	0x18,		MEM_COMMIT, PAGE_READWRITE );
-	g_pMemoryBuffers[ MEM_PI_REG    ] = (u8*)VirtualAlloc( (void*)(base+0x04600000),	0x34,		MEM_COMMIT, PAGE_READWRITE );
-	g_pMemoryBuffers[ MEM_RI_REG    ] = (u8*)VirtualAlloc( (void*)(base+0x04700000),	0x20,		MEM_COMMIT, PAGE_READWRITE );
-	g_pMemoryBuffers[ MEM_SI_REG    ] = (u8*)VirtualAlloc( (void*)(base+0x04800000),	0x1C,		MEM_COMMIT, PAGE_READWRITE );
-	//cartDom2                        = (u8*)VirtualAlloc( (void*)(base+0x05000000),	0x10000,	MEM_COMMIT, PAGE_READWRITE );
-	//cartDom1                        = (u8*)VirtualAlloc( (void*)(base+0x06000000),	0x10000,	MEM_COMMIT, PAGE_READWRITE );
-	g_pMemoryBuffers[ MEM_SAVE      ] = (u8*)VirtualAlloc( (void*)(base+0x08000000),	0x20000,	MEM_COMMIT, PAGE_READWRITE );
-	//g_pMemoryBuffers[MEM_CARTROM  ] = (u8*)VirtualAlloc( (void*)(base+0x10000000),	cart_size,	MEM_COMMIT, PAGE_READWRITE);
-	g_pMemoryBuffers[ MEM_PIF_RAM   ] = (u8*)VirtualAlloc( (void*)(base+0x1FC00000),	0x40,		MEM_COMMIT, PAGE_READWRITE );
-	//cartDom4                        = (u8*)VirtualAlloc( (void*)(base+0x1FD00000),	0x10000,	MEM_COMMIT, PAGE_READWRITE );
-	g_pMemoryBuffers[ MEM_MEMPACK   ] = (u8*)VirtualAlloc( nullptr,						0x20000,	MEM_COMMIT, PAGE_READWRITE );
-	g_pMemoryBuffers[ MEM_UNUSED    ] = new u8[ MemoryRegionSizes[MEM_UNUSED] ];
-
-#else
-	//u32 count = 0;
 	for (u32 m = 0; m < NUM_MEM_BUFFERS; m++)
 	{
 		u32 region_size = MemoryRegionSizes[m];
-		// Skip zero sized areas. An example of this is the cart rom
+		
 		if (region_size > 0)
 		{
-			//count+=region_size;
-			g_pMemoryBuffers[m] = new u8[region_size];
-			//g_pMemoryBuffers[m] = Memory_AllocRegion(region_size);
-
-			if (g_pMemoryBuffers[m] == nullptr)
-			{
-				return false;
-			}
-
-			// Necessary?
-			memset(g_pMemoryBuffers[m], 0, region_size);
+			g_pMemoryBuffers[m] = std::make_unique<u8[]>(region_size);
+			std::fill_n(g_pMemoryBuffers[m].get(), region_size, 0);
 		}
 	}
-	//printf("%d bytes used of memory\n",count);
-#endif
 
-	g_pu8RamBase_8000 = ((u8*)g_pMemoryBuffers[MEM_RD_RAM]) - 0x80000000;
+	g_pu8RamBase_8000 = (g_pMemoryBuffers[MEM_RD_RAM].get()) - 0x80000000;
 
 	g_RomWritten = false;
-
 
 	Memory_InitTables();
 
@@ -197,34 +147,14 @@ void Memory_Fini(void)
 		#ifdef DAEDALUS_DEBUG_CONSOLE
 	DPF(DEBUG_MEMORY, "Freeing Memory");
 #endif
-#ifdef DAED_USE_VIRTUAL_ALLOC
-
-	//
-	//	We have to free this buffer separately
-	//
-	if (g_pMemoryBuffers[MEM_UNUSED])
-	{
-		delete [] reinterpret_cast< u8 * >( g_pMemoryBuffers[MEM_UNUSED] );
-		g_pMemoryBuffers[MEM_UNUSED] = nullptr;
-	}
-
-	VirtualFree( gMemBase, 0, MEM_RELEASE );
-	gMemBase = nullptr;
-
-#else
 	for (u32 m = 0; m < NUM_MEM_BUFFERS; m++)
 	{
-		if (g_pMemoryBuffers[m] != nullptr)
-		{
-			delete [] (u8*)(g_pMemoryBuffers[m]);
-			g_pMemoryBuffers[m] = nullptr;
-		}
+		g_pMemoryBuffers[m].reset();
 	}
 #endif
 
 	g_pu8RamBase_8000 = nullptr;
 	//g_pu8RamBase_A000 = nullptr;
-	memset( g_pMemoryBuffers, 0xff, sizeof( g_pMemoryBuffers ) );
 }
 
 bool Memory_Reset()
@@ -254,7 +184,7 @@ bool Memory_Reset()
 	{
 		if (g_pMemoryBuffers[i])
 		{
-			memset(g_pMemoryBuffers[i], 0, MemoryRegionSizes[i]);
+			std::fill_n(g_pMemoryBuffers[i].get(), MemoryRegionSizes[i], 0); // Corrected line
 		}
 	}
 
@@ -294,15 +224,16 @@ static void Memory_Tlb_Hack()
 			g_MemoryLookupTableRead[i].pRead = pRead;
 	   }
 	}
-
-	g_MemoryLookupTableRead[0x70000000 >> 18].pRead = (u8*)(reinterpret_cast< uintptr_t >( g_pMemoryBuffers[MEM_RD_RAM]) - 0x70000000);
+	u8* base_ptr = g_pMemoryBuffers[MEM_RD_RAM].get();
+	g_MemoryLookupTableRead[0x70000000 >> 18].pRead = base_ptr - 0x70000000;
 }
 
 static void Memory_InitFunc(u32 start, u32 size, const u32 ReadRegion, const u32 WriteRegion, mReadFunction ReadFunc, mWriteFunction WriteFunc)
 {
 	u32	start_addr = (start >> 18);
 	u32	end_addr   = ((start + size - 1) >> 18);
-
+	u8* read_base_ptr = g_pMemoryBuffers[ReadRegion].get();
+	u8* write_base_ptr = g_pMemoryBuffers[WriteRegion].get();
 	while (start_addr <= end_addr)
 	{
 		g_MemoryLookupTableRead[start_addr|(0x8000>>2)].ReadFunc= ReadFunc;
@@ -313,14 +244,14 @@ static void Memory_InitFunc(u32 start, u32 size, const u32 ReadRegion, const u32
 
 		if (ReadRegion)
 		{
-			g_MemoryLookupTableRead[start_addr|(0x8000>>2)].pRead = (u8*)(reinterpret_cast< uintptr_t >(g_pMemoryBuffers[ReadRegion]) - (((start>>16)|0x8000) << 16));
-			g_MemoryLookupTableRead[start_addr|(0xA000>>2)].pRead = (u8*)(reinterpret_cast< uintptr_t >(g_pMemoryBuffers[ReadRegion]) - (((start>>16)|0xA000) << 16));
+			g_MemoryLookupTableRead[start_addr|(0x8000>>2)].pRead = read_base_ptr - (((start>>16)|0x8000) << 16);
+			g_MemoryLookupTableRead[start_addr|(0xA000>>2)].pRead = read_base_ptr - (((start>>16)|0xA000) << 16);
 		}
 
 		if (WriteRegion)
 		{
-			g_MemoryLookupTableWrite[start_addr|(0x8000>>2)].pWrite = (u8*)(reinterpret_cast< uintptr_t >(g_pMemoryBuffers[WriteRegion]) - (((start>>16)|0x8000) << 16));
-			g_MemoryLookupTableWrite[start_addr|(0xA000>>2)].pWrite = (u8*)(reinterpret_cast< uintptr_t >(g_pMemoryBuffers[WriteRegion]) - (((start>>16)|0xA000) << 16));
+			g_MemoryLookupTableWrite[start_addr|(0x8000>>2)].pWrite = write_base_ptr - ((((start>>16)|0x8000) << 16));
+			g_MemoryLookupTableWrite[start_addr|(0xA000>>2)].pWrite = write_base_ptr - ((((start>>16)|0xA000) << 16));
 		}
 
 		start_addr++;
@@ -859,7 +790,7 @@ void MemoryUpdatePI( u32 value )
 // The PIF control byte has been written to - process this command
 void MemoryUpdatePIF()
 {
-	u8 * pPIFRam = (u8 *)g_pMemoryBuffers[MEM_PIF_RAM];
+	u8 * pPIFRam = g_pMemoryBuffers[MEM_PIF_RAM].get();
 	u8 command = pPIFRam[ 0x3F ^ U8_TWIDDLE];
 	if (command == 0x08)
 	{

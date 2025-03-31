@@ -29,7 +29,7 @@ bool Memory_GetInternalReadAddress(u32 address, void ** translated)
 static bool InternalReadInvalid( u32 address [[maybe_unused]], void ** translated )
 {
 
-	*translated = g_pMemoryBuffers[MEM_UNUSED];
+	*translated = g_pMemoryBuffers[MEM_UNUSED].get();
 	return false;
 }
 
@@ -83,7 +83,7 @@ static bool InternalRead_8400_8400( u32 address, void ** translated )
 
 		offset = address & 0x1FFF;
 
-		*translated = (u8 *)g_pMemoryBuffers[MEM_SP_MEM] + offset;
+		*translated = g_pMemoryBuffers[MEM_SP_MEM].get() + offset;
 		return true;
 	}
 
@@ -100,7 +100,7 @@ static bool InternalRead_9FC0_9FCF( u32 address, void ** translated )
 
 		offset = address & 0x0FFF;
 
-		*translated = (u8 *)g_pMemoryBuffers[MEM_PIF_RAM] + offset;
+		*translated = g_pMemoryBuffers[MEM_PIF_RAM].get() + offset;
 		return true;
 	}
 	else if ((address&0x1FFFFFFF) <= PIF_RAM_END)
@@ -110,7 +110,7 @@ static bool InternalRead_9FC0_9FCF( u32 address, void ** translated )
 
 		offset = address & 0x0FFF;
 
-		*translated = (u8 *)g_pMemoryBuffers[MEM_PIF_RAM] + offset;
+		*translated = g_pMemoryBuffers[MEM_PIF_RAM].get() + offset;
 		return true;
 	}
 

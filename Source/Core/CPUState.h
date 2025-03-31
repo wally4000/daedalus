@@ -28,7 +28,7 @@ struct CPUEvent
     ECPUEventType mEventType;
 };
 
-class alignas(CACHE_ALIGN) SCPUState
+struct alignas(CACHE_ALIGN) SCPUState
 {
 public:
     register_32x64 CPU;

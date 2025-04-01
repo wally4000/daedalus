@@ -73,7 +73,7 @@ namespace
 //*************************************************************************************
 //
 //*************************************************************************************
-CFragment::CFragment( std::shared_ptr<CCodeBufferManager> p_manager,
+CFragment::CFragment( std::unique_ptr<CCodeBufferManager>& p_manager,
 					  u32 entry_address,
 					  u32 exit_address,
 					  const TraceBuffer & trace,
@@ -107,7 +107,7 @@ CFragment::CFragment( std::shared_ptr<CCodeBufferManager> p_manager,
 //*************************************************************************************
 // Create a Fragement for Patch Function
 //*************************************************************************************
-CFragment::CFragment(std::shared_ptr<CCodeBufferManager> p_manager, u32 entry_address,
+CFragment::CFragment(std::unique_ptr<CCodeBufferManager> p_manager, u32 entry_address,
 						u32 function_length, void* function_Ptr)
 	:	mEntryAddress( entry_address )
 	,	mInputLength(function_length  * sizeof( OpCode ) )
@@ -564,7 +564,7 @@ void	CFragment::AddPatch( u32 address, CJumpLocation jump_location )
 //*************************************************************************************
 //
 //*************************************************************************************
-void CFragment::Assemble( std::shared_ptr<CCodeBufferManager> p_manager,
+void CFragment::Assemble( std::unique_ptr<CCodeBufferManager>& p_manager,
 						  u32 exit_address,
 						  const std::vector< STraceEntry > & trace,
 						  const std::vector< SBranchDetails > & branch_details,
@@ -835,7 +835,7 @@ void CFragment::Assemble( std::shared_ptr<CCodeBufferManager> p_manager,
 //*************************************************************************************
 //
 //*************************************************************************************
-void CFragment::Assemble( std::shared_ptr<CCodeBufferManager> p_manager, CCodeLabel function_ptr)
+void CFragment::Assemble( std::unique_ptr<CCodeBufferManager>& p_manager, CCodeLabel function_ptr)
 {
 	std::vector< CJumpLocation >		exception_handler_jumps;
 	std::vector< RegisterSnapshotHandle> exception_handler_snapshots;

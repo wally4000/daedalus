@@ -37,7 +37,7 @@ public:
 	virtual	u32						FinaliseCurrentBlock() = 0;
 
 public:
-	static	std::shared_ptr<CCodeBufferManager>	Create();
+	static	std::unique_ptr<CCodeBufferManager>	Create();
 };
 
 

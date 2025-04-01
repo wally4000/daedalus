@@ -39,7 +39,7 @@ public:
 	virtual u32				FinaliseCurrentBlock();
 };
 
-std::shared_ptr<CCodeBufferManager> CCodeBufferManager::Create()
+std::unique_ptr<CCodeBufferManager> CCodeBufferManager::Create()
 {
 	return std::make_unique<CCodeBufferManagerOSX>();
 }

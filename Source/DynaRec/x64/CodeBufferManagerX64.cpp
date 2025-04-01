@@ -98,7 +98,7 @@ private:
 //*****************************************************************************
 std::unique_ptr<CCodeBufferManager> 	CCodeBufferManager::Create()
 {
-	return std::make_shared<CCodeBufferManagerX64>();
+	return std::make_unique<CCodeBufferManagerX64>();
 }
 
 //*****************************************************************************
@@ -228,7 +228,7 @@ std::unique_ptr<CCodeGenerator> CCodeBufferManagerX64::StartNewBlock()
 	mPrimaryBuffer.SetBuffer( mpBuffer + mBufferPtr );
 	mSecondaryBuffer.SetBuffer( mpSecondBuffer + mSecondBufferPtr );
 
-	return std::make_shared<CCodeGeneratorX64>( &mPrimaryBuffer, &mSecondaryBuffer );
+	return std::make_unique<CCodeGeneratorX64>( &mPrimaryBuffer, &mSecondaryBuffer );
 }
 
 //*****************************************************************************

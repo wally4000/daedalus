@@ -132,7 +132,7 @@ private:
 
 std::unique_ptr<CCodeBufferManager> CCodeBufferManager::Create()
 {
-	return std::make_shared<CCodeBufferManagerPSP>();
+	return std::make_unique<CCodeBufferManagerPSP>();
 }
 
 
@@ -180,7 +180,7 @@ std::unique_ptr<CCodeGenerator>  CCodeBufferManagerPSP::StartNewBlock()
 
 	mAssemblyBufferA.SetBuffer( primary );
 	mAssemblyBufferB.SetBuffer( secondary );
-	return std::make_shared<CCodeGeneratorPSP>( &mAssemblyBufferA, &mAssemblyBufferB );
+	return std::make_unique<CCodeGeneratorPSP>( &mAssemblyBufferA, &mAssemblyBufferB );
 }
 
 

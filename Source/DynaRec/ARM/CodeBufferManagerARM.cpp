@@ -69,7 +69,7 @@ private:
 
 std::unique_ptr<CCodeBufferManager>	CCodeBufferManager::Create()
 {
-	return std::make_shared<CCodeBufferManagerARM>();
+	return std::make_unique<CCodeBufferManagerARM>();
 }
 
 
@@ -135,7 +135,7 @@ std::unique_ptr<CCodeGenerator> CCodeBufferManagerARM::StartNewBlock()
 	mPrimaryBuffer.SetBuffer( mpBuffer + mBufferPtr );
 	mSecondaryBuffer.SetBuffer( mpSecondBuffer + mSecondBufferPtr );
 
-	return std::make_shared<CCodeGeneratorARM>( &mPrimaryBuffer, &mSecondaryBuffer );
+	return std::make_unique<CCodeGeneratorARM>( &mPrimaryBuffer, &mSecondaryBuffer );
 }
 
 

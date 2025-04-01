@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Core/CPU.h"
 
 #include "Core/Dynamo.h"
-
+#include "DynaRec/CodeBufferManager.h" 
 #include "Core/Memory.h"
 #include "Core/Interrupt.h"
 #include "Core/R4300.h"

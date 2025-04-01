@@ -21,7 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define DYNAREC_FRAGMENTCACHE_H_
 
 #include "Base/Types.h"
-#include "DynaRec/CodeBufferManager.h"
+
 
 class	CFragment;
 class	CJumpLocation;
@@ -90,7 +90,7 @@ public:
 
 	u32						GetMemoryUsage() const					{ return mMemoryUsage; }
 
-	std::unique_ptr<CCodeBufferManager>	GetCodeBufferManager()			{ return std::move(mpCodeBufferManager); }
+	std::shared_ptr<CCodeBufferManager>	GetCodeBufferManager()			{ return mpCodeBufferManager; }
 
 	bool					ShouldInvalidateOnWrite( u32 address, u32 length ) const;
 
@@ -135,7 +135,7 @@ private:
 	mutable std::array<FHashT, HASH_TABLE_SIZE> mpCacheHashTable;
 	// mutable FHashT			mpCacheHashTable[HASH_TABLE_SIZE];
 
-	std::unique_ptr<CCodeBufferManager>	mpCodeBufferManager;
+	std::shared_ptr<CCodeBufferManager>	mpCodeBufferManager;
 
 	CFragmentCacheCoverage	mCacheCoverage;
 };

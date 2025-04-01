@@ -67,9 +67,9 @@ private:
 };
 
 
-std::unique_ptr<CCodeBufferManager>	CCodeBufferManager::Create()
+std::shared_ptr<CCodeBufferManager>	CCodeBufferManager::Create()
 {
-	return std::make_unique<CCodeBufferManagerARM>();
+	return std::make_shared<CCodeBufferManagerARM>();
 }
 
 

@@ -73,7 +73,7 @@ namespace
 //*************************************************************************************
 //
 //*************************************************************************************
-CFragment::CFragment( std::unique_ptr<CCodeBufferManager>& p_manager,
+CFragment::CFragment( std::shared_ptr<CCodeBufferManager> p_manager,
 					  u32 entry_address,
 					  u32 exit_address,
 					  const TraceBuffer & trace,
@@ -100,14 +100,14 @@ CFragment::CFragment( std::unique_ptr<CCodeBufferManager>& p_manager,
 	mRegisterUsage = register_usage;
 #endif
 
-	Assemble( p_manager, exit_address, trace, branch_details, register_usage );
+	Assemble( std::move(p_manager), exit_address, trace, branch_details, register_usage );
 }
 
 #ifdef DAEDALUS_ENABLE_OS_HOOKS
 //*************************************************************************************
 // Create a Fragement for Patch Function
 //*************************************************************************************
-CFragment::CFragment(std::unique_ptr<CCodeBufferManager> p_manager, u32 entry_address,
+CFragment::CFragment(std::shared_ptr<CCodeBufferManager> p_manager, u32 entry_address,
 						u32 function_length, void* function_Ptr)
 	:	mEntryAddress( entry_address )
 	,	mInputLength(function_length  * sizeof( OpCode ) )
@@ -564,18 +564,27 @@ void	CFragment::AddPatch( u32 address, CJumpLocation jump_location )
 //*************************************************************************************
 //
 //*************************************************************************************
-void CFragment::Assemble( std::unique_ptr<CCodeBufferManager>& p_manager,
+void CFragment::Assemble( std::shared_ptr<CCodeBufferManager> p_manager,
 						  u32 exit_address,
 						  const std::vector< STraceEntry > & trace,
 						  const std::vector< SBranchDetails > & branch_details,
 						  const SRegisterUsageInfo & register_usage )
 {
+	if (!p_manager)
+{
+    fprintf(stderr, "Error: p_manager is null in Assemble()\n");
+    return;
+}
 	DAEDALUS_PROFILE( "CFragment::Assemble" );
 
 	const u32				NO_JUMP_ADDRESS( 0 );
 
 	std::unique_ptr<CCodeGenerator>	p_generator = p_manager->StartNewBlock();
-
+    if (!p_generator)
+    {
+        fprintf(stderr, "Error: Failed to start a new block in Assemble()\n");
+        return;
+    }
 	mEntryPoint = p_generator->GetEntryPoint();
 
 #ifdef FRAGMENT_RETAIN_ADDITIONAL_INFO
@@ -835,7 +844,7 @@ void CFragment::Assemble( std::unique_ptr<CCodeBufferManager>& p_manager,
 //*************************************************************************************
 //
 //*************************************************************************************
-void CFragment::Assemble( std::unique_ptr<CCodeBufferManager>& p_manager, CCodeLabel function_ptr)
+void CFragment::Assemble( std::shared_ptr<CCodeBufferManager> p_manager, CCodeLabel function_ptr)
 {
 	std::vector< CJumpLocation >		exception_handler_jumps;
 	std::vector< RegisterSnapshotHandle> exception_handler_snapshots;
@@ -844,7 +853,11 @@ void CFragment::Assemble( std::unique_ptr<CCodeBufferManager>& p_manager, CCodeL
 	std::unique_ptr<CCodeGenerator> p_generator = p_manager->StartNewBlock();
 	mEntryPoint = p_generator->GetEntryPoint();
 
-
+	if (!p_manager)
+	{
+		fprintf(stderr, "Error: p_manager is null in Assemble()\n");
+		return;
+	}
 #ifdef FRAGMENT_RETAIN_ADDITIONAL_INFO
 		p_generator->Initialise( mEntryAddress, 0, &mHitCount, &ctx.cpuState,  register_usage);
 #else

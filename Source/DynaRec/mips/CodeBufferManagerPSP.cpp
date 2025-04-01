@@ -130,9 +130,9 @@ private:
 
 //
 
-std::unique_ptr<CCodeBufferManager> CCodeBufferManager::Create()
+std::shared_ptr<CCodeBufferManager> CCodeBufferManager::Create()
 {
-	return std::make_unique<CCodeBufferManagerPSP>();
+	return std::make_shared<CCodeBufferManagerPSP>();
 }
 
 

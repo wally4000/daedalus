@@ -48,7 +48,7 @@ public:
 
 	EUpdateTraceStatus	UpdateTrace( u32 address, bool branch_delay_slot, bool branch_taken, OpCode op_code, CFragment * p_fragment );
 	void				StopTrace( u32 exit_address );
-	CFragment *			CreateFragment( std::unique_ptr<CCodeBufferManager> p_manager );
+	CFragment *			CreateFragment( std::shared_ptr<CCodeBufferManager> p_manager );
 	void				AbortTrace();
 
 	bool				IsTraceActive() const						{ return mTracing; }

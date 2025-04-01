@@ -96,9 +96,9 @@ private:
 //*****************************************************************************
 //
 //*****************************************************************************
-std::unique_ptr<CCodeBufferManager> 	CCodeBufferManager::Create()
+std::shared_ptr<CCodeBufferManager> 	CCodeBufferManager::Create()
 {
-	return std::make_unique<CCodeBufferManagerX64>();
+	return std::make_shared<CCodeBufferManagerX64>();
 }
 
 //*****************************************************************************

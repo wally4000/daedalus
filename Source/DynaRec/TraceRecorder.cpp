@@ -27,6 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "DynaRec/BranchType.h"
 #include "DynaRec/Fragment.h"
 #include "DynaRec/TraceRecorder.h"
+#include "DynaRec/CodeBufferManager.h"
 #include "Utility/Profiler.h"
 #include "Debug/PrintOpCode.h"
 #include <fstream> 
@@ -291,8 +292,16 @@ void	CTraceRecorder::StopTrace( u32 exit_address )
 
 //
 
-CFragment *		CTraceRecorder::CreateFragment( std::unique_ptr<CCodeBufferManager> p_manager )
+CFragment *		CTraceRecorder::CreateFragment( std::shared_ptr<CCodeBufferManager> p_manager )
 {
+
+	if (!p_manager)
+{
+    fprintf(stderr, "Error: p_manager is null in CreateFragment\n");
+    return nullptr;
+}
+
+
 	#ifdef DAEDALUS_ENABLE_DYNAREC_PROFILE
 	DAEDALUS_PROFILE( "CTraceRecorder::CreateFragment" );
 #endif
@@ -303,7 +312,7 @@ CFragment *		CTraceRecorder::CreateFragment( std::unique_ptr<CCodeBufferManager>
 	SRegisterUsageInfo	register_usage;
 	Analyse( register_usage );
 
-	CFragment *	p_frament( new CFragment( p_manager, mStartTraceAddress, mExpectedExitTraceAddress,
+	CFragment *	p_frament( new CFragment( std::move(p_manager), mStartTraceAddress, mExpectedExitTraceAddress,
 		mTraceBuffer, register_usage, mBranchDetails, mNeedIndirectExitMap ) );
 
 	//DBGConsole_Msg( 0, "Inserting hot trace for [R%08x]!", mStartTraceAddress );

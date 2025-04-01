@@ -574,7 +574,7 @@ void CFragment::Assemble( std::shared_ptr<CCodeBufferManager> p_manager,
 
 	const u32				NO_JUMP_ADDRESS( 0 );
 
-	std::shared_ptr<CCodeGenerator>	p_generator = p_manager->StartNewBlock();
+	std::unique_ptr<CCodeGenerator>	p_generator = p_manager->StartNewBlock();
 
 	mEntryPoint = p_generator->GetEntryPoint();
 
@@ -841,7 +841,7 @@ void CFragment::Assemble( std::shared_ptr<CCodeBufferManager> p_manager, CCodeLa
 	std::vector< RegisterSnapshotHandle> exception_handler_snapshots;
 	SRegisterUsageInfo register_usage;
 
-	std::shared_ptr<CCodeGenerator> p_generator = p_manager->StartNewBlock();
+	std::unique_ptr<CCodeGenerator> p_generator = p_manager->StartNewBlock();
 	mEntryPoint = p_generator->GetEntryPoint();
 
 

@@ -33,7 +33,7 @@ public:
 	virtual void					Reset() = 0;
 	virtual	void					Finalise() = 0;
 
-	virtual	std::shared_ptr<CCodeGenerator>		StartNewBlock() = 0;
+	virtual	std::unique_ptr<CCodeGenerator>		StartNewBlock() = 0;
 	virtual	u32						FinaliseCurrentBlock() = 0;
 
 public:

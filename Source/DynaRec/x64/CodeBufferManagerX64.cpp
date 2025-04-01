@@ -75,7 +75,7 @@ public:
 	virtual void			Reset();
 	virtual void			Finalise();
 
-	virtual std::shared_ptr<CCodeGenerator> StartNewBlock();
+	virtual std::unique_ptr<CCodeGenerator> StartNewBlock();
 	virtual u32				FinaliseCurrentBlock();
 
 private:
@@ -165,7 +165,7 @@ void	CCodeBufferManagerX64::Finalise()
 //*****************************************************************************
 //
 //*****************************************************************************
-std::shared_ptr<CCodeGenerator> CCodeBufferManagerX64::StartNewBlock()
+std::unique_ptr<CCodeGenerator> CCodeBufferManagerX64::StartNewBlock()
 {
 	// Round up to 16 byte boundry
 	u32 aligned_ptr( (mBufferPtr + 15) & (~15) );

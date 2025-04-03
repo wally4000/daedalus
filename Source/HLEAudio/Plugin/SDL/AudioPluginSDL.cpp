@@ -73,20 +73,15 @@ EProcessResult AudioPlugin::ProcessAList()
         case APM_DISABLED:
             result = PR_COMPLETED;
             break;
-            
         case APM_ENABLED_ASYNC:
-            if (!Asyncthread) 
-            {
-                Asyncthread = SDL_CreateThread((SDL_ThreadFunction)Audio_UcodeEntry, "Audio_UcodeThread", nullptr);
-                if (Asyncthread == nullptr) {
-                    DBGConsole_Msg(0, "Failed to create Async thread: %s", SDL_GetError());
-                } else {
-                    SDL_DetachThread(Asyncthread);
-                }
+            Asyncthread = SDL_CreateThread((SDL_ThreadFunction)Audio_UcodeEntry, "Audio_UcodeThread", nullptr);
+            if (Asyncthread == nullptr) {
+                DBGConsole_Msg(0, "Failed to create Async thread", SDL_GetError());
+            } else {
+                SDL_DetachThread(Asyncthread);
             }
             result = PR_COMPLETED;
             break;
-            
         case APM_ENABLED_SYNC:
             Audio_Ucode();
             result = PR_COMPLETED;

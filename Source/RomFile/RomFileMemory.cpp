@@ -27,7 +27,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 extern bool PSP_IS_SLIM;
 
 
-CROMFileMemory::~CROMFileMemory() {}
+CROMFileMemory::~CROMFileMemory() {
+	mRomMemoryHeap.reset();
+}
 
 
 CROMFileMemory::CROMFileMemory()
@@ -54,19 +56,39 @@ CROMFileMemory::CROMFileMemory()
 
 void * CROMFileMemory::Alloc( u32 size )
 {
-#ifdef DAEDALUS_PSP
-	return mRomMemoryHeap->Alloc( size );
-#else
-	return malloc( size );
-#endif
+		void * ptr = nullptr;
+	#ifdef DAEDALUS_PSP
+		return mRomMemoryHeap->Alloc( size );
+	#else
+		return malloc( size );
+	#endif
+
+	if (ptr == nullptr)
+	{
+		std::cerr << "Memory allocation failed for size: " << size << " bytes." << std::endl;
+	}
+	return ptr;
 }
 
 
 void  CROMFileMemory::Free(void * ptr)
 {
+
+	if (ptr == nullptr)
+	{
+		std::cerr << "Warning: Attempting to free a nullptr." << std::endl;
+		return;
+	}
 #ifdef DAEDALUS_PSP
+	if (mRomMemoryHeap)
+	{
 	mRomMemoryHeap->Free( ptr );
-#else
+	}
+	else
+	{
+		std::cerr << "Error: Trying to free memory but heap is not initialised" << std::endl;
+	}
+	#else
 	free( ptr );
 #endif
 }

@@ -25,6 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <string.h>
 #include <iostream>
+#include <cstring>
 
 
 
@@ -173,19 +174,23 @@ void  CMemoryHeap::Free( void * ptr )
 			mMemMapLen--;
 			if (i < mMemMapLen)
 			{
-			memmove( &mpMemMap[i], &mpMemMap[i+1], (mMemMapLen-i) * sizeof(mpMemMap[0]) );
+				std::memcpy(&mpMemMap[i], &mpMemMap[i + 1], (mMemMapLen - i) * sizeof(mpMemMap[0]));
+
 			}
 			// Try to shrink memory
 
-			Chunk  *tmp = reinterpret_cast< Chunk * >( realloc( mpMemMap, mMemMapLen * sizeof(mpMemMap[0]) ) );
-			if( tmp != nullptr )
-			{
-				mpMemMap = tmp;
-			}
-			else 
-			{
-				std::cout << "Memory Realloc Failed, old memory still valid" << std::endl;
-			}
+			if (mMemMapLen > 0 && (mMemMapLen % 64 == 0))  // Shrink only every 64 deletions
+            {
+                Chunk  *tmp = reinterpret_cast<Chunk*>( realloc( mpMemMap, mMemMapLen * sizeof(mpMemMap[0]) ) );
+                if( tmp != nullptr )
+                {
+                    mpMemMap = tmp;
+                }
+                else 
+                {
+                    std::cerr << "Memory Realloc Failed, old memory still valid. Length: " << mMemMapLen << std::endl;
+                }
+            }
 			return;
 		}
 	}

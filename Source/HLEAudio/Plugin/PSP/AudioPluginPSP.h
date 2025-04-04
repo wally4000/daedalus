@@ -30,6 +30,7 @@ private:
 	u32 mFrequency;
 	s32 mAudioThread;
 	s32 mSemaphore;
+	int audio_channel;
 //	u32 mBufferLenMs;
 	bool audio_open = false;
 	EAudioPluginMode audioPluginmode = APM_DISABLED;

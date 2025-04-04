@@ -26,8 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
 #include "Base/Types.h"
-#include <stdio.h>
-#include <new>
+
 
 #include <pspkernel.h>
 #include <pspaudiolib.h>
@@ -43,19 +42,20 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "HLEAudio/HLEAudioInternal.h"
 #include "HLEAudio/AudioBuffer.h"
 #include "HLEAudio/AudioPlugin.h"
-// #include "SysPSP/Utility/JobManager.h"
 #include "SysPSP/Utility/CacheUtil.h"
-// #include "SysPSP/Utility/JobManager.h"
 #include "Utility/FramerateLimiter.h"
 #include "System/Thread.h"
 #include "HLEAudio/Plugin/PSP/AudioPluginPSP.h"
 
+
+
+int audio_channel = -1;
 #ifdef DAEDALUS_PSP_USE_ME
 
 #include "SysPSP/PRX/MediaEngine/me.h"
 #include "SysPSP/Utility/ModulePSP.h"
 
-volatile me_struct *mei;
+std::unique_ptr<volatile struct me_struct> mei;
 
 bool InitialiseMediaEngine()
 {
@@ -65,11 +65,11 @@ bool InitialiseMediaEngine()
 	{
 		if( CModule::Load("Plugins/mediaengine.prx") < 0 )	return false;
 
-		mei = (volatile struct me_struct *)malloc_64(sizeof(struct me_struct));
-		mei = (volatile struct me_struct *)(make_uncached_ptr(mei));
-		sceKernelDcacheWritebackInvalidateAll();
+		mei = std::make_unique<volatile struct me_struct>(); 
+		// mei = (volatile struct me_struct *)(make_uncached_ptr(mei));
+		// sceKernelDcacheWritebackInvalidateAll();
 
-		if (InitME(mei) == 0)
+		if (InitME(mei.get()) == 0)
 		{
 			mePRXloaded = true;
 			return true;
@@ -99,7 +99,7 @@ static const u32	MAX_OUTPUT_FREQUENCY = kOutputFrequency * 4;
 
 
 // Large kAudioBufferSize creates huge delay on sound //Corn
-static const u32	kAudioBufferSize = 1024 * 2; // OSX uses a circular buffer length, 1024 * 1024
+// static const u32	kAudioBufferSize = 1024 * 2; // OSX uses a circular buffer length, 1024 * 1024
 
 
 
@@ -115,11 +115,11 @@ EAudioPluginMode AudioPlugin::GetMode() const
 
 void AudioPlugin::FillBuffer(Sample * buffer, u32 num_samples)
 {
-	sceKernelWaitSema( mSemaphore, 1, nullptr );
+	// sceKernelWaitSema( mSemaphore, 1, nullptr );
 
 	mAudioBufferUncached->Drain( buffer, num_samples );
 
-	sceKernelSignalSema( mSemaphore, 1 );
+	// sceKernelSignalSema( mSemaphore, 1 );
 }
 
 
@@ -127,17 +127,17 @@ AudioPlugin::AudioPlugin()
 :mKeepRunning (false)
 //: mAudioBuffer( kAudioBufferSize )
 , mFrequency( 44100 )
-,	mSemaphore( sceKernelCreateSema( "AudioPlugin", 0, 1, 1, nullptr ) )
+// ,	mSemaphore( sceKernelCreateSema( "AudioPlugin", 0, 1, 1, nullptr ) )
 //, mAudioThread ( kInvalidThreadHandle )
 //, mKeepRunning( false )
 //, mBufferLenMs ( 0 )
 {
 	// Allocate audio buffer with malloc_64 to avoid cached/uncached aliasing
-	void * mem = malloc_64( sizeof( CAudioBuffer ) );
-	mAudioBuffer = new( mem ) CAudioBuffer( kAudioBufferSize );
-  mAudioBufferUncached = (CAudioBuffer*)make_uncached_ptr(mem);
+	// alignas(64)	void * mem = new sizeof( CAudioBuffer );
+	// mAudioBuffer = new( mem ) CAudioBuffer( kAudioBufferSize );
+//   mAudioBufferUncached = (CAudioBuffer*)make_uncached_ptr(mem);
 	// Ideally we could just invalidate this range?
-	dcache_wbinv_range_unaligned( mAudioBuffer, mAudioBuffer+sizeof( CAudioBuffer ) );
+	// dcache_wbinv_range_unaligned( mAudioBuffer, mAudioBuffer+sizeof( CAudioBuffer ) );
 
 	#ifdef DAEDALUS_PSP_USE_ME
 	InitialiseMediaEngine();
@@ -146,10 +146,10 @@ AudioPlugin::AudioPlugin()
 
 AudioPlugin::~AudioPlugin( )
 {
-	mAudioBuffer->~CAudioBuffer();
-  free(mAudioBuffer);
-  sceKernelDeleteSema(mSemaphore);
-  pspAudioEnd();
+// 	mAudioBuffer->~CAudioBuffer();
+//   free(mAudioBuffer);
+//   sceKernelDeleteSema(mSemaphore);
+//   pspAudioEnd();
 }
 
 
@@ -158,10 +158,10 @@ void	AudioPlugin::StopEmulation()
 {
     Audio_Reset();
   	StopAudio();
-    sceKernelDeleteSema(mSemaphore);
-    pspAudioEndPre();
-    sceKernelDelayThread(100000);
-    pspAudioEnd();
+    // sceKernelDeleteSema(mSemaphore);
+    // pspAudioEndPre();
+    // sceKernelDelayThread(1000);
+    // pspAudioEnd();
 
 
 }
@@ -209,8 +209,8 @@ EProcessResult	AudioPlugin::ProcessAList()
 		case APM_ENABLED_ASYNC:
 			{
 #ifdef DAEDALUS_PSP_USE_ME
-				sceKernelDcacheWritebackInvalidateAll();
-				if(BeginME( mei, (int)&Audio_Ucode, (int)NULL, -1, NULL, -1, NULL) < 0){
+				// sceKernelDcacheWritebackInvalidateAll();
+				if(BeginME( mei.get(), (int)&Audio_Ucode, (int)NULL, -1, NULL, -1, NULL) < 0){
 						Audio_Ucode();
 						result = PR_COMPLETED;
 						break;
@@ -234,12 +234,12 @@ EProcessResult	AudioPlugin::ProcessAList()
 }
 
 
-void audioCallback( void * buf, unsigned int length, void * userdata )
-{
-	AudioPlugin * ac( reinterpret_cast< AudioPlugin * >( userdata ) );
+// void audioCallback( void * buf, unsigned int length, void * userdata )
+// {
+// 	AudioPlugin * ac( reinterpret_cast< AudioPlugin * >( userdata ) );
 
-	ac->FillBuffer( reinterpret_cast< Sample * >( buf ), length );
-}
+// 	ac->FillBuffer( reinterpret_cast< Sample * >( buf ), length );
+// }
 
 
 void AudioPlugin::StartAudio()
@@ -250,8 +250,12 @@ void AudioPlugin::StartAudio()
 	mKeepRunning = true;
 
 
-	pspAudioInit();
-	pspAudioSetChannelCallback( 0, audioCallback, this );
+    audio_channel = sceAudioChReserve(-1, 512, PSP_AUDIO_FORMAT_STEREO);
+    if (audio_channel < 0)
+    {
+        printf("Failed to reserve audio channel.\n");
+        return;
+    }
 
 	// Everything OK
 	audio_open = true;
@@ -273,16 +277,12 @@ void AudioPlugin::AddBuffer( u8 *start, u32 length )
 		break;
 
 	case APM_ENABLED_ASYNC:
-		{
-
-			mAudioBufferUncached->AddSamples( reinterpret_cast< const Sample * >( start ), num_samples, mFrequency, kOutputFrequency );
-		
-		}
-		break;
-
 	case APM_ENABLED_SYNC:
 		{
-			mAudioBufferUncached->AddSamples( reinterpret_cast< const Sample * >( start ), num_samples, mFrequency, kOutputFrequency );
+      // Output buffer to audio channel
+	  int volume = 0x8000; // Max volume
+	  int result = sceAudioOutput(audio_channel, volume, start);
+			// mAudioBufferUncached->AddSamples( reinterpret_cast< const Sample * >( start ), num_samples, mFrequency, kOutputFrequency );
 		}
 		break;
 	}
@@ -302,6 +302,14 @@ void AudioPlugin::StopAudio()
 	if (!mKeepRunning)
 		return;
 
+		if (audio_channel >= 0)
+		{
+			sceAudioChRelease(audio_channel);
+			audio_channel = -1;
+		}
+		#ifdef DAEDALUS_PSP_USE_ME
+		mei.reset(); 
+		#endif
 	mKeepRunning = false;
 
 	audio_open = false;

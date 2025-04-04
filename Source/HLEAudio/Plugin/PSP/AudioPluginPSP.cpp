@@ -42,7 +42,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Debug/DBGConsole.h"
 #include "HLEAudio/HLEAudioInternal.h"
 #include "HLEAudio/AudioBuffer.h"
-#include "HLEAudio/AudioPlugin.h"
+#include "HLEAudio/Plugin/AudioPlugin.h"
 // #include "SysPSP/Utility/JobManager.h"
 #include "SysPSP/Utility/CacheUtil.h"
 // #include "SysPSP/Utility/JobManager.h"
@@ -108,10 +108,6 @@ void AudioPlugin::SetMode(EAudioPluginMode mode)
 	audioPluginmode = mode;
 }
 
-EAudioPluginMode AudioPlugin::GetMode() const
-{
-	return audioPluginmode;
-}
 
 void AudioPlugin::FillBuffer(Sample * buffer, u32 num_samples)
 {

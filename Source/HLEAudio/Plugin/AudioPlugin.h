@@ -24,7 +24,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "Core/RSP_HLE.h"
 #include "HLEAudio/AudioBuffer.h"
+#include "HLEAudio/Plugin/SDL/RingBuffer.h"
 #include <memory>
+#include <thread> 
 
 enum EAudioPluginMode
 {
@@ -33,25 +35,40 @@ enum EAudioPluginMode
 	APM_ENABLED_SYNC,
 };
 
+
+
+
 class CAudioPlugin {
 public:
-  virtual ~CAudioPlugin() {}
+  CAudioPlugin();
+virtual ~CAudioPlugin();
 
-  virtual void StopEmulation() = 0;
 
-  enum ESystemType {
-    ST_NTSC,
-    ST_PAL,
-    ST_MPAL,
-  };
+enum ESystemType {
+  ST_NTSC,
+  ST_PAL,
+  ST_MPAL,
+};
 
-  virtual void DacrateChanged(int SystemType) = 0;
-  virtual void LenChanged() = 0;
+  virtual void StopEmulation();
+  virtual void StartAudio();
+  virtual void StopAudio();
+  void   AddBuffer(void * ptr, u32 length);
+  virtual void DacrateChanged(int SystemType);
+
+  u32                     mFrequency;
+  virtual void LenChanged();
   virtual u32 ReadLength() = 0;
-  virtual EProcessResult ProcessAList() = 0;
-  virtual void SetMode(EAudioPluginMode mode) = 0;
-  virtual EAudioPluginMode GetMode() const = 0;
+  virtual EProcessResult ProcessAList();
+  virtual void SetMode(EAudioPluginMode mode);
+  virtual EAudioPluginMode GetMode() const;
+  AudioRingBuffer mRingBuffer { 32768 }; // Adjust size as needed
+  EAudioPluginMode audioPluginmode = APM_DISABLED;
 
+  protected: 
+  virtual void AudioThread() = 0;
+  virtual void StopAudioDevice() = 0;
+  std::unique_ptr<std::thread>   mAudioThread;
 };
 
 

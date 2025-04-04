@@ -81,7 +81,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "HLEGraphics/GraphicsPlugin.h"
 #include "HLEGraphics/BaseRenderer.h"
-#include "HLEAudio/AudioPlugin.h"
+#include "HLEAudio/Plugin/AudioPlugin.h"
 #include "Interface/Preferences.h"
 #include "Interface/RomDB.h"
 #include "RomFile/RomFileMemory.h"

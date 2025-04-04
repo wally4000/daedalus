@@ -1,165 +1,75 @@
 #include <SDL2/SDL.h>
+#include <thread>
 
 #include "Base/Types.h"
 #include "Interface/ConfigOptions.h"
 #include "Utility/FramerateLimiter.h"
 #include "Core/Memory.h"
 #include "Debug/DBGConsole.h"
-#include "HLEAudio/AudioPlugin.h"
+#include "HLEAudio/Plugin/AudioPlugin.h"
 #include "HLEAudio/HLEAudioInternal.h"
 #include "System/Timing.h"
 #include "HLEAudio/Plugin/SDL/AudioPluginSDL.h"
-
+#include "HLEAudio/Plugin/SDL/RingBuffer.h"
 // EAudioPluginMode gAudioPluginEnabled = APM_ENABLED_ASYNC;
 
-SDL_Thread* Asyncthread = nullptr;
-int Asyncthreadreturn;
 
-void* Audio_UcodeEntry(void* arg) {
-    Audio_Ucode();
-    return nullptr;
-}
 
 AudioPlugin::AudioPlugin()
-    : mFrequency(44100), mAudioThread(nullptr), mAudioDevice(0)
+    :  mAudioDevice(0)
 {}
 
 AudioPlugin::~AudioPlugin()
 {
-    StopAudio();
-}
-
-void AudioPlugin::SetMode(EAudioPluginMode mode)
-{
-    audioPluginmode = mode;
+    StopAudioDevice();
 }
 
 
-
-void AudioPlugin::StopEmulation()
+void AudioPlugin::AudioThread()
 {
-    Audio_Reset();
-    StopAudio();
-}
-
-void AudioPlugin::DacrateChanged(int system_type)
-{
-    u32 clock      = (system_type == ST_NTSC) ? VI_NTSC_CLOCK : VI_PAL_CLOCK;
-    u32 dacrate    = Memory_AI_GetRegister(AI_DACRATE_REG);
-    u32 frequency  = clock / (dacrate + 1);
-
-    mFrequency = frequency;
-}
-
-void AudioPlugin::LenChanged()
-{
-    if (GetMode() > APM_DISABLED)
-    {
-        u32 address = Memory_AI_GetRegister(AI_DRAM_ADDR_REG) & 0xFFFFFF;
-        u32 length  = Memory_AI_GetRegister(AI_LEN_REG);
-
-        AddBuffer(g_pu8RamBase + address, length);
-    }
-}
-
-EProcessResult AudioPlugin::ProcessAList()
-{
-    Memory_SP_SetRegisterBits(SP_STATUS_REG, SP_STATUS_HALT);
-
-    EProcessResult result = PR_NOT_STARTED;
-
-    switch (GetMode())
-    {
-        case APM_DISABLED:
-            result = PR_COMPLETED;
-            break;
-        case APM_ENABLED_ASYNC:
-            Asyncthread = SDL_CreateThread((SDL_ThreadFunction)Audio_UcodeEntry, "Audio_UcodeThread", nullptr);
-            if (Asyncthread == nullptr) {
-                DBGConsole_Msg(0, "Failed to create Async thread", SDL_GetError());
-            } else {
-                SDL_DetachThread(Asyncthread);
-            }
-            result = PR_COMPLETED;
-            break;
-        case APM_ENABLED_SYNC:
-            Audio_Ucode();
-            result = PR_COMPLETED;
-            break;
-    }
-
-    return result;
-}
-
-
-void AudioPlugin::AddBuffer(void * ptr, u32 length)
-{
-    if (length == 0)
-        return;
-
-    if (mAudioThread == nullptr)
-        StartAudio();
-
-    u32 num_samples = length / sizeof(Sample);
-
-    // Queue the samples into SDL's audio buffer
-    if (SDL_QueueAudio(mAudioDevice, ptr, num_samples * sizeof(Sample)) != 0) {
-        DBGConsole_Msg(0, "SDL_QueueAudio error: %s", SDL_GetError());
-        return;
-    }
-}
-
-int AudioPlugin::AudioThread(void * arg)
-{
-    AudioPlugin * plugin = static_cast<AudioPlugin *>(arg);
-
-    SDL_AudioSpec audio_spec;
-    SDL_zero(audio_spec);
-    audio_spec.freq = plugin->mFrequency;
+    SDL_AudioSpec audio_spec{};
+    audio_spec.freq = mFrequency;
     audio_spec.format = AUDIO_S16SYS;
     audio_spec.channels = 2;
     audio_spec.samples = 4096;
-    audio_spec.callback = NULL;
-    audio_spec.userdata = plugin;
 
-    plugin->mAudioDevice = SDL_OpenAudioDevice(NULL, 0, &audio_spec, NULL, 0);
-    if (plugin->mAudioDevice == 0) {
-        DBGConsole_Msg(0, "Failed to open audio: %s", SDL_GetError());
-        return -1;
-    }
-
-    SDL_PauseAudioDevice(plugin->mAudioDevice, 0);
-
-    return 0;
-}
-
-void AudioPlugin::StartAudio()
-{
-    mAudioThread = SDL_CreateThread(&AudioThread, "Audio", this);
-
-    if (mAudioThread == nullptr)
+    mAudioDevice = SDL_OpenAudioDevice(NULL, 0, &audio_spec, NULL, 0);
+    if (mAudioDevice == 0)
     {
-        DBGConsole_Msg(0, "Failed to start the audio thread!");
-        FramerateLimiter_SetAuxillarySyncFunction(nullptr, nullptr);
-    }
-}
-
-void AudioPlugin::StopAudio()
-{
-    if (mAudioThread == nullptr)
+        DBGConsole_Msg(0, "Failed to open Audio: %s", SDL_GetError());
         return;
-
-    if (mAudioThread != nullptr)
-    {
-        int threadReturnValue;
-        SDL_WaitThread(mAudioThread, &threadReturnValue);
-        mAudioThread = nullptr;
     }
 
+    SDL_PauseAudioDevice(mAudioDevice, 0); // Start playback
+
+    std::vector<u8> buffer(4096);
+
+    while (mAudioThread->joinable())
+    {
+        size_t bytesRead = mRingBuffer.Pop(buffer.data(), buffer.size());
+
+        if (bytesRead > 0)
+        {
+            if (SDL_QueueAudio(mAudioDevice, buffer.data(), bytesRead) != 0)
+            {
+                DBGConsole_Msg(0, "SDL_QueueAudio error: %s", SDL_GetError());
+            }
+        }
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(10)); // Prevent 100% CPU usage
+    }
+}
+
+
+void AudioPlugin::StopAudioDevice()
+{
     // Clear the remaining audio data in SDL's audio buffer
     if (mAudioDevice != 0) {
         SDL_ClearQueuedAudio(mAudioDevice);
         SDL_CloseAudioDevice(mAudioDevice);
         mAudioDevice = 0;
     }
+
 }
+
+

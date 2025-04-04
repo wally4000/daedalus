@@ -3,7 +3,7 @@ add_library(Audio_Plugin OBJECT PSP/AudioPluginPSP.cpp )
 elseif(DAEDALUS_CTR)
 add_library(Audio_Plugin OBJECT CTR/AudioPluginCTR.cpp)
 else()
-add_library(Audio_Plugin OBJECT SDL/AudioPluginSDL.cpp)
+add_library(Audio_Plugin OBJECT AudioPlugin.cpp SDL/AudioPluginSDL.cpp)
 endif()
 
 if(DAEDALUS_PROFILE_AUDIOPLUGIN)

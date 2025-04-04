@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "Interface/ConfigOptions.h"
 #include "System/SystemInit.h"
-#include "HLEAudio/AudioPlugin.h"
+#include "HLEAudio/Plugin/AudioPlugin.h"
 
 
 enum ETextureHashFrequency

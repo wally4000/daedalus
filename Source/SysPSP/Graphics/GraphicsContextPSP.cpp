@@ -118,9 +118,9 @@ IGraphicsContext::IGraphicsContext()
 	void *ptr;
 	bool is_videmem;
 	ctx.videoMemoryManager->Alloc( DLISTSIZE, &ptr, &is_videmem );
-	list[0] = (u32*)ptr;
+	list[0] = (u32*)(((u32)ptr + 0xF) & ~0xF);
 	ctx.videoMemoryManager->Alloc( DLISTSIZE, &ptr, &is_videmem );
-	list[1] = (u32*)ptr;
+	list[1] = (u32*)(((u32)ptr + 0xF) & ~0xF);
 #endif
 }
 

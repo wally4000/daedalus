@@ -49,19 +49,17 @@ CROMFileMemory::CROMFileMemory()
 	}
 	
 #endif
-// #ifdef DAEDALUS_POSIX
-// 	mRomMemoryHeap = CMemoryHeap::Create(21 * 1024 * 1024);
-// #endif
+	mRomMemoryHeap = CMemoryHeap::Create(16 * 1024 * 1024);
 }
 
 void * CROMFileMemory::Alloc( u32 size )
 {
 		void * ptr = nullptr;
-	#ifdef DAEDALUS_PSP
+	// #ifdef DAEDALUS_PSP
 		return mRomMemoryHeap->Alloc( size );
-	#else
-		return malloc( size );
-	#endif
+	// #else
+	// 	return malloc( size );
+	// #endif
 
 	if (ptr == nullptr)
 	{
@@ -70,25 +68,3 @@ void * CROMFileMemory::Alloc( u32 size )
 	return ptr;
 }
 
-
-void  CROMFileMemory::Free(void * ptr)
-{
-
-	if (ptr == nullptr)
-	{
-		std::cerr << "Warning: Attempting to free a nullptr." << std::endl;
-		return;
-	}
-#ifdef DAEDALUS_PSP
-	if (mRomMemoryHeap)
-	{
-	mRomMemoryHeap->Free( ptr );
-	}
-	else
-	{
-		std::cerr << "Error: Trying to free memory but heap is not initialised" << std::endl;
-	}
-	#else
-	free( ptr );
-#endif
-}

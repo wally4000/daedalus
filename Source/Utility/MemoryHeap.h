@@ -25,16 +25,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Base/Types.h"
 #include "Utility/MathUtil.h"
 #include <memory> 
+#include <vector>
+#include <iostream>
+#include <algorithm>
 struct Chunk
 {
 	u8 *	Ptr;
 	u32		Length;
-#ifdef DAEDALUS_DEBUG_MEMORY
-	u32		Tag;
-#endif
 };
-
-
 
 class CMemoryHeap
 {
@@ -54,17 +52,14 @@ public:
 	//u32		GetAvailableMemory() const;
 	void		DisplayDebugInfo() const;
 #endif
-	private:
-
-	void *				InsertNew( u32 idx, u8 * adr, u32 size );
-
 
 	private:
-		u8 *				mBasePtr;
+	void *	InsertNew(u8 * adr, u32 size );
+		std::unique_ptr<u8[]> mBasePtr;
 		u32					mTotalSize;
-		bool				mDeleteOnDestruction;
 	
-		Chunk *				mpMemMap;
+		// Chunk *				mpMemMap;
+		std::vector<Chunk> mChunks;
 		u32					mMemMapLen;
 
 		

@@ -33,9 +33,9 @@ CVideoMemoryManager::CVideoMemoryManager()
 	}
 	else
 	{
-		mVideoMemoryHeap = std::unique_ptr<CMemoryHeap>(CMemoryHeap::Create(vram_base, vram_size));
+		mVideoMemoryHeap = CMemoryHeap::Create(vram_base, vram_size);
 		std::cout << "VRAM base: " << vram_base << std::endl;
-		std::cout << "VRAM Size: " << vram_size / 2014 << " KB" << std::endl;
+		std::cout << "VRAM Size: " << vram_size / 1024 << " KB" << std::endl;
 
 		void* ram_base = malloc_volatile(ERAM + 0xF);
 		if (ram_base == nullptr)
@@ -45,7 +45,7 @@ CVideoMemoryManager::CVideoMemoryManager()
 		else
 		{
 			ram_base = (void*)(((u32)ram_base +0xF) & ~0xF); // 16 byte alignment
-			mRamMemoryHeap = std::unique_ptr<CMemoryHeap>(CMemoryHeap::Create(make_uncached_ptr(ram_base),ERAM));
+			mRamMemoryHeap = CMemoryHeap::Create(make_uncached_ptr(ram_base),ERAM);
 		}
 	}
 }
@@ -65,12 +65,13 @@ bool CVideoMemoryManager::Alloc(u32 size, void **data, bool *isvidmem)
     *isvidmem = false;
 
     // Ensure that all memory is 16-byte aligned
-    size = AlignPow2(size, 16);
+    size = AlignPow2(size, 64);
 
     // Try to allocate fast VRAM
     void *mem = mVideoMemoryHeap->Alloc(size);
     if (mem != nullptr)
     {
+		mem = reinterpret_cast<void*>((reinterpret_cast<u32>(mem) + 0xF) & ~0xF);
         *data = mem;
         *isvidmem = true;
         return true;
@@ -83,6 +84,7 @@ bool CVideoMemoryManager::Alloc(u32 size, void **data, bool *isvidmem)
     mem = mRamMemoryHeap->Alloc(size);
     if (mem != nullptr)
     {
+		mem = reinterpret_cast<void*>((reinterpret_cast<u32>(mem) + 0xF) & ~0xF);
         *data = mem;
         *isvidmem = false;
         return true;

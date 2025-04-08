@@ -28,8 +28,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Utility/MemoryHeap.h"
 #include "Utility/MathUtil.h"
 
-bool Init_PSP_VideoMemoryManager();
-void Destroy_PSP_VideoMemoryManager();
 
 class CVideoMemoryManager
 {
@@ -39,7 +37,6 @@ public:
 
 	 bool			Alloc( u32 size, void ** data, bool * isvidmem );
 	 void			Free( void * ptr );
-	 void			Reset();
 #ifdef DAEDALUS_DEBUG_MEMORY
 	 void			DisplayDebugInfo() = 0;
 #endif

@@ -23,9 +23,36 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define UTILITY_ROMFILECACHE_H_
 
 #include "Base/Types.h"
+#include <vector>
+
+namespace
+{
+	static  u32	CACHE_SIZE;
+	static  u32 CHUNK_SIZE;
+	static  u32	STORAGE_BYTES;
+
+	static constexpr u32	INVALID_ADDRESS = u32( ~0 );
+}
+
 
 class ROMFile;
-struct SChunkInfo;
+struct SChunkInfo
+{
+	u32				StartOffset;
+	mutable u32		LastUseIdx;
+
+	bool		ContainsAddress( u32 address ) const
+	{
+		return address >= StartOffset && address < StartOffset + CHUNK_SIZE;
+	}
+
+	bool		InUse() const
+	{
+		return StartOffset != INVALID_ADDRESS;
+	}
+
+};
+
 
 class ROMFileCache
 {	using CacheIdx = u16;
@@ -45,17 +72,16 @@ class ROMFileCache
 		CacheIdx			GetCacheIndex( u32 address );
 
 	private:
-		std::shared_ptr<ROMFile> 		mpROMFile;
+		std::unique_ptr<ROMFile> 		mpROMFile;
+		std::unique_ptr<u8[]> mpStorage;			// Underlying storage. This is carved up between different chunks
 
-		u8 *				mpStorage;			// Underlying storage. This is carved up between different chunks
-		SChunkInfo *		mpChunkInfo;		// Info about which region a chunk is allocated to
-
+		std::vector<SChunkInfo>	mpChunkInfo;		// Info about which region a chunk is allocated to
+		std::vector<CacheIdx> mpChunkMap;
 		u32					mChunkMapEntries;	// i.e. Number of chunks in the rom
-		CacheIdx *			mpChunkMap;			// Map allowing quick lookups from address -> chunkidx
-
 		u32					mMRUIdx;			// Most recently used index
 
-		static const CacheIdx	INVALID_IDX = CacheIdx(-1);
-};
+		static constexpr CacheIdx	INVALID_IDX = static_cast<CacheIdx>(-1);
+
+	};
 
 #endif // UTILITY_ROMFILECACHE_H_

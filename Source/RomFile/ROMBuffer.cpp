@@ -50,7 +50,7 @@ extern bool isN3DS;
 namespace
 {
 	bool			sRomLoaded	= false;
-	u8 *			spRomData	= nullptr;
+	std::unique_ptr<u8[]> spRomData;
 	u32				sRomSize [[maybe_unused]]	= 0;
 	bool			sRomFixed	= false;
 	bool			sRomWritten	= false;
@@ -200,18 +200,30 @@ bool RomBuffer::Open()
 	{
 		// Now, allocate memory for rom - round up to a 4 byte boundry
 		u32		size_aligned =  AlignPow2( sRomSize, 4 );
-		u8 *	p_bytes =  (u8*)ctx.ROMFileMemory->Alloc( size_aligned );
-
-#ifndef DAEDALUS_PSP
-		if( !p_rom_file->LoadData( sRomSize, p_bytes, messages ) )
+		void* ptr = aligned_alloc(16, size_aligned);;
+			if (ptr == nullptr)
 		{
-			#ifdef DAEDALUS_DEBUG_CONSOLE
-			DBGConsole_Msg(0, "Failed to load [C%s]\n", filename.c_str());
-			#endif
-			ctx.ROMFileMemory->Free( p_bytes );
+			std::cerr << "Failed to allocate aligned memory." << std::endl;
 			return false;
 		}
-#else
+		spRomData.reset(static_cast<u8*>(ptr));
+
+		 if (!spRomData)
+		 {
+			std::cerr << "Failed to allocate memory for ROM Buffer" << std::endl;
+			return false;
+		 }
+
+// #ifndef DAEDALUS_PSP
+// 		if( !p_rom_file->LoadData( sRomSize, spRomData.get(), messages ) )
+// 		{
+// 			#ifdef DAEDALUS_DEBUG_CONSOLE
+// 			DBGConsole_Msg(0, "Failed to load [C%s]\n", filename.c_str());
+// 			#endif
+// 			spRomData.reset();
+// 			return false;
+// 		}
+// #else
 		u32 offset = 0;
 		u32 length_remaining( sRomSize );
 		const u32 TEMP_BUFFER_SIZE = 128 * 1024;
@@ -223,14 +235,14 @@ bool RomBuffer::Open()
 		{
 			u32 length_to_process( std::min( length_remaining, TEMP_BUFFER_SIZE ) );
 
-			if( !p_rom_file->ReadChunk( offset, p_bytes + offset, length_to_process ) )
+			if( !p_rom_file->ReadChunk( offset, spRomData.get() + offset, length_to_process ) )
 			{
 				break;
 			}
 
 			offset += length_to_process;
 			length_remaining -= length_to_process;
-
+			#ifdef DAEDALUS_PSP
 			ctx.graphicsContext->BeginFrame();
 			ctx.graphicsContext->ClearToBlack();
 			#ifdef INTRAFONT
@@ -238,12 +250,12 @@ bool RomBuffer::Open()
 			#endif
 			ctx.graphicsContext->EndFrame();
 			ctx.graphicsContext->UpdateFrame( false );
+			#endif
 		}
 	#ifdef INTRAFONT
 		 intraFontUnload( ltn8 );
 	#endif
-#endif
-		spRomData = p_bytes;
+// #endif
 		sRomFixed = true;
 
 	}
@@ -310,17 +322,13 @@ bool RomBuffer::Open()
 
 void	RomBuffer::Close()
 {
-	if (spRomData)
-	{
-		ctx.ROMFileMemory->Free( spRomData );
-		spRomData = nullptr;
-	}
 
 	if (spRomFileCache)
 	{
 		spRomFileCache->Close();
+		spRomFileCache.reset();
 	}
-
+	spRomData.reset();
 	sRomSize   = 0;
 	sRomLoaded = false;
 	sRomFixed  = false;
@@ -375,7 +383,7 @@ void	RomBuffer::GetRomBytesRaw( void * p_dst, u32 rom_start, u32 length )
 {
 	if( sRomFixed )
 	{
-		memcpy(p_dst, (const u8*)spRomData + rom_start, length );
+		memcpy(p_dst, spRomData.get() + rom_start, length );
 	}
 	else
 	{
@@ -396,7 +404,7 @@ void	RomBuffer::SaveRomValue( u32 value )
 void	RomBuffer::PutRomBytesRaw( u32 rom_start, const void * p_src, u32 length )
 {
 	DAEDALUS_ASSERT( sRomFixed, "Cannot put rom bytes when the data isn't fixed" );
-	memcpy( (u8*)spRomData + rom_start, p_src, length );
+	memcpy( spRomData.get() + rom_start, p_src, length );
 }
 
 
@@ -413,7 +421,7 @@ void * RomBuffer::GetAddressRaw( u32 rom_start )
 	{
 		if( sRomFixed )
 		{
-			return (u8 *)spRomData + rom_start;
+			return spRomData.get() + rom_start;
 		}
 		else
 		{
@@ -433,7 +441,7 @@ bool RomBuffer::CopyToRam( u8 * p_dst, u32 dst_offset, u32 dst_size, u32 src_off
 {
 	if( sRomFixed )
 	{
-		const u8* p_src = (const u8 *)spRomData ;
+		const u8* p_src = spRomData.get() ;
 		u32	src_size = sRomSize;
 
 		return DMA_HandleTransfer( p_dst, dst_offset, dst_size, p_src, src_offset, src_size, length );
@@ -479,7 +487,7 @@ bool RomBuffer::CopyFromRam( u32 dst_offset, const u8 * p_src, u32 src_offset, u
 {
 	if( sRomFixed )
 	{
-		u8 * p_dst = (u8 *)spRomData;
+		u8 * p_dst = spRomData.get();
 		u32	dst_size = sRomSize;
 
 		return DMA_HandleTransfer( p_dst, dst_offset, dst_size, p_src, src_offset, src_size, length );
@@ -503,5 +511,5 @@ const void * RomBuffer::GetFixedRomBaseAddress()
 	DAEDALUS_ASSERT( sRomLoaded, "The rom isn't loaded" );
 	DAEDALUS_ASSERT( sRomFixed, "Trying to access the rom base address when it's not fixed" );
 
-	return spRomData;
+	return spRomData.get();
 }

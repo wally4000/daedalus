@@ -32,8 +32,7 @@ public:
 	~CROMFileMemory();
 
 	void * 			Alloc( u32 size );
-	void			Free( void * ptr );
-
+	void			Free( void * ptr);
 	private: 
 	std::unique_ptr<CMemoryHeap> mRomMemoryHeap;
 };

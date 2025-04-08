@@ -17,25 +17,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-//Define line below to show amount of allocated VRAM //Corn
-#include <cstdio>
-
 
 #include "Utility/MemoryHeap.h"
-
-#include <string.h>
+#include <memory>
 #include <iostream>
 #include <cstring>
-
-
-
-//
-//  Allocator taken from.
-//  Taken from http://svn.ps2dev.org/filedetails.php?repname=psp&path=%2Ftrunk%2Fpspgl%2Fpspgl_vidmem.c&rev=0&sc=0
-//
-//	We probably need something a bit more suitable for our requirements eventually.
-//
-
+#include <cstdlib>
+#include <malloc.h>
 
 std::unique_ptr<CMemoryHeap> CMemoryHeap::Create(u32 size)
 {
@@ -49,24 +37,33 @@ std::unique_ptr<CMemoryHeap> CMemoryHeap::Create(void* base_ptr, u32 size)
 
 
 CMemoryHeap::CMemoryHeap( u32 size )
-:	mBasePtr( new u8[ size ] )
-,	mTotalSize( size )
-,	mDeleteOnDestruction( true )
-,	mpMemMap( NULL )
-,	mMemMapLen( 0 )
+:	mTotalSize(size)
 #ifdef SHOW_MEM
 ,	mMemAlloc( 0 )
 #endif
 {
+    void* ptr = nullptr;
+    #if defined(DAEDALUS_PSP)
+        ptr =  memalign(64, size);
+        if (!ptr)
+        {
+            std::cerr << "Failed to allocate aligned memory on PSP." << std::endl;
+            // throw std::bad_alloc();
+        }
+    #else
+        if (posix_memalign(&ptr, 16, size) != 0)
+        {
+            std::cerr << "Failed to allocate aligned memory on non-PSP system." << std::endl;
+            throw std::bad_alloc();
+        }
+    #endif
+
+    mBasePtr = std::unique_ptr<u8[]>(reinterpret_cast<u8*>(ptr));
 }
 
-
 CMemoryHeap::CMemoryHeap( void * base_ptr, u32 size )
-:	mBasePtr( reinterpret_cast< u8 * >( base_ptr ) )
+:	mBasePtr( static_cast<u8*>( base_ptr ) )
 ,	mTotalSize( size )
-,	mDeleteOnDestruction( false )
-,	mpMemMap( NULL )
-,	mMemMapLen( 0 )
 #ifdef SHOW_MEM
 ,	mMemAlloc( 0 )
 #endif
@@ -76,141 +73,129 @@ CMemoryHeap::CMemoryHeap( void * base_ptr, u32 size )
 
 CMemoryHeap::~CMemoryHeap()
 {
-	if( mDeleteOnDestruction )
-	{
-		delete [] mBasePtr;
-	}
 }
 
+
+
+// void* CMemoryHeap::Alloc( u32 size )
+// {
+// 	// FIXME(strmnnrmn): This code was removed at some point - does something else help guarantee alignment?
+// 	// Might be that we just want to lower it to 4 or 8.
+// 	// Ensure that all memory is 16-byte aligned
+// 	//size = AlignPow2( size, 16 );
+
+	
+
+// 	u8 * adr = mBasePtr;
+// 	u32 i;
+
+// 	for (i=0; i<mMemMapLen; ++i)
+// 	{
+// 		if( mpMemMap[i].Ptr != NULL )
+// 		{
+// 			u8 * new_adr = mpMemMap[i].Ptr;
+// 			if( adr + size <= new_adr )
+// 			{
+// #ifdef SHOW_MEM
+// 				mMemAlloc += size;
+// 				printf("VRAM %d +\n", mMemAlloc);
+// #endif
+// 				return InsertNew( i, adr, size );
+// 			}
+
+// 			adr = new_adr + mpMemMap[i].Length;
+// 		}
+// 	}
+
+// 	if( adr + size > mBasePtr + mTotalSize )
+// 	{
+// 		#ifdef DAEDALUS_ENABLE_ASSERTS
+// 		DAEDALUS_ASSERT( false, "Out of VRAM/RAM memory" );
+// 		#endif
+// 		return NULL;
+// 	}
+
+// #ifdef SHOW_MEM
+// 	mMemAlloc += size;
+// 	printf("VRAM %d +\n", mMemAlloc);
+// #endif
+// 	return InsertNew( mMemMapLen, adr, size );
+// }
+
+void* CMemoryHeap::Alloc(u32 size)
+{
+	if (size == 0 || size > mTotalSize)
+	{
+		std::cerr << "Invalid memory allocation size requested: " << size << " bytes." << std::endl;
+		return nullptr;
+	}
+
+	u8* addr = mBasePtr.get();
+
+	for (auto& chunk : mChunks)
+	{
+		if (addr + size <= chunk.Ptr)
+		{
+			return InsertNew(addr, size);
+		}
+		addr = chunk.Ptr + chunk.Length; 
+	}
+	
+	if ( addr + size > mBasePtr.get() + mTotalSize)
+	{
+		std::cerr << "Out of memory!" << std::endl;
+		return nullptr;
+	}
+
+	return InsertNew(addr, size);
+}
+
+
+
+
+
+void * CMemoryHeap::InsertNew( u8 * adr, u32 size )
+{
+	Chunk newChunk{ adr, size};
+	mChunks.emplace_back(newChunk);
+#ifdef SHOW_MEM
+	mMemAlloc += size;
+#endif 
+	return newChunk.Ptr;
+}
 
 bool	CMemoryHeap::IsFromHeap( void * ptr ) const
 {
-	return ptr >= mBasePtr && ptr < (mBasePtr + mTotalSize);
+	auto base = mBasePtr.get();
+	return (ptr >= base) && (ptr < (base + mTotalSize));
 }
-
-
-void * CMemoryHeap::InsertNew( u32 idx, u8 * adr, u32 size )
-{
-	Chunk *tmp = reinterpret_cast< Chunk * >( realloc(mpMemMap, (mMemMapLen + 1) * sizeof(mpMemMap[0]) ) );
-	if( tmp == NULL )
-	{
-		return NULL;
-	}
-
-	mpMemMap = tmp;
-	memmove(&mpMemMap[idx+1], &mpMemMap[idx], (mMemMapLen-idx) * sizeof(mpMemMap[0]));
-	mMemMapLen++;
-	mpMemMap[idx].Ptr = adr;
-	mpMemMap[idx].Length = size;
-//Tag seems broken - Kreationz
-//#ifdef DAEDALUS_DEBUG_MEMORY
-//	mpMemMap[idx].Tag = tag;
-//#endif
-
-	return mpMemMap[idx].Ptr;
-}
-
-
-void* CMemoryHeap::Alloc( u32 size )
-{
-	// FIXME(strmnnrmn): This code was removed at some point - does something else help guarantee alignment?
-	// Might be that we just want to lower it to 4 or 8.
-	// Ensure that all memory is 16-byte aligned
-	//size = AlignPow2( size, 16 );
-
-	u8 * adr = mBasePtr;
-	u32 i;
-
-	for (i=0; i<mMemMapLen; ++i)
-	{
-		if( mpMemMap[i].Ptr != NULL )
-		{
-			u8 * new_adr = mpMemMap[i].Ptr;
-			if( adr + size <= new_adr )
-			{
-#ifdef SHOW_MEM
-				mMemAlloc += size;
-				printf("VRAM %d +\n", mMemAlloc);
-#endif
-				return InsertNew( i, adr, size );
-			}
-
-			adr = new_adr + mpMemMap[i].Length;
-		}
-	}
-
-	if( adr + size > mBasePtr + mTotalSize )
-	{
-		#ifdef DAEDALUS_ENABLE_ASSERTS
-		DAEDALUS_ASSERT( false, "Out of VRAM/RAM memory" );
-		#endif
-		return NULL;
-	}
-
-#ifdef SHOW_MEM
-	mMemAlloc += size;
-	printf("VRAM %d +\n", mMemAlloc);
-#endif
-	return InsertNew( mMemMapLen, adr, size );
-}
-
 
 void  CMemoryHeap::Free( void * ptr )
 {
-	#ifdef DAEDALUS_ENABLE_ASSERTS
-	DAEDALUS_ASSERT( ptr == NULL || IsFromHeap( ptr ), "Memory is not from this heap" );
-#endif
-	if( ptr == nullptr ) 
-		return;
-
-	for ( u32 i=0; i < mMemMapLen; ++i )
+	auto it = std::find_if(mChunks.begin(), mChunks.end(), [ptr](const Chunk& chunk)
 	{
-		if( mpMemMap[i].Ptr == ptr )
-		{
+		return chunk.Ptr == ptr;
+	});
 
-#ifdef SHOW_MEM
-			mMemAlloc -= mpMemMap[i].Length;
-#endif
-			mMemMapLen--;
-			if (i < mMemMapLen)
-			{
-				std::memcpy(&mpMemMap[i], &mpMemMap[i + 1], (mMemMapLen - i) * sizeof(mpMemMap[0]));
-
-			}
-			// Try to shrink memory
-
-			if (mMemMapLen > 0 && (mMemMapLen % 64 == 0))  // Shrink only every 64 deletions
-            {
-                Chunk  *tmp = reinterpret_cast<Chunk*>( realloc( mpMemMap, mMemMapLen * sizeof(mpMemMap[0]) ) );
-                if( tmp != nullptr )
-                {
-                    mpMemMap = tmp;
-                }
-                else 
-                {
-                    std::cerr << "Memory Realloc Failed, old memory still valid. Length: " << mMemMapLen << std::endl;
-                }
-            }
-			return;
-		}
+	if (it != mChunks.end())
+	{
+	#ifdef SHOW_MEM
+		mMemAlloc -= it->Length;
+	#endif
+		mChunks.erase(it);
 	}
-#ifdef SHOW_MEM
-	printf("VRAM %d -\n", mMemAlloc);
-#endif
+	else{
+		std::cerr << "Attempted to free memory that was not allocated by this heap." << std::endl;
+	}
 }
 
 void CMemoryHeap::Reset()
 {
-	if (mpMemMap)
-	{
-		free(mpMemMap);
-		mpMemMap = nullptr;
-		mMemMapLen = 0;
-	}
+	mChunks.clear();
+#ifdef SHOW_MEM
+	mMemAlloc = 0;
+#endif
 
-	#ifdef SHOW_MEM
-		mMemAlloc = 0;
-	#endif
 }
 
 #ifdef DAEDALUS_DEBUG_MEMORY

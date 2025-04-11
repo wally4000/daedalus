@@ -43,6 +43,7 @@ class CController;
 class CTextureCache;
 class BaseRenderer;
 struct SCPUState;
+class CMemoryHeap;
 
 struct SystemContext {
     SystemContext(); 
@@ -53,6 +54,7 @@ struct SystemContext {
     std::unique_ptr<CRomSettingsDB> romSettingsDB;
     std::unique_ptr<CInputManager> inputManager;
     std::unique_ptr<CROMFileMemory> ROMFileMemory;
+    std::unique_ptr<CMemoryHeap> ROMMemoryHeap;
     std::unique_ptr<CController> pifController;
     std::unique_ptr<RomInfo> romInfo;
     std::unique_ptr<CTextureCache> textureCache;

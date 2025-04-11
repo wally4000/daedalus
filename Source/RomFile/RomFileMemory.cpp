@@ -22,14 +22,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "RomFile/RomFileMemory.h"
 
 #include <iostream> 
+#include "System/SystemInit.h"
 
 
 extern bool PSP_IS_SLIM;
 
 
-CROMFileMemory::~CROMFileMemory() {
-	mRomMemoryHeap.reset();
-}
+CROMFileMemory::~CROMFileMemory() {}
 
 
 CROMFileMemory::CROMFileMemory()
@@ -41,25 +40,22 @@ CROMFileMemory::CROMFileMemory()
 	//
 	if (PSP_IS_SLIM)
 	{
-		mRomMemoryHeap = std::unique_ptr<CMemoryHeap>(CMemoryHeap::Create(16 * 1024 * 1024));
+		ctx.ROMMemoryHeap = CMemoryHeap::Create(16 * 1024 * 1024);
 	}
 	else
 	{
-		mRomMemoryHeap = std::unique_ptr<CMemoryHeap>(CMemoryHeap::Create(2 * 1024 * 1024));
+		ctx.ROMMemoryHeap = CMemoryHeap::Create(2 * 1024 * 1024);
 	}
 	
+#else
+		ctx.ROMMemoryHeap = CMemoryHeap::Create(16 * 1024 * 1024);
 #endif
-	mRomMemoryHeap = CMemoryHeap::Create(16 * 1024 * 1024);
+
 }
 
 void * CROMFileMemory::Alloc( u32 size )
 {
-		void * ptr = nullptr;
-	// #ifdef DAEDALUS_PSP
-		return mRomMemoryHeap->Alloc( size );
-	// #else
-	// 	return malloc( size );
-	// #endif
+		void * ptr = ctx.ROMMemoryHeap->Alloc( size );
 
 	if (ptr == nullptr)
 	{

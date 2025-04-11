@@ -24,6 +24,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <cstring>
 #include <cstdlib>
 #include <malloc.h>
+#include "SysPSP/Utility/CacheUtil.h"
+std::vector<MemoryBlock> mBlockList;
+
 
 std::unique_ptr<CMemoryHeap> CMemoryHeap::Create(u32 size)
 {
@@ -36,27 +39,17 @@ std::unique_ptr<CMemoryHeap> CMemoryHeap::Create(void* base_ptr, u32 size)
 }
 
 
-CMemoryHeap::CMemoryHeap( u32 size )
-:	mTotalSize(size)
+CMemoryHeap::CMemoryHeap(u32 size)
+: mTotalSize(size)
 #ifdef SHOW_MEM
-,	mMemAlloc( 0 )
+, mMemAlloc(0)
 #endif
 {
-    void* ptr = nullptr;
-    #if defined(DAEDALUS_PSP)
-        ptr =  memalign(64, size);
-        if (!ptr)
-        {
-            std::cerr << "Failed to allocate aligned memory on PSP." << std::endl;
-            // throw std::bad_alloc();
-        }
-    #else
-        if (posix_memalign(&ptr, 16, size) != 0)
-        {
-            std::cerr << "Failed to allocate aligned memory on non-PSP system." << std::endl;
-            throw std::bad_alloc();
-        }
-    #endif
+	void* ptr = malloc_64(size);
+	if (!ptr)
+	{
+		std::cerr << "Failed to allocate aligned memory" << std::endl;
+	}
 
     mBasePtr = std::unique_ptr<u8[]>(reinterpret_cast<u8*>(ptr));
 }
@@ -71,85 +64,39 @@ CMemoryHeap::CMemoryHeap( void * base_ptr, u32 size )
 }
 
 
-CMemoryHeap::~CMemoryHeap()
-{
-}
+CMemoryHeap::~CMemoryHeap() {}
 
-
-
-// void* CMemoryHeap::Alloc( u32 size )
-// {
-// 	// FIXME(strmnnrmn): This code was removed at some point - does something else help guarantee alignment?
-// 	// Might be that we just want to lower it to 4 or 8.
-// 	// Ensure that all memory is 16-byte aligned
-// 	//size = AlignPow2( size, 16 );
-
-	
-
-// 	u8 * adr = mBasePtr;
-// 	u32 i;
-
-// 	for (i=0; i<mMemMapLen; ++i)
-// 	{
-// 		if( mpMemMap[i].Ptr != NULL )
-// 		{
-// 			u8 * new_adr = mpMemMap[i].Ptr;
-// 			if( adr + size <= new_adr )
-// 			{
-// #ifdef SHOW_MEM
-// 				mMemAlloc += size;
-// 				printf("VRAM %d +\n", mMemAlloc);
-// #endif
-// 				return InsertNew( i, adr, size );
-// 			}
-
-// 			adr = new_adr + mpMemMap[i].Length;
-// 		}
-// 	}
-
-// 	if( adr + size > mBasePtr + mTotalSize )
-// 	{
-// 		#ifdef DAEDALUS_ENABLE_ASSERTS
-// 		DAEDALUS_ASSERT( false, "Out of VRAM/RAM memory" );
-// 		#endif
-// 		return NULL;
-// 	}
-
-// #ifdef SHOW_MEM
-// 	mMemAlloc += size;
-// 	printf("VRAM %d +\n", mMemAlloc);
-// #endif
-// 	return InsertNew( mMemMapLen, adr, size );
-// }
 
 void* CMemoryHeap::Alloc(u32 size)
 {
 	if (size == 0 || size > mTotalSize)
-	{
-		std::cerr << "Invalid memory allocation size requested: " << size << " bytes." << std::endl;
 		return nullptr;
+
+	// Try to reuse a freed block
+	for (auto& block : mBlockList)
+	{
+		if (!block.used && block.size >= size)
+		{
+			block.used = true;
+			mUsedSize += size;
+			return block.ptr;
+		}
 	}
 
-	u8* addr = mBasePtr.get();
+	u8* base = mBasePtr.get();
+	u8* addr = base;
 
 	for (auto& chunk : mChunks)
-	{
-		if (addr + size <= chunk.Ptr)
-		{
-			return InsertNew(addr, size);
-		}
-		addr = chunk.Ptr + chunk.Length; 
-	}
-	
-	if ( addr + size > mBasePtr.get() + mTotalSize)
-	{
-		std::cerr << "Out of memory!" << std::endl;
+		addr = chunk.Ptr + chunk.Length;
+
+	if (addr + size > base + mTotalSize)
 		return nullptr;
-	}
 
-	return InsertNew(addr, size);
+	mUsedSize += size;
+	mChunks.push_back({ addr, size });
+	mBlockList.push_back({ addr, size, true });
+	return addr;
 }
-
 
 
 
@@ -158,6 +105,8 @@ void * CMemoryHeap::InsertNew( u8 * adr, u32 size )
 {
 	Chunk newChunk{ adr, size};
 	mChunks.emplace_back(newChunk);
+
+	mUsedSize += size;
 #ifdef SHOW_MEM
 	mMemAlloc += size;
 #endif 
@@ -170,24 +119,20 @@ bool	CMemoryHeap::IsFromHeap( void * ptr ) const
 	return (ptr >= base) && (ptr < (base + mTotalSize));
 }
 
-void  CMemoryHeap::Free( void * ptr )
+void CMemoryHeap::Free(void * ptr)
 {
-	auto it = std::find_if(mChunks.begin(), mChunks.end(), [ptr](const Chunk& chunk)
+	for (auto& block : mBlockList)
 	{
-		return chunk.Ptr == ptr;
-	});
-
-	if (it != mChunks.end())
-	{
-	#ifdef SHOW_MEM
-		mMemAlloc -= it->Length;
-	#endif
-		mChunks.erase(it);
+		if (block.ptr == ptr && block.used)
+		{
+			block.used = false;
+			mUsedSize -= block.size;
+			return;
+		}
 	}
-	else{
-		std::cerr << "Attempted to free memory that was not allocated by this heap." << std::endl;
-	}
+	std::cerr << "Attempted to free untracked or already freed block\n";
 }
+
 
 void CMemoryHeap::Reset()
 {

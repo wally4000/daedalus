@@ -33,6 +33,12 @@ struct Chunk
 	u8 *	Ptr;
 	u32		Length;
 };
+struct MemoryBlock {
+    u8* ptr;
+    u32 size;
+    bool used;
+};
+
 
 class CMemoryHeap
 {
@@ -46,6 +52,8 @@ public:
 	void *		Alloc( u32 size );
 	void		Free( void * ptr );
 	void		Reset();
+	u32 GetUsedSize() const { return mUsedSize; }
+    u32 GetTotalSize() const { return mTotalSize; }
 
 	bool		IsFromHeap( void * ptr ) const;		// Does this chunk of memory belong to this heap?
 #ifdef DAEDALUS_DEBUG_MEMORY
@@ -61,6 +69,7 @@ public:
 		// Chunk *				mpMemMap;
 		std::vector<Chunk> mChunks;
 		u32					mMemMapLen;
+		u32 mUsedSize = 0;
 
 		
 #ifdef SHOW_MEM

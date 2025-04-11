@@ -299,6 +299,7 @@ void Destroy_Renderer(SystemContext& ctx)
 
 static void Destroy_ROMBuffer(SystemContext& ctx) {
 	ctx.ROMFileMemory.reset();
+	ctx.ROMMemoryHeap.reset();
 }
 #ifdef DAEDALUS_PSP
 bool Init_PSPVideoMemoryManager(SystemContext& ctx)

@@ -29,14 +29,22 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <malloc.h>
 
-#ifdef DAEDALUS_PSP
-inline void *malloc_64(int size)
+inline void* malloc_64(size_t size)
 {
-	int mod_64 {size & 0x3f};
-	if (mod_64 != 0) size += 64 - mod_64;
-	return((void *)memalign(64, size));
+    size = (size + 63) & ~63;
+
+#if defined(DAEDALUS_PSP)
+    return memalign(64, size);
+#else
+    void* ptr = nullptr;
+    if (posix_memalign(&ptr, 64, size) != 0)
+        return nullptr;
+    return ptr;
+#endif
 }
 
+
+#ifdef DAEDALUS_PSP
 
 inline void dcache_wbinv_all()
 {

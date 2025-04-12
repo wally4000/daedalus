@@ -379,7 +379,7 @@ bool Legacy_RomBuffer_Open(SystemContext& ctx)
 {
 	// Create memory heap used for either ROM Cache or ROM buffer
 	// We do this to avoid memory fragmentation
-	return RomBuffer::Open(); // Not a class
+	return RomBuffer::Open(); 
 }
 
 void Legacy_RomBuffer_Close(SystemContext& ctx)

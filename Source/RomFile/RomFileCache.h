@@ -79,7 +79,9 @@ class ROMFileCache
 		std::vector<CacheIdx> mpChunkMap;
 		u32					mChunkMapEntries;	// i.e. Number of chunks in the rom
 		u32					mMRUIdx;			// Most recently used index
-
+		u32  mLastChunkIdx = ~0u;
+		u8*  mLastChunkPtr = nullptr;
+		u32  mLastChunkOffset = 0;
 		static constexpr CacheIdx	INVALID_IDX = static_cast<CacheIdx>(-1);
 
 	};

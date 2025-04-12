@@ -123,73 +123,95 @@ void	ROMFileCache::PurgeChunk( CacheIdx cache_idx )
 	chunk_info.LastUseIdx = 0;
 }
 
-ROMFileCache::CacheIdx	ROMFileCache::GetCacheIndex( u32 address )
+ROMFileCache::CacheIdx ROMFileCache::GetCacheIndex(u32 address)
 {
-	u32	chunk_map_idx =  AddressToChunkMapIndex( address );
+	u32 chunk_map_idx = AddressToChunkMapIndex(address);
+	DAEDALUS_ASSERT(chunk_map_idx < mChunkMapEntries, "chunk_map_idx out of bounds");
 
-	//	Check if this chunk is already cached, load if necessary
-	CacheIdx idx =  mpChunkMap[ chunk_map_idx ];
+	CacheIdx idx = mpChunkMap[chunk_map_idx];
 
-	if(idx == INVALID_IDX)
+	if (idx != INVALID_IDX)
 	{
-		CacheIdx selected_idx = 0;
-		u32	oldest_timestamp =  mpChunkInfo[ 0 ].LastUseIdx;
-
-		for(CacheIdx i = 1; i < CACHE_SIZE; ++i)
-		{
-			if (mpChunkInfo[i].LastUseIdx < oldest_timestamp)
-			{
-				oldest_timestamp = mpChunkInfo[i].LastUseIdx;
-				selected_idx = i;
-			}
-		}
-
-		PurgeChunk( selected_idx );
-
-		SChunkInfo &chunk_info =  mpChunkInfo[ selected_idx ];
-		chunk_info.StartOffset = GetChunkStartAddress( address );
-		chunk_info.LastUseIdx = ++mMRUIdx;
-
-		mpChunkMap[ chunk_map_idx ] = selected_idx;
-
-		u32	storage_offset =  selected_idx * CHUNK_SIZE;
-		u8 *p_dst = mpStorage.get() + storage_offset;
-
-		//DBGConsole_Msg( 0, "[CRomCache - loading %02x, %08x-%08x", selected_idx, chunk_info.StartOffset, chunk_info.StartOffset + CHUNK_SIZE );
-		mpROMFile->ReadChunk( chunk_info.StartOffset, p_dst, CHUNK_SIZE );
-
-		idx = selected_idx;
+		mpChunkInfo[idx].LastUseIdx = ++mMRUIdx;
+		return idx;
 	}
 
-	return idx;
+	CacheIdx selected_idx = 0;
+	u32 oldest_timestamp = mpChunkInfo[0].LastUseIdx;
+
+	for (CacheIdx i = 1; i < CACHE_SIZE; ++i)
+	{
+		if (mpChunkInfo[i].LastUseIdx < oldest_timestamp)
+		{
+			oldest_timestamp = mpChunkInfo[i].LastUseIdx;
+			selected_idx = i;
+		}
+	}
+
+	PurgeChunk(selected_idx);
+
+	SChunkInfo &chunk_info = mpChunkInfo[selected_idx];
+	chunk_info.StartOffset = GetChunkStartAddress(address);
+	chunk_info.LastUseIdx = ++mMRUIdx;
+
+	mpChunkMap[chunk_map_idx] = selected_idx;
+
+	u32 storage_offset = selected_idx * CHUNK_SIZE;
+	u8* p_dst = mpStorage.get() + storage_offset;
+
+#ifdef ENABLE_ROMCACHE_STATS
+	mStats.cacheMisses++;
+#endif
+
+	mpROMFile->ReadChunk(chunk_info.StartOffset,p_dst, CHUNK_SIZE);
+
+	return selected_idx;
 }
 
-bool	ROMFileCache::GetChunk( u32 rom_offset, u8 ** p_p_chunk_base, u32 * p_chunk_offset, u32 * p_chunk_size )
+bool ROMFileCache::GetChunk(u32 rom_offset, u8 **p_p_chunk_base, u32 *p_chunk_offset, u32 *p_chunk_size)
 {
-	u32	chunk_map_idx =  AddressToChunkMapIndex( rom_offset );
+	DAEDALUS_ASSERT(p_p_chunk_base != nullptr, "Null output pointer");
 
-	if(chunk_map_idx < mChunkMapEntries)
+	u32 chunk_idx = rom_offset / CHUNK_SIZE;
+
+	// ✅ Fast path: return last-used chunk
+	if (chunk_idx == mLastChunkIdx)
 	{
-		CacheIdx idx = GetCacheIndex( rom_offset );
-		#ifdef DAEDALUS_ENABLE_ASSERTS
-		DAEDALUS_ASSERT( idx < CACHE_SIZE, "Invalid chunk index!" );
-		#endif
-
-		if (idx != INVALID_IDX)
-		{
-			SChunkInfo &chunk_info = mpChunkInfo[ idx ];
-
-			u32	storage_offset = idx * CHUNK_SIZE;
-
-		*p_p_chunk_base = mpStorage.get() + storage_offset;
-		*p_chunk_offset = chunk_info.StartOffset;
-		*p_chunk_size = CHUNK_SIZE;	
+		*p_p_chunk_base = mLastChunkPtr;
+		*p_chunk_offset = mLastChunkOffset;
+		*p_chunk_size   = CHUNK_SIZE;
 		return true;
-		}
-		else
-		{
-			// Invalid address, no chunk available
-			return false;
-		}
-	}	
+	}
+
+	u32 chunk_map_idx = AddressToChunkMapIndex(rom_offset);
+
+	if (chunk_map_idx >= mChunkMapEntries)
+		return false;
+
+	CacheIdx idx = GetCacheIndex(rom_offset);
+
+#ifdef DAEDALUS_ENABLE_ASSERTS
+	DAEDALUS_ASSERT(idx < CACHE_SIZE, "Invalid chunk index!");
+#endif
+
+	if (idx != INVALID_IDX)
+	{
+		SChunkInfo &chunk_info = mpChunkInfo[idx];
+		u32 storage_offset = idx * CHUNK_SIZE;
+
+		u8* chunk_ptr = mpStorage.get() + storage_offset;
+
+		// ✅ Store new last chunk info
+		mLastChunkIdx = chunk_idx;
+		mLastChunkPtr = chunk_ptr;
+		mLastChunkOffset = chunk_info.StartOffset;
+
+		*p_p_chunk_base = chunk_ptr;
+		*p_chunk_offset = chunk_info.StartOffset;
+		*p_chunk_size   = CHUNK_SIZE;
+		return true;
+	}
+
+	// ❌ Not in cache
+	return false;
 }

@@ -77,7 +77,8 @@ namespace
 		else
 			return rom_size <  8 * 1024 * 1024;
 #else
-		return true;
+		return rom_size < 32 * 1024 * 1204;
+		// return true;
 #endif
 	}
 
@@ -214,16 +215,6 @@ bool RomBuffer::Open()
 			return false;
 		 }
 
-// #ifndef DAEDALUS_PSP
-// 		if( !p_rom_file->LoadData( sRomSize, spRomData.get(), messages ) )
-// 		{
-// 			#ifdef DAEDALUS_DEBUG_CONSOLE
-// 			DBGConsole_Msg(0, "Failed to load [C%s]\n", filename.c_str());
-// 			#endif
-// 			spRomData.reset();
-// 			return false;
-// 		}
-// #else
 		u32 offset = 0;
 		u32 length_remaining( sRomSize );
 		const u32 TEMP_BUFFER_SIZE = 128 * 1024;

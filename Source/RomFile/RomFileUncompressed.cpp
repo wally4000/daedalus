@@ -39,7 +39,7 @@ ROMFileUncompressed::ROMFileUncompressed( const std::filesystem::path filename )
 //*****************************************************************************
 ROMFileUncompressed::~ROMFileUncompressed()
 {
-    // mFH will automatically be closed by its destructor
+    mFH.close();
 }
 
 //*****************************************************************************

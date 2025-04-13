@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <cstdlib>
 #include <malloc.h>
 #include "SysPSP/Utility/CacheUtil.h"
-std::vector<MemoryBlock> mBlockList;
+
 
 
 std::unique_ptr<CMemoryHeap> CMemoryHeap::Create(u32 size)
@@ -41,6 +41,7 @@ std::unique_ptr<CMemoryHeap> CMemoryHeap::Create(void* base_ptr, u32 size)
 
 CMemoryHeap::CMemoryHeap(u32 size)
 : mTotalSize(size)
+, mUsedSize(0)
 #ifdef SHOW_MEM
 , mMemAlloc(0)
 #endif
@@ -57,6 +58,7 @@ CMemoryHeap::CMemoryHeap(u32 size)
 CMemoryHeap::CMemoryHeap( void * base_ptr, u32 size )
 :	mBasePtr( static_cast<u8*>( base_ptr ) )
 ,	mTotalSize( size )
+, 	mUsedSize(0)
 #ifdef SHOW_MEM
 ,	mMemAlloc( 0 )
 #endif
@@ -72,65 +74,63 @@ void* CMemoryHeap::Alloc(u32 size)
 	if (size == 0 || size > mTotalSize)
 		return nullptr;
 
-	// Try to reuse a freed block
-	for (auto& block : mBlockList)
+	// Try to reuse freed block
+	for (auto& chunk : mChunks)
 	{
-		if (!block.used && block.size >= size)
+		if (!chunk.Used && chunk.Length >= size)
 		{
-			block.used = true;
+			chunk.Used = true;
 			mUsedSize += size;
-			return block.ptr;
+#ifdef SHOW_MEM
+			mMemAlloc += size;
+#endif
+			return chunk.Ptr;
 		}
 	}
 
-	u8* base = mBasePtr.get();
-	u8* addr = base;
-
-	for (auto& chunk : mChunks)
+	// Allocate new block
+	u8* addr = mBasePtr.get();
+	for (const auto& chunk : mChunks)
 		addr = chunk.Ptr + chunk.Length;
 
-	if (addr + size > base + mTotalSize)
+	if (addr + size > mBasePtr.get() + mTotalSize)
+	{
+		std::cerr << "CMemoryHeap::Alloc - Out of memory\n";
 		return nullptr;
+	}
 
+	mChunks.push_back({ addr, size, true });
 	mUsedSize += size;
-	mChunks.push_back({ addr, size });
-	mBlockList.push_back({ addr, size, true });
+#ifdef SHOW_MEM
+	mMemAlloc += size;
+#endif
 	return addr;
 }
 
 
-
-
-void * CMemoryHeap::InsertNew( u8 * adr, u32 size )
+void CMemoryHeap::Free(void* ptr)
 {
-	Chunk newChunk{ adr, size};
-	mChunks.emplace_back(newChunk);
-
-	mUsedSize += size;
+	for (auto& chunk : mChunks)
+	{
+		if (chunk.Ptr == ptr && chunk.Used)
+		{
+			chunk.Used = false;
+			mUsedSize -= chunk.Length;
 #ifdef SHOW_MEM
-	mMemAlloc += size;
-#endif 
-	return newChunk.Ptr;
+			mMemAlloc -= chunk.Length;
+#endif
+			return;
+		}
+	}
+	std::cerr << "Attempted to free untracked or already freed block\n";
 }
+
+
 
 bool	CMemoryHeap::IsFromHeap( void * ptr ) const
 {
 	auto base = mBasePtr.get();
 	return (ptr >= base) && (ptr < (base + mTotalSize));
-}
-
-void CMemoryHeap::Free(void * ptr)
-{
-	for (auto& block : mBlockList)
-	{
-		if (block.ptr == ptr && block.used)
-		{
-			block.used = false;
-			mUsedSize -= block.size;
-			return;
-		}
-	}
-	std::cerr << "Attempted to free untracked or already freed block\n";
 }
 
 

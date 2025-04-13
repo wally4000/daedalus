@@ -32,45 +32,33 @@ struct Chunk
 {
 	u8 *	Ptr;
 	u32		Length;
+	bool Used;
 };
-struct MemoryBlock {
-    u8* ptr;
-    u32 size;
-    bool used;
-};
-
 
 class CMemoryHeap
 {
 public:
-	static std::unique_ptr<CMemoryHeap> Create( u32 size );						// Allocate and manage a new region of this size
-	static std::unique_ptr<CMemoryHeap> Create( void * base_ptr, u32 size );		// Manage this region of pre-allocated memory
+	static std::unique_ptr<CMemoryHeap> Create( u32 size );					
+	static std::unique_ptr<CMemoryHeap> Create( void * base_ptr, u32 size );
 
 	CMemoryHeap(u32 size );
 	CMemoryHeap( void * base_ptr, u32 size);
 	~CMemoryHeap();
+
 	void *		Alloc( u32 size );
 	void		Free( void * ptr );
 	void		Reset();
-	u32 GetUsedSize() const { return mUsedSize; }
-    u32 GetTotalSize() const { return mTotalSize; }
-
-	bool		IsFromHeap( void * ptr ) const;		// Does this chunk of memory belong to this heap?
+	bool		IsFromHeap( void * ptr ) const;
 #ifdef DAEDALUS_DEBUG_MEMORY
 	//u32		GetAvailableMemory() const;
 	void		DisplayDebugInfo() const;
 #endif
 
 	private:
-	void *	InsertNew(u8 * adr, u32 size );
 		std::unique_ptr<u8[]> mBasePtr;
-		u32					mTotalSize;
-	
-		// Chunk *				mpMemMap;
-		std::vector<Chunk> mChunks;
-		u32					mMemMapLen;
+		u32	mTotalSize = 0;
 		u32 mUsedSize = 0;
-
+		std::vector<Chunk> mChunks;
 		
 #ifdef SHOW_MEM
 u32					mMemAlloc;

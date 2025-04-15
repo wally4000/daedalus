@@ -24,6 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "Base/Types.h"
 #include "SysPSP/HLEGraphics/Combiner/CombinerInput.h"
+#include <memory>
 
 class CAlphaRenderSettings;
 class CBlendStates;
@@ -44,26 +45,32 @@ public:
 	const CBlendStates *		GetBlendStates() const				{ return mBlendStates; }
 
 private:
-	CBlendStates *				GenerateBlendStates( const CCombinerOperand * colour_operand, const CCombinerOperand * alpha_operand ) const;
+	CBlendStates *				GenerateBlendStates( const std::unique_ptr<CCombinerOperand>& colour_operand, const std::unique_ptr<CCombinerOperand>& alpha_operand ) const;
 
-	CAlphaRenderSettings *		GenerateAlphaRenderSettings(  const CCombinerOperand * operand ) const;
-	void						GenerateRenderSettings( CBlendStates * states, const CCombinerOperand * operand ) const;
-
-
-	static CCombinerOperand *	Simplify( CCombinerOperand * operand );
+	CAlphaRenderSettings *		GenerateAlphaRenderSettings(  const std::unique_ptr<CCombinerOperand>& operand ) const;
+	void						GenerateRenderSettings( CBlendStates * states, const std::unique_ptr<CCombinerOperand>& operand ) const;
 
 
-	static CCombinerOperand *	BuildCycle1( ECombinerInput a, ECombinerInput b, ECombinerInput c, ECombinerInput d );
-	static CCombinerOperand *	BuildCycle2( ECombinerInput a, ECombinerInput b, ECombinerInput c, ECombinerInput d, const CCombinerOperand * cycle_1_output );
+	static std::unique_ptr<CCombinerOperand>	Simplify( std::unique_ptr<CCombinerOperand> operand );
 
-	static CCombinerOperand *	Build( CCombinerOperand * a, CCombinerOperand * b, CCombinerOperand * c, CCombinerOperand * d );
+
+	static std::unique_ptr<CCombinerOperand>	BuildCycle1( ECombinerInput a, ECombinerInput b, ECombinerInput c, ECombinerInput d );
+	static std::unique_ptr<CCombinerOperand> BuildCycle2(
+		ECombinerInput a,
+		ECombinerInput b,
+		ECombinerInput c,
+		ECombinerInput d,
+		const std::unique_ptr<CCombinerOperand>& cycle_1_output
+	);
+
+	static std::unique_ptr<CCombinerOperand>	Build( std::unique_ptr<CCombinerOperand> a, std::unique_ptr<CCombinerOperand> b, std::unique_ptr<CCombinerOperand> c, std::unique_ptr<CCombinerOperand> d );
 
 private:
 	u64							mMux;
-	CCombinerOperand *			mCycle1;
-	CCombinerOperand *			mCycle1A;
-	CCombinerOperand *			mCycle2;
-	CCombinerOperand *			mCycle2A;
+	std::unique_ptr<CCombinerOperand>			mCycle1;
+	std::unique_ptr<CCombinerOperand>			mCycle1A;
+	std::unique_ptr<CCombinerOperand>			mCycle2;
+	std::unique_ptr<CCombinerOperand>			mCycle2A;
 
 	CBlendStates *				mBlendStates;
 };

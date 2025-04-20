@@ -3,14 +3,15 @@
 
 #include <GL/picaGL.h>
 
-#include "Combiner/BlendConstant.h"
-#include "Combiner/CombinerTree.h"
-#include "Combiner/RenderSettings.h"
+
 #include "Core/ROM.h"
 #include "Debug/Dump.h"
 #include "Graphics/GraphicsContext.h"
 #include "Graphics/NativeTexture.h"
 #include "HLEGraphics/CachedTexture.h"
+#include "HLEGraphics/Combiner/BlendConstant.h"
+#include "HLEGraphics/Combiner/CombinerTree.h"
+#include "HLEGraphics/Combiner/RenderSettings.h"
 #include "HLEGraphics/DLDebug.h"
 #include "HLEGraphics/RDPStateManager.h"
 #include "HLEGraphics/TextureCache.h"

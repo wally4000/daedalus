@@ -19,14 +19,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #pragma once
 
-#ifndef SYSPSP_HLEGRAPHICS_COMBINER_COMBINEREXPRESSION_H_
-#define SYSPSP_HLEGRAPHICS_COMBINER_COMBINEREXPRESSION_H_
+#ifndef HLEGRAPHICS_COMBINER_COMBINEREXPRESSION_H_
+#define HLEGRAPHICS_COMBINER_COMBINEREXPRESSION_H_
 
 #include <vector>
 #include <algorithm>
 
-#include "SysPSP/HLEGraphics/Combiner/CombinerInput.h"
 #include "Base/Types.h"
+#include "CombinerInput.h"
 
 class COutputStream;
 
@@ -256,4 +256,4 @@ private:
 	std::vector< Node >	mOperands;
 };
 
-#endif // SYSPSP_HLEGRAPHICS_COMBINER_COMBINEREXPRESSION_H_
+#endif // HLEGRAPHICS_COMBINER_COMBINEREXPRESSION_H_

@@ -1,19 +1,27 @@
 add_library(HLEGraphics OBJECT 
-                            BaseRenderer.cpp 
-                            CachedTexture.cpp 
-                            ConvertImage.cpp 
-                            ConvertTile.cpp 
-                            DLDebug.cpp 
-                            DLParser.cpp 
-                            Microcode.cpp 
-                            RDP.cpp 
-                            RDPStateManager.cpp 
-                            TextureCache.cpp 
-                            TextureInfo.cpp 
-                            TMEM.cpp 
-                            uCodes/Ucode.cpp
+    BaseRenderer.cpp 
+    CachedTexture.cpp 
+    ConvertImage.cpp 
+    ConvertTile.cpp 
+    DLDebug.cpp 
+    DLParser.cpp 
+    Microcode.cpp 
+    RDP.cpp 
+    RDPStateManager.cpp 
+    TextureCache.cpp 
+    TextureInfo.cpp 
+    TMEM.cpp 
+    uCodes/Ucode.cpp
+)
 
-            )
+if (DAEDALUS_CTR OR DAEDALUS_PSP)
+    target_sources(HLEGraphics PRIVATE
+        Combiner/BlendConstant.cpp 
+        Combiner/CombinerExpression.cpp 
+        Combiner/CombinerTree.cpp 
+        Combiner/RenderSettings.cpp
+    )
+endif()
 
 if(DAEDALUS_GL)
 

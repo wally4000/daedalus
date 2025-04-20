@@ -5,9 +5,9 @@
 
 
 #include <glm/gtc/type_ptr.hpp>  
-#include "Combiner/BlendConstant.h"
-#include "Combiner/CombinerTree.h"
-#include "Combiner/RenderSettings.h"
+#include "HLEGraphics/Combiner/BlendConstant.h"
+#include "HLEGraphics/Combiner/CombinerTree.h"
+#include "HLEGraphics/Combiner/RenderSettings.h"
 #include "Core/ROM.h"
 #include "Debug/Dump.h"
 #include "Graphics/GraphicsContext.h"

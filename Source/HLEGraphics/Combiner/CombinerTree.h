@@ -19,11 +19,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #pragma once
 
-#ifndef SYSPSP_HLEGRAPHICS_COMBINER_COMBINERTREE_H_
-#define SYSPSP_HLEGRAPHICS_COMBINER_COMBINERTREE_H_
+#ifndef HLEGRAPHICS_COMBINER_COMBINERTREE_H_
+#define HLEGRAPHICS_COMBINER_COMBINERTREE_H_
 
 #include "Base/Types.h"
-#include "SysPSP/HLEGraphics/Combiner/CombinerInput.h"
+#include "CombinerInput.h"
 
 class CAlphaRenderSettings;
 class CBlendStates;
@@ -68,4 +68,4 @@ private:
 	CBlendStates *				mBlendStates;
 };
 
-#endif // SYSPSP_HLEGRAPHICS_COMBINER_COMBINERTREE_H_
+#endif // HLEGRAPHICS_COMBINER_COMBINERTREE_H_

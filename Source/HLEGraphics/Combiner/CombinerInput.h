@@ -19,8 +19,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #pragma once
 
-#ifndef SYSPSP_HLEGRAPHICS_COMBINER_COMBINERINPUT_H_
-#define SYSPSP_HLEGRAPHICS_COMBINER_COMBINERINPUT_H_
+#ifndef HLEGRAPHICS_COMBINER_COMBINERINPUT_H_
+#define HLEGRAPHICS_COMBINER_COMBINERINPUT_H_
 
 //*****************************************************************************
 //
@@ -49,4 +49,4 @@ enum ECombinerInput
 
 const char * GetCombinerInputName( ECombinerInput input );
 
-#endif // SYSPSP_HLEGRAPHICS_COMBINER_COMBINERINPUT_H_
+#endif // HLEGRAPHICS_COMBINER_COMBINERINPUT_H_

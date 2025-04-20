@@ -10,11 +10,6 @@ add_library(HLEGraphics_PSP OBJECT
                                     TransformWithColour.S
                                     TransformWithLighting.S
                                     VectorClipping.S
-
-                                    Combiner/BlendConstant.cpp 
-                                    Combiner/CombinerExpression.cpp 
-                                    Combiner/CombinerTree.cpp 
-                                    Combiner/RenderSettings.cpp
             )
 
 if(DAEDALUS_PROFILE_HLEGRAPHICS_PSP)

@@ -19,8 +19,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #pragma once
 
-#ifndef SYSPSP_HLEGRAPHICS_COMBINER_BLENDCONSTANT_H_
-#define SYSPSP_HLEGRAPHICS_COMBINER_BLENDCONSTANT_H_
+#ifndef HLEGRAPHICS_COMBINER_BLENDCONSTANT_H_
+#define HLEGRAPHICS_COMBINER_BLENDCONSTANT_H_
 
 #include <string>
 
@@ -122,9 +122,11 @@ struct MulOp
 	static inline c32 Process( c32 a, c32 b )	{ return a.Modulate( b ); }
 	static inline const char * OpString()		{ return " * "; }
 };
-using CBlendConstantExpressionAdd = CBlendConstantExpression2< AddOp >;
-using CBlendConstantExpressionSub = CBlendConstantExpression2< SubOp >;
-using CBlendConstantExpressionMul = CBlendConstantExpression2< MulOp >;
+
+typedef CBlendConstantExpression2< AddOp >	CBlendConstantExpressionAdd;
+typedef CBlendConstantExpression2< SubOp >	CBlendConstantExpressionSub;
+typedef CBlendConstantExpression2< MulOp >	CBlendConstantExpressionMul;
+
 
 
 class CBlendConstantExpressionBlend : public CBlendConstantExpression
@@ -154,4 +156,4 @@ private:
 	const CBlendConstantExpression *			mF;
 };
 
-#endif // SYSPSP_HLEGRAPHICS_COMBINER_BLENDCONSTANT_H_
+#endif // HLEGRAPHICS_COMBINER_BLENDCONSTANT_H_

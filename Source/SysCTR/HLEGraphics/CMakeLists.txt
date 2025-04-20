@@ -4,10 +4,6 @@ add_library(HLEGraphics_CTR OBJECT
                     ColourAdjuster.cpp
                     GraphicsPluginCTR.cpp
                     RendererCTR.cpp
-                    Combiner/BlendConstant.cpp
-                    Combiner/CombinerExpression.cpp
-                    Combiner/CombinerTree.cpp
-                    Combiner/RenderSettings.cpp
                     )
 
 if(DAEDALUS_PROFILE_HLEGRAPHICS_CTR)

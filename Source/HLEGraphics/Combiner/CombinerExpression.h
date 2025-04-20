@@ -24,6 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <vector>
 #include <algorithm>
+#include <memory>
 
 #include "Base/Types.h"
 #include "CombinerInput.h"
@@ -50,7 +51,7 @@ public:
 
 	ECombinerType					GetType() const							{ return mType; }
 
-	virtual CCombinerOperand *		Clone() const = 0;
+	virtual std::unique_ptr<CCombinerOperand> Clone() const = 0;
 
 	virtual bool					IsInput( ECombinerInput input ) const	{ return false; }
 	virtual bool					IsInput() const							{ return false; }
@@ -61,7 +62,7 @@ public:
 	virtual int						Compare( const CCombinerOperand & other ) const = 0;
 	virtual bool					IsEqual( const CCombinerOperand & rhs ) const	{ return Compare( rhs ) == 0; }
 
-	virtual CCombinerOperand *		SimplifyAndReduce() const = 0;
+	virtual std::unique_ptr<CCombinerOperand>		SimplifyAndReduce() const = 0;
 	virtual COutputStream &			Stream( COutputStream & stream ) const = 0;
 
 private:
@@ -82,11 +83,11 @@ public:
 
 	ECombinerInput					GetInput() const						{ return mInput; }
 
-	virtual CCombinerOperand *		Clone() const							{ return new CCombinerInput( mInput ); }
+	virtual std::unique_ptr<CCombinerOperand>		Clone() const							{ return std::make_unique<CCombinerInput>( mInput ); }
 	virtual bool					IsInput( ECombinerInput input ) const	{ return input == mInput; }
 	virtual bool					IsInput() const							{ return true; }
 
-	virtual CCombinerOperand *		SimplifyAndReduce()	const				{ return Clone(); }
+	virtual std::unique_ptr<CCombinerOperand>		SimplifyAndReduce()	const				{ return Clone(); }
 
 	virtual bool					IsEqual( const CCombinerOperand & rhs ) const	{ return rhs.IsInput( mInput ); }
 
@@ -105,29 +106,33 @@ private:
 class CCombinerBlend : public CCombinerOperand
 {
 public:
-	CCombinerBlend( CCombinerOperand * a, CCombinerOperand * b, CCombinerOperand * f )
+	CCombinerBlend( std::unique_ptr<CCombinerOperand>  a, std::unique_ptr<CCombinerOperand> b, std::unique_ptr<CCombinerOperand> f )
 		:	CCombinerOperand( CT_BLEND )
-		,	mInputA( a )
-		,	mInputB( b )
-		,	mInputF( f )
+		,	mInputA( std::move(a) )
+		,	mInputB( std::move(b) )
+		,	mInputF( std::move(f) )
 	{
 	}
 
 	~CCombinerBlend()
 	{
-		delete mInputA;
-		delete mInputB;
-		delete mInputF;
 	}
 
-	CCombinerOperand *				GetInputA() const						{ return mInputA; }
-	CCombinerOperand *				GetInputB() const						{ return mInputB; }
-	CCombinerOperand *				GetInputF() const						{ return mInputF; }
+	CCombinerOperand *				GetInputA() const						{ return mInputA.get(); }
+	CCombinerOperand *				GetInputB() const						{ return mInputB.get(); }
+	CCombinerOperand *				GetInputF() const						{ return mInputF.get(); }
 
-	virtual CCombinerOperand *		Clone() const							{ return new CCombinerBlend( mInputA->Clone(), mInputB->Clone(), mInputF->Clone() ); }
+	virtual std::unique_ptr<CCombinerOperand> Clone() const override
+	{
+		return std::make_unique<CCombinerBlend>(
+			mInputA->Clone(),
+			mInputB->Clone(),
+			mInputF->Clone()
+		);
+	}
 	virtual bool					IsBlend() const							{ return true; }
 
-	virtual CCombinerOperand *		SimplifyAndReduce()	const				{ return Clone(); }
+	virtual std::unique_ptr<CCombinerOperand>		SimplifyAndReduce()	const				{ return Clone(); }
 
 	virtual bool					IsEqual( const CCombinerOperand & rhs ) const	{ return Compare( rhs ) == 0; }
 
@@ -135,9 +140,9 @@ public:
 	virtual COutputStream &			Stream( COutputStream & stream ) const;
 
 private:
-	CCombinerOperand *		mInputA;
-	CCombinerOperand *		mInputB;
-	CCombinerOperand *		mInputF;
+std::unique_ptr<CCombinerOperand> mInputA;
+std::unique_ptr<CCombinerOperand> mInputB;
+std::unique_ptr<CCombinerOperand> mInputF;
 };
 
 
@@ -148,28 +153,31 @@ class CCombinerSum : public CCombinerOperand
 {
 public:
 	CCombinerSum();
-	CCombinerSum( CCombinerOperand * operand );
+	CCombinerSum( std::unique_ptr<CCombinerOperand> operand );
 	CCombinerSum( const CCombinerSum & rhs );
 	~CCombinerSum();
 
 	virtual int							Compare( const CCombinerOperand & other ) const;
-	void								Add( CCombinerOperand * operand );
+	void								Add( std::unique_ptr<CCombinerOperand> operand );
 
-	void								Sub( CCombinerOperand * operand );
+	void								Sub( std::unique_ptr<CCombinerOperand> operand );
 
 	// Try to reduce this operand to a blend. If it fails, returns NULL
-	CCombinerOperand *					ReduceToBlend() const;
+	std::unique_ptr<CCombinerOperand>					ReduceToBlend() const;
 
-	virtual CCombinerOperand *			SimplifyAndReduce() const;
+	virtual std::unique_ptr<CCombinerOperand> 	SimplifyAndReduce() const;
 
 	void								SortOperands()					{ std::sort( mOperands.begin(), mOperands.end(), SortCombinerOperandPtr() ); }
 
 	u32									GetNumOperands() const			{ return mOperands.size(); }
-	const CCombinerOperand *			GetOperand( u32 i ) const		{ return mOperands[ i ].Operand; }
+	const CCombinerOperand* GetOperand(u32 i) const {	return mOperands[i].Operand.get(); }
 	bool								IsTermNegated( u32 i ) const	{ return mOperands[ i ].Negate; }
 
 	virtual bool						IsSum() const					{ return true; }
-	virtual CCombinerOperand *			Clone() const					{ return new CCombinerSum( *this ); }
+	virtual std::unique_ptr<CCombinerOperand> Clone() const override
+	{
+		return std::make_unique<CCombinerSum>(*this);
+	}
 
 	virtual COutputStream &				Stream( COutputStream & stream ) const;
 
@@ -177,14 +185,12 @@ private:
 
 	struct Node
 	{
-		Node( CCombinerOperand * operand, bool negate )
-			:	Operand( operand )
-			,	Negate( negate )
-		{
-		}
+		std::unique_ptr<CCombinerOperand> Operand;
+		bool Negate;
 
-		CCombinerOperand *	Operand;
-		bool				Negate;
+		Node( std::unique_ptr<CCombinerOperand> operand, bool negate )
+			:	Operand( std::move(operand))
+			,	Negate( negate ) {}
 	};
 	struct SortCombinerOperandPtr
 	{
@@ -212,7 +218,7 @@ class CCombinerProduct : public CCombinerOperand
 {
 public:
 	CCombinerProduct();
-	CCombinerProduct( CCombinerOperand * operand );
+	CCombinerProduct( std::unique_ptr<CCombinerOperand> operand );
 	CCombinerProduct( const CCombinerProduct & rhs );
 	~CCombinerProduct();
 
@@ -220,17 +226,17 @@ public:
 
 	virtual int					Compare( const CCombinerOperand & other ) const;
 
-	void						Mul( CCombinerOperand * operand );
+	void						Mul( std::unique_ptr<CCombinerOperand> operand );
 
-	virtual CCombinerOperand *	SimplifyAndReduce() const;
+	virtual std::unique_ptr<CCombinerOperand> SimplifyAndReduce() const;
 
 	void						SortOperands()				{ std::sort( mOperands.begin(), mOperands.end(), SortCombinerOperandPtr() ); }
 
 	u32							GetNumOperands() const		{ return mOperands.size(); }
-	const CCombinerOperand *	GetOperand( u32 i ) const	{ return mOperands[ i ].Operand; }
+	const CCombinerOperand* GetOperand(u32 i) const {	return mOperands[i].Operand.get(); }
 
 	virtual bool				IsProduct() const			{ return true; }
-	virtual CCombinerOperand *	Clone() const				{ return new CCombinerProduct( *this ); }
+	virtual std::unique_ptr<CCombinerOperand>	Clone() const				{ return std::make_unique<CCombinerProduct>( *this ); }
 
 	virtual COutputStream &		Stream( COutputStream & stream ) const;
 
@@ -238,11 +244,11 @@ private:
 
 	struct Node
 	{
-		Node( CCombinerOperand * operand )
-			:	Operand( operand )
+		Node( std::unique_ptr<CCombinerOperand> operand )
+			:	Operand( std::move(operand) )
 		{
 		}
-		CCombinerOperand *	Operand;
+		std::unique_ptr<CCombinerOperand>	Operand;
 	};
 	struct SortCombinerOperandPtr
 	{
@@ -253,7 +259,7 @@ private:
 	};
 
 
-	std::vector< Node >	mOperands;
+	std::vector<Node> mOperands;
 };
 
 #endif // HLEGRAPHICS_COMBINER_COMBINEREXPRESSION_H_

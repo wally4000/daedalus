@@ -178,10 +178,10 @@ static const CBlendConstantExpression * BuildConstantExpression( const CCombiner
 //*****************************************************************************
 CCombinerTree::CCombinerTree( u64 mux, bool two_cycles )
 :	mMux( mux )
-,	mCycle1( NULL )
-,	mCycle1A( NULL )
-,	mCycle2( NULL )
-,	mCycle2A( NULL )
+,	mCycle1( nullptr )
+,	mCycle1A( nullptr )
+,	mCycle2( nullptr )
+,	mCycle2A( nullptr )
 {
 	RDP_Combine m;	m.mux = mux;
 	//fprintf(fh, "\n\t\tcase 0x%08x%08xLL:\n", mux0, mux1);
@@ -195,13 +195,13 @@ CCombinerTree::CCombinerTree( u64 mux, bool two_cycles )
 
 	if( two_cycles )
 	{
-		mCycle2 = BuildCycle2( CombinerInput16[m.aRGB1], CombinerInput16[m.bRGB1], CombinerInput32[m.cRGB1], CombinerInput8[m.dRGB1], mCycle1 );
-		mCycle2A = BuildCycle2( CombinerInputAlphaC2_8[m.aA1], CombinerInputAlphaC2_8[m.bA1], CombinerInputAlphaC2_8[m.cA1], CombinerInputAlphaC2_8[m.dA1], mCycle1A );
-		mBlendStates = GenerateBlendStates( mCycle2, mCycle2A );
+		mCycle2 = BuildCycle2( CombinerInput16[m.aRGB1], CombinerInput16[m.bRGB1], CombinerInput32[m.cRGB1], CombinerInput8[m.dRGB1], mCycle1->Clone() );
+		mCycle2A = BuildCycle2( CombinerInputAlphaC2_8[m.aA1], CombinerInputAlphaC2_8[m.bA1], CombinerInputAlphaC2_8[m.cA1], CombinerInputAlphaC2_8[m.dA1], mCycle1A->Clone() );
+		mBlendStates = GenerateBlendStates( mCycle2.get(), mCycle2A.get() );
 	}
 	else
 	{
-		mBlendStates = GenerateBlendStates( mCycle1, mCycle1A );
+		mBlendStates = GenerateBlendStates( mCycle1.get(), mCycle1A.get() );
 	}
 }
 
@@ -209,56 +209,69 @@ CCombinerTree::CCombinerTree( u64 mux, bool two_cycles )
 //
 //*****************************************************************************
 CCombinerTree::~CCombinerTree()
-{
-	delete mCycle1;
-	delete mCycle1A;
-	delete mCycle2;
-	delete mCycle2A;
-}
+{}
 
 
 //*****************************************************************************
 //
 //*****************************************************************************
-CCombinerOperand *	CCombinerTree::BuildCycle1( ECombinerInput a, ECombinerInput b, ECombinerInput c, ECombinerInput d )
+std::unique_ptr<CCombinerOperand> CCombinerTree::BuildCycle1(ECombinerInput a, ECombinerInput b, ECombinerInput c, ECombinerInput d)
 {
-	CCombinerOperand *	input_a( new CCombinerInput( a ) );
-	CCombinerOperand *	input_b( new CCombinerInput( b ) );
-	CCombinerOperand *	input_c( new CCombinerInput( c ) );
-	CCombinerOperand *	input_d( new CCombinerInput( d ) );
-
-	return Build( input_a, input_b, input_c, input_d );
+	return Build(
+		std::make_unique<CCombinerInput>(a),
+		std::make_unique<CCombinerInput>(b),
+		std::make_unique<CCombinerInput>(c),
+		std::make_unique<CCombinerInput>(d)
+	);
 }
-
 //*****************************************************************************
 //
 //*****************************************************************************
-CCombinerOperand *	CCombinerTree::BuildCycle2( ECombinerInput a, ECombinerInput b, ECombinerInput c, ECombinerInput d, const CCombinerOperand * cycle_1_output )
+std::unique_ptr<CCombinerOperand> CCombinerTree::BuildCycle2(
+	ECombinerInput a, ECombinerInput b,
+	ECombinerInput c, ECombinerInput d,
+	std::unique_ptr<CCombinerOperand> cycle_1_output)
 {
-	CCombinerOperand *	input_a( a == CI_COMBINED ? cycle_1_output->Clone() : new CCombinerInput( a ) );
-	CCombinerOperand *	input_b( b == CI_COMBINED ? cycle_1_output->Clone() : new CCombinerInput( b ) );
-	CCombinerOperand *	input_c( c == CI_COMBINED ? cycle_1_output->Clone() : new CCombinerInput( c ) );
-	CCombinerOperand *	input_d( d == CI_COMBINED ? cycle_1_output->Clone() : new CCombinerInput( d ) );
+	auto input_a = (a == CI_COMBINED)
+		? cycle_1_output->Clone()
+		: std::make_unique<CCombinerInput>(a);
 
-	return Build( input_a, input_b, input_c, input_d );
+	auto input_b = (b == CI_COMBINED)
+		? cycle_1_output->Clone()
+		: std::make_unique<CCombinerInput>(b);
+
+	auto input_c = (c == CI_COMBINED)
+		? cycle_1_output->Clone()
+		: std::make_unique<CCombinerInput>(c);
+
+	auto input_d = (d == CI_COMBINED)
+		? cycle_1_output->Clone()
+		: std::make_unique<CCombinerInput>(d);
+
+	return Build(
+		std::move(input_a),
+		std::move(input_b),
+		std::move(input_c),
+		std::move(input_d)
+	);
 }
 
 //*****************************************************************************
 //	Build an expression of the form output = (A-B)*C + D, and simplify.
 //*****************************************************************************
-CCombinerOperand *	CCombinerTree::Build( CCombinerOperand * a, CCombinerOperand * b, CCombinerOperand * c, CCombinerOperand * d )
+std::unique_ptr<CCombinerOperand>	CCombinerTree::Build( std::unique_ptr<CCombinerOperand>  a, std::unique_ptr<CCombinerOperand>  b, std::unique_ptr<CCombinerOperand>  c, std::unique_ptr<CCombinerOperand>  d )
 {
-	CCombinerSum * sum( new CCombinerSum( NULL ) );
-	sum->Add( a );
-	sum->Sub( b );
+	auto sum =  std::make_unique<CCombinerSum>( nullptr );
+	sum->Add( std::move(a) );
+	sum->Sub( std::move(b) );
 
-	CCombinerProduct * product( new CCombinerProduct( sum ) );
-	product->Mul( c );
+	auto product( std::make_unique<CCombinerProduct>( std::move(sum) ) );
+	product->Mul( std::move(c) );
 
-	CCombinerSum * output( new CCombinerSum( product ) );
-	output->Add( d );
+	auto output = std::make_unique<CCombinerSum>( std::move(product) );
+	output->Add( std::move(d) );
 
-	return Simplify( output );
+	return Simplify( std::move(output) );
 }
 
 //*****************************************************************************
@@ -602,16 +615,16 @@ void	CCombinerTree::GenerateRenderSettings( CBlendStates * states, const CCombin
 //*****************************************************************************
 //
 //*****************************************************************************
-CCombinerOperand * CCombinerTree::Simplify( CCombinerOperand * operand )
+std::unique_ptr<CCombinerOperand> CCombinerTree::Simplify( std::unique_ptr<CCombinerOperand> operand )
 {
 	bool	did_something;
 	do
 	{
-		CCombinerOperand *	new_tree( operand->SimplifyAndReduce() );
+		auto new_tree = operand->SimplifyAndReduce();
 
 		did_something = !new_tree->IsEqual( *operand );
-		delete operand;
-		operand = new_tree;
+
+		operand = std::move(new_tree);
 	}
 	while( did_something );
 

@@ -181,7 +181,6 @@ class CRomPreferencesScreen :  public CUIScreen
 		virtual void				Update( float elapsed_time, const glm::vec2 & stick, u32 old_buttons, u32 new_buttons );
 		virtual void				Render();
 		virtual bool				IsFinished() const									{ return mIsFinished; }
-		static std::unique_ptr<CRomPreferencesScreen>	Create( CUIContext * p_context, const RomID & rom_id );
 	private:
 				void				OnConfirm();
 				void				OnCancel();

@@ -30,7 +30,6 @@ class CAboutComponent : public CUIComponent
 		CAboutComponent( CUIContext * p_context );
 		virtual ~CAboutComponent();
 
-		static std::unique_ptr<CAboutComponent>	Create( CUIContext * p_context );
 		void Update(f32 elapsed_time, const glm::vec2& stick, u32 old_buttons, u32 new_buttons) override;
 		void Render() override;
 	

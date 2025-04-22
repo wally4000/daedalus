@@ -43,7 +43,6 @@ class CSelectedRomComponent :  public CUIComponent
 		virtual void				Render();
 
 		virtual void				SetRomID( const RomID & rom_id )			{ mRomID = rom_id; }
-		static std::unique_ptr<CSelectedRomComponent>	Create( CUIContext * p_context, std::function<void()> on_start_emulation );
 
 	private:
 		void						EditPreferences();

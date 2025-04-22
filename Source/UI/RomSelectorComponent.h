@@ -114,7 +114,6 @@ class CRomSelectorComponent : public CUIComponent
 		// CUIComponent
 		virtual void				Update( float elapsed_time, const glm::vec2 & stick, u32 old_buttons, u32 new_buttons );
 		virtual void				Render();
-		static std::unique_ptr<CRomSelectorComponent>	Create( CUIContext * p_context, std::function<void(const std::filesystem::path&)> on_rom_selected );
 	private:
 				void				UpdateROMList();
 				void				RenderPreview();

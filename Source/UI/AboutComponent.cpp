@@ -38,13 +38,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
 
-
-
-std::unique_ptr<CAboutComponent>	CAboutComponent::Create( CUIContext * p_context )
-{
-	return std::make_unique<CAboutComponent>( p_context );
-}
-
 CAboutComponent::~CAboutComponent() {}
 CAboutComponent::CAboutComponent( CUIContext * p_context )
 :	CUIComponent( p_context )

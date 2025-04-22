@@ -32,13 +32,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "System/SystemInit.h"
 
 
-
-std::unique_ptr<CAdvancedOptionsScreen>	CAdvancedOptionsScreen::Create( CUIContext * p_context, const RomID & rom_id )
-{
-	return std::make_unique<CAdvancedOptionsScreen>( p_context, rom_id );
-}
-
-
 CAdvancedOptionsScreen::CAdvancedOptionsScreen( CUIContext * p_context, const RomID & rom_id )
 :	CUIScreen( p_context )
 ,	mRomID( rom_id )

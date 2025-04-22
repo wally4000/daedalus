@@ -196,7 +196,7 @@ void HandleEndOfFrame()
 
 		if(p_context != NULL)
 		{
-			auto	pause = CPauseScreen::Create( p_context );
+			auto	pause = std::make_unique<CPauseScreen>( p_context );
 			pause->Run();
 			delete p_context;
 		}

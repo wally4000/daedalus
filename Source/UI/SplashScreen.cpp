@@ -37,12 +37,6 @@ extern bool g32bitColorMode;
 
 
 
-std::unique_ptr<CSplashScreen>	CSplashScreen::Create( CUIContext * p_context )
-{
-	return std::make_unique<CSplashScreen>( p_context );
-}
-
-
 CSplashScreen::CSplashScreen( CUIContext * p_context )
 :	CUIScreen( p_context )
 ,	mIsFinished( false )

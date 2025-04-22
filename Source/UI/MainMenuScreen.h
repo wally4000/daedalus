@@ -58,7 +58,6 @@ class CMainMenuScreen : public CUIScreen
 		virtual void				Update( float elapsed_time, const glm::vec2 & stick, u32 old_buttons, u32 new_buttons );
 		virtual void				Render();
 		virtual bool				IsFinished() const									{ return mIsFinished; }
-		static std::unique_ptr<CMainMenuScreen>	Create( CUIContext * p_context );
 
 
 	private:

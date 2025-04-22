@@ -27,8 +27,7 @@ class IAdjustDeadzoneScreen : public CUIScreen
 {
 	public:
 
-	
-		static CAdjustDeadzoneScreen *	Create( CUIContext * p_context );
+
 		IAdjustDeadzoneScreen( CUIContext * p_context );
 		~IAdjustDeadzoneScreen();
 

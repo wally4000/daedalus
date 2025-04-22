@@ -38,13 +38,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
 
-
-CAdjustDeadzoneScreen *	CAdjustDeadzoneScreen::Create( CUIContext * p_context )
-{
-	return new CAdjustDeadzoneScreen( p_context );
-}
-
-
 CAdjustDeadzoneScreen::CAdjustDeadzoneScreen( CUIContext * p_context )
 :	CUIScreen( p_context )
 ,	mIsFinished( false )

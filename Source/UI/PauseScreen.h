@@ -49,8 +49,6 @@ class CPauseScreen : public CUIScreen
 		virtual void				Update( float elapsed_time, const glm::vec2 & stick, u32 old_buttons, u32 new_buttons );
 		virtual void				Render();
 		virtual bool				IsFinished() const									{ return mIsFinished; }
-		static std::unique_ptr<CPauseScreen>	Create( CUIContext * p_context );
-
 	private:
 		static	EPauseOptions			GetNextOption( EPauseOptions option )					{ return EPauseOptions( (option + 1) % NUM_MENU_OPTIONS ); }
 		static	EPauseOptions			GetPreviousOption( EPauseOptions option )				{ return EPauseOptions( (option + NUM_MENU_OPTIONS -1) % NUM_MENU_OPTIONS ); }

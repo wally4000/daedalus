@@ -54,37 +54,25 @@ const char * const	gMenuOptionNames[ NUM_MENU_OPTIONS ] =
 };
 
 
-std::unique_ptr<CMainMenuScreen>	CMainMenuScreen::Create( CUIContext * p_context )
-{
-	return std::make_unique<CMainMenuScreen>( p_context );
-}
 
-
-CMainMenuScreen::CMainMenuScreen(CUIContext* p_context)
+CMainMenuScreen::CMainMenuScreen(CUIContext * p_context)
 : CUIScreen(p_context)
 , mIsFinished(false)
 , mCurrentOption(MO_ROMS)
 , mCurrentDisplayOption(mCurrentOption)
 {
 	// Create components
-	mOptionComponents[MO_SELECTED_ROM] = CSelectedRomComponent::Create(mpContext, [this]() {
-		this->OnStartEmulation();
-	});
+	mOptionComponents[MO_SELECTED_ROM] = std::make_unique<CSelectedRomComponent>(mpContext, [this]() {this->OnStartEmulation(); });
 	
 	mSelectedRomComponent = static_cast<CSelectedRomComponent*>(mOptionComponents[MO_SELECTED_ROM].get());
-	mOptionComponents[MO_GLOBAL_SETTINGS] = CGlobalSettingsComponent::Create(mpContext);
+	mOptionComponents[MO_GLOBAL_SETTINGS] = std::make_unique<CGlobalSettingsComponent>(mpContext);
 
-	mOptionComponents[MO_ROMS] = CRomSelectorComponent::Create(mpContext, [this](const std::filesystem::path& rom) {
-		this->OnRomSelected(rom);
-	});
+	mOptionComponents[MO_ROMS] = std::make_unique<CRomSelectorComponent>(mpContext, [this](const std::filesystem::path& rom) { this->OnRomSelected(rom); });
+	
+	mOptionComponents[MO_SAVESTATES] = std::make_unique<CSavestateSelectorComponent>(mpContext,
+		CSavestateSelectorComponent::AT_LOADING, [this](const char* savestate) { this->OnSavestateSelected(savestate); }, std::filesystem::path()	);
 
-	mOptionComponents[MO_SAVESTATES] = CSavestateSelectorComponent::Create(mpContext,
-		CSavestateSelectorComponent::AT_LOADING,
-		[this](const char* savestate) { this->OnSavestateSelected(savestate); },
-		std::filesystem::path()
-	);
-
-	mOptionComponents[MO_ABOUT] = CAboutComponent::Create(mpContext);
+	mOptionComponents[MO_ABOUT] = std::make_unique<CAboutComponent>(mpContext);
 }
 
 CMainMenuScreen::~CMainMenuScreen() {}
@@ -307,11 +295,11 @@ void DisplayRomsAndChoose(bool show_splash)
 
 		if( show_splash )
 		{
-			auto p_splash = CSplashScreen::Create( p_context );
+			auto p_splash = std::make_unique<CSplashScreen>( p_context );
 			p_splash->Run();
 		}
 
-		auto p_main_menu = CMainMenuScreen::Create( p_context );
+		auto p_main_menu = std::make_unique<CMainMenuScreen>( p_context );
 		p_main_menu->Run();
 	}
 

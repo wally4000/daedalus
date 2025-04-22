@@ -44,11 +44,6 @@ extern bool gTakeScreenshotSS;
 
 
 
-std::unique_ptr<CPauseOptionsComponent> CPauseOptionsComponent::Create( CUIContext * p_context,  std::function<void()> on_resume, std::function<void()> on_reset )
-{
-	return std::make_unique<CPauseOptionsComponent>( p_context, on_resume, on_reset );
-}
-
 
 CPauseOptionsComponent::CPauseOptionsComponent( CUIContext * p_context,  std::function<void()> on_resume, std::function<void()> on_reset)
 :	CUIComponent( p_context )
@@ -160,20 +155,20 @@ void CPauseOptionsComponent::OnReset()
 
 void	CPauseOptionsComponent::EditPreferences()
 {
-	auto	edit_preferences = CRomPreferencesScreen::Create( mpContext, ctx.romInfo->mRomID );
+	auto	edit_preferences = std::make_unique<CRomPreferencesScreen>( mpContext, ctx.romInfo->mRomID );
 	edit_preferences->Run();
 }
 
 
 void	CPauseOptionsComponent::AdvancedOptions()
 {
-	auto advanced_options = CAdvancedOptionsScreen::Create( mpContext, ctx.romInfo->mRomID );
+	auto advanced_options = std::make_unique<CAdvancedOptionsScreen>( mpContext, ctx.romInfo->mRomID );
 	advanced_options->Run();
 }
 
 void	CPauseOptionsComponent::CheatOptions()
 {
-	auto cheat_options = CCheatOptionsScreen::Create( mpContext, ctx.romInfo->mRomID );
+	auto cheat_options = std::make_unique<CCheatOptionsScreen>( mpContext, ctx.romInfo->mRomID );
 	cheat_options->Run();
 }
 
@@ -183,9 +178,9 @@ void	CPauseOptionsComponent::SaveState()
 auto onSaveStateSlotSelected = [this](const std::filesystem::path slot) { this->OnSaveStateSlotSelected(slot);
 };
 
-auto component = CSavestateSelectorComponent::Create(mpContext, CSavestateSelectorComponent::AT_SAVING, onSaveStateSlotSelected, ctx.romInfo->settings.GameName.c_str());
+auto component = std::make_unique<CSavestateSelectorComponent>(mpContext, CSavestateSelectorComponent::AT_SAVING, onSaveStateSlotSelected, ctx.romInfo->settings.GameName.c_str());
 
-	auto screen( CUIComponentScreen::Create( mpContext, std::move(component), SAVING_TITLE_TEXT ) );
+	auto screen = std::make_unique<CUIComponentScreen>( mpContext, std::move(component), SAVING_TITLE_TEXT );
 	screen->Run();
 	(mOnResume)();
 }
@@ -197,9 +192,9 @@ auto onLoadStateSlotSelected = [this](const std::filesystem::path slot) {
     this->OnLoadStateSlotSelected(slot);
 };
 
-auto component = CSavestateSelectorComponent::Create(mpContext, CSavestateSelectorComponent::AT_LOADING, onLoadStateSlotSelected, ctx.romInfo->settings.GameName.c_str());
+auto component = std::make_unique<CSavestateSelectorComponent>(mpContext, CSavestateSelectorComponent::AT_LOADING, onLoadStateSlotSelected, ctx.romInfo->settings.GameName.c_str());
 
-	auto screen =  CUIComponentScreen::Create( mpContext, std::move(component), LOADING_TITLE_TEXT );
+	auto screen =  std::make_unique<CUIComponentScreen>( mpContext, std::move(component), LOADING_TITLE_TEXT );
 	screen->Run();
 	(mOnResume)();
 }

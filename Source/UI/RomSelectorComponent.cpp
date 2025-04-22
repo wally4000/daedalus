@@ -67,10 +67,6 @@ bool SortByGameName( const std::unique_ptr<SRomInfo>& a, const std::unique_ptr<S
 	return ( a->mSettings.GameName < b->mSettings.GameName );
 }
 
-std::unique_ptr<CRomSelectorComponent>	CRomSelectorComponent::Create( CUIContext * p_context, std::function<void(const std::filesystem::path&)> on_rom_selected )
-{
-	return std::make_unique<CRomSelectorComponent>( p_context, on_rom_selected );
-}
 
 CRomSelectorComponent::CRomSelectorComponent( CUIContext * p_context, std::function<void(const std::filesystem::path&)> on_rom_selected )
 :	CUIComponent( p_context )

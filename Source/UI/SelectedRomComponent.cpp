@@ -35,11 +35,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 CSelectedRomComponent::~CSelectedRomComponent() {}
 
 
-std::unique_ptr<CSelectedRomComponent>	CSelectedRomComponent::Create( CUIContext * p_context, std::function<void()> on_start_emulation )
-{
-	return std::make_unique<CSelectedRomComponent>( p_context, on_start_emulation );
-}
-
 
 CSelectedRomComponent::CSelectedRomComponent( CUIContext * p_context, std::function<void()> on_start_emulation )
 :	CUIComponent( p_context )
@@ -112,20 +107,20 @@ void	CSelectedRomComponent::Render()
 
 void	CSelectedRomComponent::EditPreferences()
 {
-	auto edit_preferences = CRomPreferencesScreen::Create( mpContext, mRomID );
+	auto edit_preferences = std::make_unique<CRomPreferencesScreen>( mpContext, mRomID );
 	edit_preferences->Run();
 }
 
 
 void	CSelectedRomComponent::AdvancedOptions()
 {
-	auto advanced_options = CAdvancedOptionsScreen::Create( mpContext, mRomID );
+	auto advanced_options = std::make_unique<CAdvancedOptionsScreen>( mpContext, mRomID );
 	advanced_options->Run();
 }
 
 void	CSelectedRomComponent::CheatOptions()
 {
-	auto cheat_options = CCheatOptionsScreen::Create( mpContext, mRomID );
+	auto cheat_options = std::make_unique<CCheatOptionsScreen>( mpContext, mRomID );
 	cheat_options->Run();
 }
 

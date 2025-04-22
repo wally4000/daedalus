@@ -260,12 +260,6 @@ namespace
 
 
 
-
-std::unique_ptr<CGlobalSettingsComponent>	CGlobalSettingsComponent::Create( CUIContext * p_context )
-{
-	return std::make_unique<CGlobalSettingsComponent>( p_context );
-}
-
 CGlobalSettingsComponent::CGlobalSettingsComponent( CUIContext * p_context )
 :	CUIComponent( p_context )
 {

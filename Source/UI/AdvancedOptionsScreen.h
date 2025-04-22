@@ -37,7 +37,6 @@ class CAdvancedOptionsScreen : public CUIScreen
 
 		CAdvancedOptionsScreen( CUIContext * p_context, const RomID & rom_id );
 		~CAdvancedOptionsScreen();
-		static std::unique_ptr<CAdvancedOptionsScreen> Create( CUIContext * p_context, const RomID & rom_id );
 		// CAdvancedOptionsScreen
 		virtual void				Run();
 

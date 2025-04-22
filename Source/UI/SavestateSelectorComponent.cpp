@@ -40,14 +40,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
 
-
-
-
-std::unique_ptr<CSavestateSelectorComponent>	CSavestateSelectorComponent::Create( CUIContext * p_context, EAccessType accetype, std::function<void( const char *)>  on_slot_selected, const std::filesystem::path& running_rom )
-{
-	return std::make_unique<CSavestateSelectorComponent>( p_context, accetype, on_slot_selected, running_rom );
-}
-
 namespace
 {
 	   void MakeSaveSlotPath(std::filesystem::path& path, std::filesystem::path& png_path, u32 slot_idx, const std::filesystem::path& slot_path)

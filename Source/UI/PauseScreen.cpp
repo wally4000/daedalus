@@ -52,12 +52,6 @@ extern void battery_info();
 	};
 
 
-std::unique_ptr<CPauseScreen>	CPauseScreen::Create( CUIContext * p_context )
-{
-	return std::make_unique<CPauseScreen>( p_context );
-}
-
-
 CPauseScreen::CPauseScreen( CUIContext * p_context )
 :	CUIScreen( p_context )
 ,	mIsFinished( false )
@@ -68,9 +62,9 @@ CPauseScreen::CPauseScreen( CUIContext * p_context )
 		mOptionComponents[ i ] = NULL;
 	}
 
-	mOptionComponents[ PO_GLOBAL_SETTINGS ]	= CGlobalSettingsComponent::Create( mpContext );
-	mOptionComponents[ PO_PAUSE_OPTIONS ]	= CPauseOptionsComponent::Create( mpContext, std::bind(&CPauseScreen::OnResume, this), std::bind(&CPauseScreen::OnReset, this ) );
-	mOptionComponents[ PO_ABOUT ]			= CAboutComponent::Create( mpContext );
+	mOptionComponents[ PO_GLOBAL_SETTINGS ]	= std::make_unique<CGlobalSettingsComponent>( mpContext );
+	mOptionComponents[ PO_PAUSE_OPTIONS ]	= std::make_unique<CPauseOptionsComponent>( mpContext, std::bind(&CPauseScreen::OnResume, this), std::bind(&CPauseScreen::OnReset, this ) );
+	mOptionComponents[ PO_ABOUT ]			= std::make_unique<CAboutComponent>( mpContext );
 
 #ifdef DAEDALUS_ENABLE_ASSERTS
 	for( u32 i = 0; i < NUM_MENU_OPTIONS; ++i )

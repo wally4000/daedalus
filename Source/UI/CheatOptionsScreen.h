@@ -40,7 +40,6 @@ class CCheatOptionsScreen : public CUIScreen
 
 		CCheatOptionsScreen( CUIContext * p_context, const RomID & rom_id );
 		~CCheatOptionsScreen();
-		static std::unique_ptr<CCheatOptionsScreen>	Create( CUIContext * p_context, const RomID & rom_id );
 		// CCheatOptionsScreen
 
 		virtual void				Run();

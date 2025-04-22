@@ -41,7 +41,6 @@ class CPauseOptionsComponent : public CUIComponent
 
 		// CUIComponent
 		virtual void				Update( float elapsed_time, const glm::vec2 & stick, u32 old_buttons, u32 new_buttons );		
-		static std::unique_ptr<CPauseOptionsComponent>	Create( CUIContext * p_context, std::function<void()> on_resume, std::function<void()> on_reset);	
 		virtual void Render();
 
 	private:

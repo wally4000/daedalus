@@ -71,9 +71,9 @@ CSelectedRomComponent::CSelectedRomComponent( CUIContext * p_context )
 CSelectedRomComponent::~CSelectedRomComponent() {}
 
 
-CSelectedRomComponent *	CSelectedRomComponent::Create( CUIContext * p_context, std::function<void()> on_start_emulation )
+std::unique_ptr<CSelectedRomComponent>	CSelectedRomComponent::Create( CUIContext * p_context, std::function<void()> on_start_emulation )
 {
-	return new ISelectedRomComponent( p_context, on_start_emulation );
+	return std::make_unique<ISelectedRomComponent>( p_context, on_start_emulation );
 }
 
 

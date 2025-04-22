@@ -111,7 +111,7 @@ class IMainMenuScreen : public CMainMenuScreen, public CUIScreen
 		f32							mCurrentDisplayOption;
 
 		CUIComponent *				mOptionComponents[ NUM_MENU_OPTIONS ];
-		CSelectedRomComponent *		mSelectedRomComponent;
+		std::unique_ptr<CSelectedRomComponent>		mSelectedRomComponent;
 
 		RomID						mRomID;
 };
@@ -140,7 +140,7 @@ IMainMenuScreen::IMainMenuScreen( CUIContext * p_context )
 
 	mOptionComponents[ MO_GLOBAL_SETTINGS ]	= CGlobalSettingsComponent::Create( mpContext );
 	mOptionComponents[ MO_ROMS ] 			= CRomSelectorComponent::Create( mpContext, [this](const std::filesystem::path& rom) { this->OnRomSelected(rom); } );
-	mOptionComponents[ MO_SELECTED_ROM ]	= mSelectedRomComponent;
+	mOptionComponents[ MO_SELECTED_ROM ]	= mSelectedRomComponent.get();
 	mOptionComponents[ MO_SAVESTATES ]		= CSavestateSelectorComponent::Create( mpContext, CSavestateSelectorComponent::AT_LOADING,[this](const char* savestate) { this->OnSavestateSelected(savestate); }, std::filesystem::path());
 	mOptionComponents[ MO_ABOUT ]			= CAboutComponent::Create( mpContext );
 
@@ -183,8 +183,6 @@ s32	IMainMenuScreen::GetPreviousValidOption() const
 	return current_option;
 }
 
-
-//
 
 s32	IMainMenuScreen::GetNextValidOption() const
 {
@@ -364,7 +362,7 @@ void DisplayRomsAndChoose(bool show_splash)
 
 	auto p_context =  CUIContext::Create();
 
-	if(p_context != NULL)
+	if(p_context)
 	{
 		p_context->ClearBackground(c32::Red);
 

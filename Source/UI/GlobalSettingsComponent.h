@@ -22,6 +22,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define UI_GLOBALSETTINGSCOMPONENT_H_
 
 #include "UIComponent.h"
+#include "Dialogs.h"
+#include "UIContext.h"
+#include "UIScreen.h"
+#include "UISetting.h"
+#include "Menu.h"
+
 
 class CGlobalSettingsComponent : public CUIComponent
 {
@@ -30,6 +36,13 @@ class CGlobalSettingsComponent : public CUIComponent
 		virtual ~CGlobalSettingsComponent();
 
 		static std::unique_ptr<CGlobalSettingsComponent>	Create( CUIContext * p_context );
-};
+
+		// CUIComponent
+		virtual void				Update( float elapsed_time, const glm::vec2 & stick, u32 old_buttons, u32 new_buttons );
+		virtual void				Render();
+
+	private:
+		CUIElementBag				mElements;
+	};
 
 #endif // UI_GLOBALSETTINGSCOMPONENT_H_

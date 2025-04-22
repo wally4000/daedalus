@@ -23,14 +23,30 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 class CUIContext;
 
-class CSplashScreen
+
+#include "UIContext.h"
+#include "UIScreen.h"
+
+class CSplashScreen : public CUIScreen
 {
 	public:
-		virtual ~CSplashScreen();
 
+		CSplashScreen( CUIContext * p_context );
+		~CSplashScreen();
+
+		// CSplashScreen
+		virtual void				Run();
+
+		// CUIScreen
+		virtual void				Update( float elapsed_time, const glm::vec2 & stick, u32 old_buttons, u32 new_buttons );
+		virtual void				Render();
+		virtual bool				IsFinished() const									{ return mIsFinished; }
 		static std::unique_ptr<CSplashScreen> Create( CUIContext * p_context );
-
-		virtual void				Run() = 0;
+	private:
+		bool						mIsFinished;
+		float						mElapsedTime;
+		std::shared_ptr<CNativeTexture>		mpTexture;
 };
+
 
 #endif // UI_SPLASHSCREEN_H_

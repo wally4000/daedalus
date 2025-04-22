@@ -27,8 +27,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <cctype>
 #include <string_view>
 
+#include "RomSelectorComponent.h"
+
 #include "Base/Types.h"
-#include "UI/Menu.h"
 #include "Core/ROM.h"
 #include "RomFile/RomSettings.h"
 #include "Graphics/ColourValue.h"
@@ -37,87 +38,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Utility/MathUtil.h"
 
 #include "DrawTextUtilities.h"
-#include "Menu.h"
-#include "RomSelectorComponent.h"
-#include "UIContext.h"
-#include "UIScreen.h"
-
-
 
 #include "Interface/Preferences.h"
 #include "RomFile/RomFile.h"
 
-namespace
-{
 
-#ifdef DAEDALUS_ENABLE_ASSERTS
-	DAEDALUS_STATIC_ASSERT( std::size( gCategoryLetters ) == NUM_CATEGORIES +1 );
-#endif
-	ECategory		GetCategory( char c )
-	{
-		if (c < 0)
-			return C_UNK;
+//Lifting this out makes it remmember last choosen ROM
+//Could probably be fixed better but C++ is giving me an attitude //Corn
+u32 mCurrentSelection = 0;
 
-		if( std::isalpha( c ))
-		{
-			c = std::tolower( c );
-			return ECategory( C_A + (c - 'a') );
-		}
-		else if(std::isdigit(c) )
-		{
-			return C_NUMBERS;
-		}
-		else
-		{
-			return C_UNK;
-		}
-	}
-
-	char	GetCategoryLetter( ECategory category )
-	{
-#ifdef DAEDALUS_ENABLE_ASSERTS
-		DAEDALUS_ASSERT( category >= 0 && category < NUM_CATEGORIES, "Invalid category" );
-		#endif
-		return gCategoryLetters[ category ];
-	}
-
-}
-
-struct SRomInfo
-{
-	std::filesystem::path	mFilename;
-	RomID			mRomID;
-	u32				mRomSize;
-	ECicType		mCicType;
-	RomSettings		mSettings;
-
-	SRomInfo( const std::filesystem::path& filename )
-		:	mFilename( filename )
-	{
-		if ( ROM_GetRomDetailsByFilename( filename, &mRomID, &mRomSize, &mCicType ) )
-		{
-			if ( !ctx.romSettingsDB->GetSettings( mRomID, &mSettings ) )
-			{
-				// Create new entry, add
-				mSettings.Reset();
-				mSettings.Comment = "Unknown";
-
-				// Get internal file name for rom from header, otherwise get filename
-				if ( !ROM_GetRomName( filename, mSettings.GameName ) )
-				{
-					mSettings.GameName = filename.string();
-				}
-				mSettings.GameName = mSettings.GameName.substr(0,63);
-				ctx.romSettingsDB->SetSettings( mRomID, mSettings );
-			}
-		}
-		else
-		{
-			mSettings.GameName = "Can't get rom info";
-		}
-
-	}
-};
 
 ECategory Categorise( std::string_view name )
 {
@@ -138,66 +67,13 @@ bool SortByGameName( const std::unique_ptr<SRomInfo>& a, const std::unique_ptr<S
 	return ( a->mSettings.GameName < b->mSettings.GameName );
 }
 
-//Lifting this out makes it remmember last choosen ROM
-//Could probably be fixed better but C++ is giving me an attitude //Corn
-u32 mCurrentSelection = 0;
-
-class IRomSelectorComponent : public CRomSelectorComponent
-{
-	public:
-
-		IRomSelectorComponent( CUIContext * p_context, std::function<void(const std::filesystem::path&)> on_rom_selected );
-		~IRomSelectorComponent();
-
-		// CUIComponent
-		virtual void				Update( float elapsed_time, const glm::vec2 & stick, u32 old_buttons, u32 new_buttons );
-		virtual void				Render();
-
-	private:
-				void				UpdateROMList();
-				void				RenderPreview();
-				void				RenderRomList();
-				void				RenderCategoryList();
-
-				void				AddRomDirectory(const std::filesystem::path& p_roms_dir, std::vector<std::unique_ptr<SRomInfo>> & roms);
-
-				ECategory			GetCurrentCategory() const;
-
-				void				DrawInfoText( CUIContext * p_context, s32 y, const char * field_txt, const char * value_txt );
-
-	private:
-		std::function<void(const std::filesystem::path&)> mOnRomSelected;
-		std::vector<std::unique_ptr<SRomInfo>>		mRomsList;
-		std::map< ECategory, u32> 	mRomCategoryMap;
-		s32							mCurrentScrollOffset;
-		float						mSelectionAccumulator;
-		std::string					mSelectedRom;
-
-		bool						mDisplayFilenames;
-	//	bool						mDisplayInfo;
-
-		std::shared_ptr<CNativeTexture>		mpPreviewTexture;
-		u32							mPreviewIdx;
-		float						mPreviewLoadedTime;		// How long the preview has been loaded (so we can fade in)
-		float						mTimeSinceScroll;		
-
-		bool						mRomDelete;
-};
-
-CRomSelectorComponent::CRomSelectorComponent( CUIContext * p_context )
-:	CUIComponent( p_context )
-{}
-
-CRomSelectorComponent::~CRomSelectorComponent() {}
-
-
 std::unique_ptr<CRomSelectorComponent>	CRomSelectorComponent::Create( CUIContext * p_context, std::function<void(const std::filesystem::path&)> on_rom_selected )
 {
-	return std::make_unique<IRomSelectorComponent>( p_context, on_rom_selected );
+	return std::make_unique<CRomSelectorComponent>( p_context, on_rom_selected );
 }
 
-IRomSelectorComponent::IRomSelectorComponent( CUIContext * p_context, std::function<void(const std::filesystem::path&)> on_rom_selected )
-:	CRomSelectorComponent( p_context )
+CRomSelectorComponent::CRomSelectorComponent( CUIContext * p_context, std::function<void(const std::filesystem::path&)> on_rom_selected )
+:	CUIComponent( p_context )
 ,	mOnRomSelected( on_rom_selected )
 //,	mCurrentSelection( 0 )
 ,	mCurrentScrollOffset( 0 )
@@ -225,11 +101,11 @@ IRomSelectorComponent::IRomSelectorComponent( CUIContext * p_context, std::funct
 	}
 }
 
-IRomSelectorComponent::~IRomSelectorComponent()
+CRomSelectorComponent::~CRomSelectorComponent()
 {
 	mRomsList.clear();
 }
-void IRomSelectorComponent::AddRomDirectory(const std::filesystem::path &p_roms_dir, std::vector<std::unique_ptr<SRomInfo>> &roms)
+void CRomSelectorComponent::AddRomDirectory(const std::filesystem::path &p_roms_dir, std::vector<std::unique_ptr<SRomInfo>> &roms)
 {
     try
     {
@@ -253,7 +129,7 @@ void IRomSelectorComponent::AddRomDirectory(const std::filesystem::path &p_roms_
 
 //Refresh ROM list
 
-void	IRomSelectorComponent::UpdateROMList()
+void	CRomSelectorComponent::UpdateROMList()
 {
 	mRomsList.clear();
 
@@ -278,7 +154,7 @@ void	IRomSelectorComponent::UpdateROMList()
 	}
 }
 
-ECategory	IRomSelectorComponent::GetCurrentCategory() const
+ECategory	CRomSelectorComponent::GetCurrentCategory() const
 {
 	if( !mRomsList.empty() )
 	{
@@ -288,7 +164,7 @@ ECategory	IRomSelectorComponent::GetCurrentCategory() const
 	return C_NUMBERS;
 }
 
-void IRomSelectorComponent::DrawInfoText(  CUIContext * p_context, s32 y, const char * field_txt, const char * value_txt  )
+void CRomSelectorComponent::DrawInfoText(  CUIContext * p_context, s32 y, const char * field_txt, const char * value_txt  )
 {
 	c32			colour(	p_context->GetDefaultTextColour() );
 
@@ -296,7 +172,7 @@ void IRomSelectorComponent::DrawInfoText(  CUIContext * p_context, s32 y, const 
 	p_context->DrawTextAlign( PREVIEW_IMAGE_LEFT, PREVIEW_IMAGE_LEFT + PREVIEW_IMAGE_WIDTH, AT_RIGHT, y, value_txt, colour );
 }
 
-void IRomSelectorComponent::RenderPreview()
+void CRomSelectorComponent::RenderPreview()
 {
 	// Preview Image
 	glm::vec2	tl( PREVIEW_IMAGE_LEFT, BELOW_MENU_MIN );
@@ -351,7 +227,7 @@ void IRomSelectorComponent::RenderPreview()
 		DrawInfoText( mpContext, y, "EPak:", "" );		y += line_height;
 	}
 }
-void IRomSelectorComponent::RenderRomList()
+void CRomSelectorComponent::RenderRomList()
 {
 	u32	line_height = mpContext->GetFontHeight() + 2 ;
 
@@ -413,7 +289,7 @@ void IRomSelectorComponent::RenderRomList()
 #endif
 }
 
-void IRomSelectorComponent::RenderCategoryList()
+void CRomSelectorComponent::RenderCategoryList()
 {
 	s32 x = CATEGORY_TEXT_LEFT;
 	s32 y = CATEGORY_TEXT_TOP + mpContext->GetFontHeight();
@@ -443,7 +319,7 @@ void IRomSelectorComponent::RenderCategoryList()
 	}
 }
 
-void IRomSelectorComponent::Render()
+void CRomSelectorComponent::Render()
 {
 	static u32 count = 0;
 
@@ -492,7 +368,7 @@ void IRomSelectorComponent::Render()
 }
 
 
-void	IRomSelectorComponent::Update( float elapsed_time, const glm::vec2 & stick, u32 old_buttons, u32 new_buttons )
+void	CRomSelectorComponent::Update( float elapsed_time, const glm::vec2 & stick, u32 old_buttons, u32 new_buttons )
 {
 	static const float	SCROLL_RATE_PER_SECOND = 25.0f;		// 25 roms/second
 

@@ -19,7 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
 #include "Base/Types.h"
-
+#include "SavestateSelectorComponent.h"
 
 #include <filesystem>
 
@@ -31,71 +31,21 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Interface/SaveState.h"
 #include "Graphics/NativeTexture.h"
 #include "DrawTextUtilities.h"
-#include "UICommand.h"
-#include "UIContext.h"
-#include "UIElement.h"
-#include "UIScreen.h"
+
 #include "Menu.h"
-#include "SavestateSelectorComponent.h"
+
 #include "Utility/Paths.h"
 #include "Utility/Stream.h"
 #include "Utility/Translate.h"
 
 
-class ISavestateSelectorComponent : public CSavestateSelectorComponent
-{
-	public:
-
-		ISavestateSelectorComponent( CUIContext * p_context, EAccessType accetype, std::function<void (const char *)> on_slot_selected, const std::filesystem::path& running_rom );
-		~ISavestateSelectorComponent();
-
-		// CUIScreen
-		virtual void				Update( float elapsed_time, const glm::vec2 & stick, u32 old_buttons, u32 new_buttons );
-		virtual void				Render();
-		virtual bool				IsFinished() const									{ return mIsFinished; }
-	public:
-		std::filesystem::path			current_slot_path;
-		bool					isGameRunning;
-	
-	private:
-		void				OnSlotSelected( u32 slot_idx );
-		void				OnFolderSelected( u32 index );
-		void				LoadFolders();
-		void				LoadSlots();
-		void				deleteSlot(u32 id_ss);
-		bool					isDeletionAllowed;
-
-	private:
-		EAccessType				mAccessType;
-		std::function<void(const char *)> 	mOnSlotSelected;
-
-		u32					mSelectedSlot;
-		bool					mIsFinished;
-		bool	deleteButtonTriggered;
-
-		CUIElementBag				mElements;
-		std::vector<std::string> 		mElementTitle;
-		bool					mSlotEmpty[ NUM_SAVESTATE_SLOTS ];
-		std::filesystem::path		mPVFilename[ NUM_SAVESTATE_SLOTS ];
-		std::filesystem::path		mPVScreenShot [ NUM_SAVESTATE_SLOTS ];
-		s8						mPVExists[ NUM_SAVESTATE_SLOTS ];	//0=skip, 1=file exists, -1=show no preview
-		std::shared_ptr<CNativeTexture>	mPreviewTexture;
-		u32						mLastPreviewLoad;
-
-};
 
 
-CSavestateSelectorComponent::~CSavestateSelectorComponent() {}
-
-
-CSavestateSelectorComponent::CSavestateSelectorComponent( CUIContext * p_context )
-:	CUIComponent( p_context )
-{}
 
 
 std::unique_ptr<CSavestateSelectorComponent>	CSavestateSelectorComponent::Create( CUIContext * p_context, EAccessType accetype, std::function<void( const char *)>  on_slot_selected, const std::filesystem::path& running_rom )
 {
-	return std::make_unique<ISavestateSelectorComponent>( p_context, accetype, on_slot_selected, running_rom );
+	return std::make_unique<CSavestateSelectorComponent>( p_context, accetype, on_slot_selected, running_rom );
 }
 
 namespace
@@ -115,8 +65,8 @@ namespace
     }
 }
 
-ISavestateSelectorComponent::ISavestateSelectorComponent( CUIContext * p_context, EAccessType accetype, std::function<void (const char *)> on_slot_selected, const std::filesystem::path& running_rom )
-:	CSavestateSelectorComponent( p_context )
+CSavestateSelectorComponent::CSavestateSelectorComponent( CUIContext * p_context, EAccessType accetype, std::function<void (const char *)> on_slot_selected, const std::filesystem::path& running_rom )
+:	CUIComponent( p_context)
 ,	mAccessType( accetype )
 ,	mOnSlotSelected( on_slot_selected )
 ,	mSelectedSlot( INVALID_SLOT )
@@ -136,7 +86,7 @@ ISavestateSelectorComponent::ISavestateSelectorComponent( CUIContext * p_context
 	}
 }
 
-void ISavestateSelectorComponent::LoadFolders() {
+void CSavestateSelectorComponent::LoadFolders() {
     u32 folderIndex = 0;
     const char* const description_text = (mAccessType == AT_SAVING) ? "Select the slot in which to save" : "Select the slot from which to load";
 
@@ -167,7 +117,7 @@ void ISavestateSelectorComponent::LoadFolders() {
 			}
 		}
 }
-void ISavestateSelectorComponent::LoadSlots() {
+void CSavestateSelectorComponent::LoadSlots() {
     const char* description_text = (mAccessType == AT_SAVING) ? "Select the slot in which to save [X:save O:back]" : "Select the slot from which to load [X:load O:back []:delete]";
     char date_string[30];
     
@@ -212,10 +162,10 @@ void ISavestateSelectorComponent::LoadSlots() {
 
 
 
-ISavestateSelectorComponent::~ISavestateSelectorComponent() {}
+CSavestateSelectorComponent::~CSavestateSelectorComponent() {}
 
 
-void	ISavestateSelectorComponent::Update( float elapsed_time [[maybe_unused]], const glm::vec2 & stick [[maybe_unused]], [[maybe_unused]] u32 old_buttons, u32 new_buttons )
+void	CSavestateSelectorComponent::Update( float elapsed_time [[maybe_unused]], const glm::vec2 & stick [[maybe_unused]], [[maybe_unused]] u32 old_buttons, u32 new_buttons )
 {
 	//	Trigger the save on the first update AFTER mSelectedSlot was set.
 	//	This ensures we get at least one frame where we can display "Saving..." etc.
@@ -296,7 +246,7 @@ void	ISavestateSelectorComponent::Update( float elapsed_time [[maybe_unused]], c
 }
 
 // Disabled for now, will be fixed soon
-void	ISavestateSelectorComponent::deleteSlot(u32 slot_idx [[maybe_unused]])
+void	CSavestateSelectorComponent::deleteSlot(u32 slot_idx [[maybe_unused]])
 {
 	// To reimplement we need to define path and sub_path for local SaveStates Directory and ms0:/n64 (maybe)
 	
@@ -314,7 +264,7 @@ void	ISavestateSelectorComponent::deleteSlot(u32 slot_idx [[maybe_unused]])
     //   LoadSlots();
     // }
 }
-void	ISavestateSelectorComponent::Render()
+void	CSavestateSelectorComponent::Render()
 {
 	const u32	font_height = mpContext->GetFontHeight();
 
@@ -372,7 +322,7 @@ void	ISavestateSelectorComponent::Render()
 }
 
 
-void	ISavestateSelectorComponent::OnSlotSelected( u32 slot_idx )
+void	CSavestateSelectorComponent::OnSlotSelected( u32 slot_idx )
 {
 	if( slot_idx >= NUM_SAVESTATE_SLOTS )
 		return;
@@ -384,7 +334,7 @@ void	ISavestateSelectorComponent::OnSlotSelected( u32 slot_idx )
 	mSelectedSlot = slot_idx;
 }
 
-void	ISavestateSelectorComponent::OnFolderSelected( u32 index )
+void	CSavestateSelectorComponent::OnFolderSelected( u32 index )
 {
 	current_slot_path = mElementTitle[index].c_str();
 	mElementTitle.clear();

@@ -22,6 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <stdio.h>
 
+#include "RomPreferencesScreen.h"
 
 #include "Interface/ConfigOptions.h"
 #include "Core/ROM.h"
@@ -30,197 +31,18 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Input/InputManager.h"
 #include "DrawTextUtilities.h"
 #include "Menu.h"
-#include "RomPreferencesScreen.h"
-#include "UIContext.h"
-#include "UIScreen.h"
-#include "UISetting.h"
-#include "UISpacer.h"
-#include "UICommand.h"
+
 #include "Interface/Preferences.h"
 #include "System/SystemInit.h"
 
 
-namespace
-{
-
-	class CTextureHashFrequency : public CUISetting
-	{
-	public:
-		CTextureHashFrequency( ETextureHashFrequency * setting, const std::string name, const char * description )
-			:	CUISetting( name, description )
-			,	mSetting( setting )
-		{
-		}
-
-		virtual	void			OnNext()				{ *mSetting = ETextureHashFrequency( ( *mSetting + 1 ) % NUM_THF ); }
-		virtual	void			OnPrevious()			{ *mSetting = ETextureHashFrequency( ( *mSetting + NUM_THF - 1 ) % NUM_THF ); }
-
-		virtual const char *	GetSettingName() const	{ return Preferences_GetTextureHashFrequencyDescription( *mSetting ); }
-
-	private:
-		ETextureHashFrequency *	mSetting;
-	};
-
-
-
-	class CAdjustControllerSetting : public CUISetting
-	{
-	public:
-		CAdjustControllerSetting( u32 * setting, const char * name )
-			:	CUISetting( name, "" )
-			,	mSetting( setting )
-		{
-		}
-
-		virtual	void			OnNext()				{ *mSetting = (*mSetting + 1) % ctx.inputManager->GetNumConfigurations(); }
-		virtual	void			OnPrevious()			{ *mSetting = (*mSetting + ctx.inputManager->GetNumConfigurations() - 1) % ctx.inputManager->GetNumConfigurations(); }
-
-		virtual const char *	GetSettingName() const	{ return ctx.inputManager->GetConfigurationName( *mSetting ); }
-		virtual const std::string	GetDescription() const	{ return ctx.inputManager->GetConfigurationDescription( *mSetting ); }
-
-	private:
-		u32 *					mSetting;
-	};
-
-
-	class CAudioSetting : public CUISetting
-	{
-	public:
-		CAudioSetting( EAudioPluginMode * setting, const char * name, const char * description )
-			:	CUISetting( name, description )
-			,	mSetting( setting )
-		{
-		}
-
-		virtual	void			OnNext()				{ *mSetting = (*mSetting < APM_ENABLED_SYNC) ? static_cast<EAudioPluginMode>(*mSetting + 1) : APM_DISABLED; }
-		virtual	void			OnPrevious()			{ *mSetting = (*mSetting > APM_DISABLED)     ? static_cast<EAudioPluginMode>(*mSetting - 1) : APM_ENABLED_SYNC; }
-
-		virtual const char *	GetSettingName() const
-		{
-			switch ( *mSetting )
-			{
-				case APM_DISABLED:			return "Disabled";
-				case APM_ENABLED_ASYNC:		return "Asynchronous";
-				case APM_ENABLED_SYNC:		return "Synchronous";
-			}
-			return "Unknown";
-		}
-
-	private:
-		EAudioPluginMode		*mSetting;
-	};
-
-	class CZoomSetting : public CUISetting
-	{
-	public:
-		CZoomSetting( f32 * setting, const char * name, const char * description )
-			:	CUISetting( name, description )
-			,	mSetting( setting )
-		{
-		}
-
-		virtual	void			OnNext()				{ *mSetting += 0.01f; *mSetting = *mSetting > 1.5f ? 1.5f : *mSetting;}
-		virtual	void			OnPrevious()			{ *mSetting -= 0.01f; *mSetting = *mSetting < 1.0f ? 1.0f : *mSetting;}
-
-		virtual const char *	GetSettingName() const	{ snprintf( mString, sizeof(mString), "%.0f%%", (double)(*mSetting*100.0f) ); return mString; }
-
-	private:
-		float *			mSetting;
-		mutable char 	mString[8];
-	};
-
-
-
-	class CAdjustFrameskipSetting : public CUISetting
-	{
-	public:
-		CAdjustFrameskipSetting( EFrameskipValue * setting, const char * name, const char * description )
-			:	CUISetting( name, description )
-			,	mSetting( setting )
-		{
-		}
-
-		virtual	void			OnNext()				{ *mSetting = EFrameskipValue( (*mSetting + 1) % NUM_FRAMESKIP_VALUES ); }
-		virtual	void			OnPrevious()			{ *mSetting = EFrameskipValue( (*mSetting + NUM_FRAMESKIP_VALUES - 1) % NUM_FRAMESKIP_VALUES ); }
-
-		virtual const char *	GetSettingName() const	{ return Preferences_GetFrameskipDescription( *mSetting ); }
-
-	private:
-		EFrameskipValue *		mSetting;
-	};
-
-	class CFSkipSetting : public CUISetting
-	{
-	public:
-		CFSkipSetting( u32 * setting, const char * name, const char * description )
-			:	CUISetting( name, description )
-			,	mSetting( setting )
-		{
-		}
-
-		virtual	void			OnNext()				{ *mSetting = (*mSetting < 2) ? (*mSetting + 1) : 0; }
-		virtual	void			OnPrevious()			{ *mSetting = (*mSetting > 0) ? (*mSetting - 1) : 2; }
-
-		virtual const char *	GetSettingName() const
-		{
-			switch ( *mSetting )
-			{
-				case 0:		return "No";
-				case 1:		return "Full speed";
-				case 2:		return "Half speed";
-			}
-			return "?";
-		}
-
-	private:
-		u32		*mSetting;
-	};
-}
-
-
-//
-
-class IRomPreferencesScreen : public CRomPreferencesScreen, public CUIScreen
-{
-	public:
-
-		IRomPreferencesScreen( CUIContext * p_context, const RomID & rom_id );
-		~IRomPreferencesScreen();
-
-		// CRomPreferencesScreen
-		virtual void				Run();
-
-		// CUIScreen
-		virtual void				Update( float elapsed_time, const glm::vec2 & stick, u32 old_buttons, u32 new_buttons );
-		virtual void				Render();
-		virtual bool				IsFinished() const									{ return mIsFinished; }
-
-	private:
-				void				OnConfirm();
-				void				OnCancel();
-				void				ResetDefaults();
-
-	private:
-		RomID						mRomID;
-		std::string					mRomName;
-		SRomPreferences				mRomPreferences;
-
-		bool						mIsFinished;
-
-		CUIElementBag				mElements;
-};
-
-
-CRomPreferencesScreen::~CRomPreferencesScreen() {}
-
-
 std::unique_ptr<CRomPreferencesScreen>	CRomPreferencesScreen::Create( CUIContext * p_context, const RomID & rom_id )
 {
-	return std::make_unique<IRomPreferencesScreen>( p_context, rom_id );
+	return std::make_unique<CRomPreferencesScreen>( p_context, rom_id );
 }
 
 
-IRomPreferencesScreen::IRomPreferencesScreen( CUIContext * p_context, const RomID & rom_id )
+CRomPreferencesScreen::CRomPreferencesScreen( CUIContext * p_context, const RomID & rom_id )
 :	CUIScreen( p_context )
 ,	mRomID( rom_id )
 ,	mRomName( "?" )
@@ -246,17 +68,17 @@ IRomPreferencesScreen::IRomPreferencesScreen( CUIContext * p_context, const RomI
 #endif
 //	mElements.Add( new CUISpacer( 16 ) );
 
-	mElements.Add(std::make_unique<CUICommandImpl>(std::bind(&IRomPreferencesScreen::OnConfirm, this ), "Save & Return", "Confirm changes to settings and return." ) );
-	mElements.Add(std::make_unique<CUICommandImpl>(std::bind(&IRomPreferencesScreen::OnCancel, this ), "Cancel", "Cancel changes to settings and return." ) );
+	mElements.Add(std::make_unique<CUICommandImpl>(std::bind(&CRomPreferencesScreen::OnConfirm, this ), "Save & Return", "Confirm changes to settings and return." ) );
+	mElements.Add(std::make_unique<CUICommandImpl>(std::bind(&CRomPreferencesScreen::OnCancel, this ), "Cancel", "Cancel changes to settings and return." ) );
 
 }
 
 
-IRomPreferencesScreen::~IRomPreferencesScreen() {}
+CRomPreferencesScreen::~CRomPreferencesScreen() {}
 
 
 
-void	IRomPreferencesScreen::Update( float elapsed_time[[maybe_unused]], const glm::vec2 & stick[[maybe_unused]], u32 old_buttons, u32 new_buttons )
+void	CRomPreferencesScreen::Update( float elapsed_time[[maybe_unused]], const glm::vec2 & stick[[maybe_unused]], u32 old_buttons, u32 new_buttons )
 {
 	if(old_buttons != new_buttons)
 	{
@@ -288,7 +110,7 @@ void	IRomPreferencesScreen::Update( float elapsed_time[[maybe_unused]], const gl
 	}
 }
 
-void	IRomPreferencesScreen::Render()
+void	CRomPreferencesScreen::Render()
 {
 	mpContext->ClearBackground();
 
@@ -326,13 +148,13 @@ void	IRomPreferencesScreen::Render()
 }
 
 
-void	IRomPreferencesScreen::Run()
+void	CRomPreferencesScreen::Run()
 {
 	CUIScreen::Run();
 }
 
 
-void	IRomPreferencesScreen::OnConfirm()
+void	CRomPreferencesScreen::OnConfirm()
 {
 	ctx.preferences->SetRomPreferences( mRomID, mRomPreferences );
 
@@ -344,7 +166,7 @@ void	IRomPreferencesScreen::OnConfirm()
 }
 
 
-void	IRomPreferencesScreen::OnCancel()
+void	CRomPreferencesScreen::OnCancel()
 {
 	mIsFinished = true;
 }

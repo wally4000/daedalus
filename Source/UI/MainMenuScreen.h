@@ -21,18 +21,73 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef UI_MAINMENUSCREEN_H_
 #define UI_MAINMENUSCREEN_H_
 
+#include "UIContext.h"
+#include "UIScreen.h"
+#include "RomSelectorComponent.h"
+#include "SelectedRomComponent.h"
+#include "SavestateSelectorComponent.h"
+#include "SplashScreen.h"
+
 class CUIContext;
 
-class CMainMenuScreen
+	enum EMenuOption
+	{
+		MO_GLOBAL_SETTINGS = 0,
+		MO_ROMS,
+		MO_SELECTED_ROM,
+		MO_SAVESTATES,
+		MO_ABOUT,
+	};
+	const s16 NUM_MENU_OPTIONS {MO_ABOUT+1};
+
+	const EMenuOption	MO_FIRST_OPTION [[maybe_unused]] = MO_GLOBAL_SETTINGS;
+	const EMenuOption	MO_LAST_OPTION [[maybe_unused]] = MO_ABOUT;
+
+
+class CMainMenuScreen : public CUIScreen
 {
 	public:
-		virtual ~CMainMenuScreen();
 
+		CMainMenuScreen( CUIContext * p_context );
+		~CMainMenuScreen();
+
+		// CMainMenuScreen
+		virtual void				Run();
+
+		// CUIScreen
+		virtual void				Update( float elapsed_time, const glm::vec2 & stick, u32 old_buttons, u32 new_buttons );
+		virtual void				Render();
+		virtual bool				IsFinished() const									{ return mIsFinished; }
 		static std::unique_ptr<CMainMenuScreen>	Create( CUIContext * p_context );
 
-		virtual void				Run() = 0;
-};
 
+	private:
+		static	EMenuOption			AsMenuOption( s32 option );
+
+				EMenuOption			GetPreviousOption() const							{ return AsMenuOption( mCurrentOption - 1 ); }
+				EMenuOption			GetCurrentOption() const							{ return AsMenuOption( mCurrentOption ); }
+				EMenuOption			GetNextOption() const								{ return AsMenuOption( mCurrentOption + 1 ); }
+
+				s32					GetPreviousValidOption() const;
+				s32					GetNextValidOption() const;
+
+				bool				IsOptionValid( EMenuOption option ) const;
+
+				void				OnRomSelected( const std::filesystem::path& filename);
+				void				OnSavestateSelected( const char * savestate_filename );
+				void				OnStartEmulation();
+
+	private:
+		bool						mIsFinished;
+
+		s32							mCurrentOption;
+		f32							mCurrentDisplayOption;
+
+		std::unique_ptr<CUIComponent>				mOptionComponents[ NUM_MENU_OPTIONS ];
+		CSelectedRomComponent* mSelectedRomComponent = nullptr; 
+
+		RomID						mRomID;
+};
 void DisplayRomsAndChoose(bool show_splash);
 
 #endif // UI_MAINMENUSCREEN_H_

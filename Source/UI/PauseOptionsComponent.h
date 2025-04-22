@@ -21,17 +21,57 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef UI_PAUSEOPTIONSCOMPONENT_H_
 #define UI_PAUSEOPTIONSCOMPONENT_H_
 
+#include "UIContext.h"
+#include "UIScreen.h"
+#include "UISetting.h"
+#include "UICommand.h"
+#include "UISpacer.h"
 #include "UIComponent.h"
+
 #include <functional>
+#include <memory>
 
 
 class CPauseOptionsComponent : public CUIComponent
 {
 	public:
-		CPauseOptionsComponent( CUIContext * p_context );
-		virtual ~CPauseOptionsComponent();
 
-		static std::unique_ptr<CPauseOptionsComponent>	Create( CUIContext * p_context, std::function<void()> on_resume, std::function<void()> on_reset);
+		CPauseOptionsComponent( CUIContext * p_context,  std::function<void()> on_resume, std::function<void()> on_reset );
+		~CPauseOptionsComponent();
+
+		// CUIComponent
+		virtual void				Update( float elapsed_time, const glm::vec2 & stick, u32 old_buttons, u32 new_buttons );		
+		static std::unique_ptr<CPauseOptionsComponent>	Create( CUIContext * p_context, std::function<void()> on_resume, std::function<void()> on_reset);	
+		virtual void Render();
+
+	private:
+				void				OnResume();
+				void				OnReset();
+				void				EditPreferences();
+				void				AdvancedOptions();
+				void				CheatOptions();
+				void				SaveState();
+				void				LoadState();
+				void				TakeScreenshot();
+#ifdef DAEDALUS_DIALOGS
+				void				ExitConfirmation();
+#endif
+				void				OnSaveStateSlotSelected( const std::filesystem::path& filename );
+				void				OnLoadStateSlotSelected( const std::filesystem::path& filename );
+
+#ifdef DAEDALUS_DEBUG_DISPLAYLIST
+				void				DebugDisplayList();
+#endif
+#ifdef DAEDALUS_KERNEL_MODE
+				void				ProfileNextFrame();
+#endif
+
+	private:
+		std::function<void()> 					mOnResume;
+		std::function<void()>					mOnReset;
+
+		CUIElementBag				mElements;
 };
+
 
 #endif // UI_PAUSEOPTIONSCOMPONENT_H_

@@ -22,23 +22,64 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define UI_SAVESTATESELECTORCOMPONENT_H_
 
 #include "UIComponent.h"
+#include "UICommand.h"
+#include "UIContext.h"
+#include "UIElement.h"
+#include "UIScreen.h"
+#include "Menu.h"
+
 #include <functional>
 
 class CSavestateSelectorComponent : public CUIComponent
 {
 	public:
-		CSavestateSelectorComponent( CUIContext * p_context );
-		virtual ~CSavestateSelectorComponent();
 
-		enum EAccessType
-		{
-			AT_SAVING,
-			AT_LOADING,
-		};
+	enum EAccessType
+	{
+		AT_SAVING,
+		AT_LOADING,
+	};
 
+
+		CSavestateSelectorComponent( CUIContext * p_context, EAccessType accetype, std::function<void (const char *)> on_slot_selected, const std::filesystem::path& running_rom );
+		~CSavestateSelectorComponent();
+
+		// CUIScreen
+		virtual void				Update( float elapsed_time, const glm::vec2 & stick, u32 old_buttons, u32 new_buttons );
+		virtual void				Render();
+		virtual bool				IsFinished() const									{ return mIsFinished; }
+	public:
+		std::filesystem::path			current_slot_path;
+		bool					isGameRunning;
 		static std::unique_ptr<CSavestateSelectorComponent>	Create( CUIContext * p_context, EAccessType access_type, std::function<void( const char *)> on_savestate_selected, const std::filesystem::path& running_rom );
 		void LoadState();
 		void SaveState();
+	private:
+		void				OnSlotSelected( u32 slot_idx );
+		void				OnFolderSelected( u32 index );
+		void				LoadFolders();
+		void				LoadSlots();
+		void				deleteSlot(u32 id_ss);
+		bool					isDeletionAllowed;
+
+	private:
+		EAccessType				mAccessType;
+		std::function<void(const char *)> 	mOnSlotSelected;
+
+		u32					mSelectedSlot;
+		bool					mIsFinished;
+		bool	deleteButtonTriggered;
+
+		CUIElementBag				mElements;
+		std::vector<std::string> 		mElementTitle;
+		bool					mSlotEmpty[ NUM_SAVESTATE_SLOTS ];
+		std::filesystem::path		mPVFilename[ NUM_SAVESTATE_SLOTS ];
+		std::filesystem::path		mPVScreenShot [ NUM_SAVESTATE_SLOTS ];
+		s8						mPVExists[ NUM_SAVESTATE_SLOTS ];	//0=skip, 1=file exists, -1=show no preview
+		std::shared_ptr<CNativeTexture>	mPreviewTexture;
+		u32						mLastPreviewLoad;
+
 };
+
 
 #endif // UI_SAVESTATESELECTORCOMPONENT_H_

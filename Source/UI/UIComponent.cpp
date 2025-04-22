@@ -49,20 +49,22 @@ std::unique_ptr<CUIComponentScreen>	CUIComponentScreen::Create( CUIContext * p_c
 }
 
 
-void	CUIComponentScreen::Update( float elapsed_time, const glm::vec2 & stick, u32 old_buttons, u32 new_buttons )
+void CUIComponentScreen::Update(float elapsed_time, const glm::vec2& stick, u32 old_buttons, u32 new_buttons)
 {
-	mComponent->Update( elapsed_time, stick, old_buttons, new_buttons );
+	if (mComponent)
+		mComponent->Update(elapsed_time, stick, old_buttons, new_buttons);
 }
 
-
-void	CUIComponentScreen::Render()
+void CUIComponentScreen::Render()
 {
 	mpContext->ClearBackground();
-	mpContext->DrawTextAlign( 0, mpContext->GetScreenWidth(), AT_CENTRE, TITLE_HEADER, mTitle.c_str(), mpContext->GetDefaultTextColour() );
-	mComponent->Render();
+	mpContext->DrawTextAlign(0, mpContext->GetScreenWidth(), AT_CENTRE, TITLE_HEADER, mTitle.c_str(), mpContext->GetDefaultTextColour());
+
+	if (mComponent)
+		mComponent->Render();
 }
 
-bool	CUIComponentScreen::IsFinished() const
+bool CUIComponentScreen::IsFinished() const
 {
-	return mComponent->IsFinished();
+	return mComponent ? mComponent->IsFinished() : true;
 }

@@ -27,8 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "DrawTextUtilities.h"
 #include "Menu.h"
 #include "SplashScreen.h"
-#include "UIContext.h"
-#include "UIScreen.h"
+
 #include <cmath>
 
 #include "Interface/Preferences.h"
@@ -36,38 +35,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern bool g32bitColorMode;
 
-class ISplashScreen : public CSplashScreen, public CUIScreen
-{
-	public:
-
-		ISplashScreen( CUIContext * p_context );
-		~ISplashScreen();
-
-		// CSplashScreen
-		virtual void				Run();
-
-		// CUIScreen
-		virtual void				Update( float elapsed_time, const glm::vec2 & stick, u32 old_buttons, u32 new_buttons );
-		virtual void				Render();
-		virtual bool				IsFinished() const									{ return mIsFinished; }
-
-	private:
-		bool						mIsFinished;
-		float						mElapsedTime;
-		std::shared_ptr<CNativeTexture>		mpTexture;
-};
-
-
-CSplashScreen::~CSplashScreen() {}
 
 
 std::unique_ptr<CSplashScreen>	CSplashScreen::Create( CUIContext * p_context )
 {
-	return std::make_unique<ISplashScreen>( p_context );
+	return std::make_unique<CSplashScreen>( p_context );
 }
 
 
-ISplashScreen::ISplashScreen( CUIContext * p_context )
+CSplashScreen::CSplashScreen( CUIContext * p_context )
 :	CUIScreen( p_context )
 ,	mIsFinished( false )
 ,	mElapsedTime( 0.0f )
@@ -75,10 +51,10 @@ ISplashScreen::ISplashScreen( CUIContext * p_context )
 {}
 
 
-ISplashScreen::~ISplashScreen() {}
+CSplashScreen::~CSplashScreen() {}
 
 
-void	ISplashScreen::Update( float elapsed_time , const glm::vec2 & stick[[maybe_unused]], u32 old_buttons, u32 new_buttons )
+void	CSplashScreen::Update( float elapsed_time , const glm::vec2 & stick[[maybe_unused]], u32 old_buttons, u32 new_buttons )
 {
 	// If any button was unpressed and is now pressed, exit
 	if((~old_buttons) & new_buttons)
@@ -93,7 +69,7 @@ void	ISplashScreen::Update( float elapsed_time , const glm::vec2 & stick[[maybe_
 	}
 }
 
-void	ISplashScreen::Render()
+void	CSplashScreen::Render()
 {
 	f32	alpha = 255.0f * sinf( mElapsedTime * M_PI / MAX_TIME );
 	u8		a = 0;
@@ -119,7 +95,7 @@ void	ISplashScreen::Render()
 #endif
 }
 
-void	ISplashScreen::Run()
+void	CSplashScreen::Run()
 {
 	CUIScreen::Run();
 }

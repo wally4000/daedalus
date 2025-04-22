@@ -28,11 +28,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // #include "AdjustDeadzoneScreen.h"
 #include "GlobalSettingsComponent.h"
 #include "DrawTextUtilities.h"
-#include "Dialogs.h"
-#include "UIContext.h"
-#include "UIScreen.h"
-#include "UISetting.h"
-#include "Menu.h"
 
 
 #include "System/Thread.h"
@@ -261,37 +256,18 @@ namespace
 
 }
 
-class IGlobalSettingsComponent : public CGlobalSettingsComponent
-{
-	public:
-
-		IGlobalSettingsComponent( CUIContext * p_context );
-		~IGlobalSettingsComponent();
-
-		// CUIComponent
-		virtual void				Update( float elapsed_time, const glm::vec2 & stick, u32 old_buttons, u32 new_buttons );
-		virtual void				Render();
-
-	private:
-		CUIElementBag				mElements;
-};
 
 
-CGlobalSettingsComponent::CGlobalSettingsComponent( CUIContext * p_context )
-:	CUIComponent( p_context )
-{}
 
-
-CGlobalSettingsComponent::~CGlobalSettingsComponent() {}
 
 
 std::unique_ptr<CGlobalSettingsComponent>	CGlobalSettingsComponent::Create( CUIContext * p_context )
 {
-	return std::make_unique<IGlobalSettingsComponent>( p_context );
+	return std::make_unique<CGlobalSettingsComponent>( p_context );
 }
 
-IGlobalSettingsComponent::IGlobalSettingsComponent( CUIContext * p_context )
-:	CGlobalSettingsComponent( p_context )
+CGlobalSettingsComponent::CGlobalSettingsComponent( CUIContext * p_context )
+:	CUIComponent( p_context )
 {
 
 	mElements.Add(std::make_unique<CInfoSetting>( "Display Info", "Whether to show additional info while the rom is running. Some modes are only available in DEBUG mode") );
@@ -330,10 +306,10 @@ IGlobalSettingsComponent::IGlobalSettingsComponent( CUIContext * p_context )
 }
 
 
-IGlobalSettingsComponent::~IGlobalSettingsComponent() {}
+CGlobalSettingsComponent::~CGlobalSettingsComponent() {}
 
 
-void	IGlobalSettingsComponent::Update( float elapsed_time [[maybe_unused]], const glm::vec2 & stick [[maybe_unused]], u32 old_buttons, u32 new_buttons )
+void	CGlobalSettingsComponent::Update( float elapsed_time [[maybe_unused]], const glm::vec2 & stick [[maybe_unused]], u32 old_buttons, u32 new_buttons )
 {
 	if(old_buttons != new_buttons)
 	{
@@ -367,7 +343,7 @@ void	IGlobalSettingsComponent::Update( float elapsed_time [[maybe_unused]], cons
 }
 
 
-void	IGlobalSettingsComponent::Render()
+void	CGlobalSettingsComponent::Render()
 {
 	mElements.Draw( mpContext, LIST_TEXT_LEFT, LIST_TEXT_WIDTH, AT_CENTRE, BELOW_MENU_MIN );
 

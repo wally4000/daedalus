@@ -17,23 +17,47 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-#include "Interface/RomID.h"
 #ifndef UI_ADVANCEDOPTIONSSCREEN_H_
 #define UI_ADVANCEDOPTIONSSCREEN_H_
 
+#include "UIScreen.h"
+#include "UIContext.h"
+#include "UISetting.h"
+#include "UISpacer.h"
+#include "UICommand.h"
+#include "Menu.h"
 #include <memory>
 
-class CUIContext;
+#include "Interface/RomID.h"
 
 
-class CAdvancedOptionsScreen
+class CAdvancedOptionsScreen : public CUIScreen
 {
 	public:
-		virtual ~CAdvancedOptionsScreen();
 
+		CAdvancedOptionsScreen( CUIContext * p_context, const RomID & rom_id );
+		~CAdvancedOptionsScreen();
 		static std::unique_ptr<CAdvancedOptionsScreen> Create( CUIContext * p_context, const RomID & rom_id );
+		// CAdvancedOptionsScreen
+		virtual void				Run();
 
-		virtual void				Run() = 0;
+		// CUIScreen
+		virtual void				Update( float elapsed_time, const glm::vec2 & stick, u32 old_buttons, u32 new_buttons );
+		virtual void				Render();
+		virtual bool				IsFinished() const									{ return mIsFinished; }
+
+	private:
+				void				OnConfirm();
+				void				OnCancel();
+
+	private:
+		RomID						mRomID;
+		std::string					mRomName;
+		SRomPreferences				mRomPreferences;
+
+		bool						mIsFinished;
+
+		CUIElementBag				mElements;
 };
 
 #endif // UI_ADVANCEDOPTIONSSCREEN_H_

@@ -23,14 +23,32 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 class CUIContext;
 
-class CAdjustDeadzoneScreen
+class IAdjustDeadzoneScreen : public CUIScreen
 {
 	public:
-		virtual ~CAdjustDeadzoneScreen();
 
+	
 		static CAdjustDeadzoneScreen *	Create( CUIContext * p_context );
+		IAdjustDeadzoneScreen( CUIContext * p_context );
+		~IAdjustDeadzoneScreen();
 
-		virtual void				Run() = 0;
+		virtual void				Run();
+		virtual void				Update( float elapsed_time, const glm::vec2 & stick, u32 old_buttons, u32 new_buttons );
+		virtual void				Render();
+		virtual bool				IsFinished() const									{ return mIsFinished; }
+
+	private:
+		void						DrawCircle( s32 x, s32 y, s32 r, c32 colour );
+		void						DrawCrosshair( s32 x, s32 y, c32 colour );
+		void						DrawStick( s32 x, s32 y, s32 r, const glm::vec2 & stick, f32 min_deadzone, f32 max_deadzone );
+
+	private:
+		bool						mIsFinished;
+		v2							mPspStick;
+		v2							mN64Stick;
+		bool						mAdjustingMinDeadzone;
+		f32							mStickMinDeadzone;
+		f32							mStickMaxDeadzone;
 };
 
 #endif // UI_ADJUSTDEADZONESCREEN_H_

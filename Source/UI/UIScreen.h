@@ -22,6 +22,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define UI_UISCREEN_H_
 
 #include "Base/Types.h"
+#include "Interface/Preferences.h"
+#include <glm/vec2.hpp>
 
 class v2;
 class c32;

@@ -21,16 +21,57 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef UI_PAUSESCREEN_H_
 #define UI_PAUSESCREEN_H_
 
+#include "UIContext.h"
+#include "UIScreen.h"
+#include  "MainMenuScreen.h"
 class CUIContext;
 
-class CPauseScreen
+enum EPauseOptions
 {
-	public:
-		virtual ~CPauseScreen();
-
-		static std::unique_ptr<CPauseScreen>	Create( CUIContext * p_context );
-
-		virtual void				Run() = 0;
+	PO_GLOBAL_SETTINGS = 0,
+	PO_PAUSE_OPTIONS,
+	PO_ABOUT,
+	NUM_PAUSE_OPTIONS,
 };
 
+
+class CPauseScreen : public CUIScreen
+{
+	public:
+
+		CPauseScreen( CUIContext * p_context );
+		~CPauseScreen();
+
+		// CPauseScreen
+		virtual void				Run();
+
+		// CUIScreen
+		virtual void				Update( float elapsed_time, const glm::vec2 & stick, u32 old_buttons, u32 new_buttons );
+		virtual void				Render();
+		virtual bool				IsFinished() const									{ return mIsFinished; }
+		static std::unique_ptr<CPauseScreen>	Create( CUIContext * p_context );
+
+	private:
+		static	EPauseOptions			GetNextOption( EPauseOptions option )					{ return EPauseOptions( (option + 1) % NUM_MENU_OPTIONS ); }
+		static	EPauseOptions			GetPreviousOption( EPauseOptions option )				{ return EPauseOptions( (option + NUM_MENU_OPTIONS -1) % NUM_MENU_OPTIONS ); }
+
+				EPauseOptions			GetPreviousOption() const							{ return GetPreviousOption( mCurrentOption ); }
+				EPauseOptions			GetCurrentOption() const							{ return mCurrentOption; }
+				EPauseOptions			GetNextOption() const								{ return GetNextOption( mCurrentOption ); }
+
+				EPauseOptions			GetPreviousValidOption() const;
+				EPauseOptions			GetNextValidOption() const;
+
+				bool				IsOptionValid( EPauseOptions option ) const;
+
+				void				OnResume();
+				void				OnReset();
+
+	private:
+		bool						mIsFinished;
+
+		EPauseOptions					mCurrentOption;
+
+		std::unique_ptr<CUIComponent>				mOptionComponents[ NUM_MENU_OPTIONS ];
+};
 #endif // UI_PAUSESCREEN_H_

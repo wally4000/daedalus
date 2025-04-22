@@ -21,14 +21,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "CheatOptionsScreen.h"
 #include "Menu.h"
-#include "UIContext.h"
-#include "UIScreen.h"
-#include "UISetting.h"
-#include "UISpacer.h"
-#include "UICommand.h"
 
 #include "Interface/ConfigOptions.h"
-#include "Interface/Cheats.h"
 #include "Core/ROM.h"
 
 #include "RomFile/RomSettings.h"
@@ -36,112 +30,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Input/InputManager.h"
 #include "DrawTextUtilities.h"
 
-#include "Interface/Preferences.h"
 #include "Utility/Stream.h"
 
 
-
-class ICheatOptionsScreen : public CCheatOptionsScreen, public CUIScreen
-{
-	public:
-
-		ICheatOptionsScreen( CUIContext * p_context, const RomID & rom_id );
-		~ICheatOptionsScreen();
-
-		// CCheatOptionsScreen
-		virtual void				Run();
-
-		// CUIScreen
-		virtual void				Update( float elapsed_time, const glm::vec2 & stick, u32 old_buttons, u32 new_buttons );
-		virtual void				Render();
-		virtual bool				IsFinished() const									{ return mIsFinished; }
-
-	private:
-		void				OnConfirm();
-		void				OnCancel();
-		RomID						mRomID;
-		std::string					mRomName;
-		SRomPreferences				mRomPreferences;
-		bool						mIsFinished;
-		CUIElementBag				mElements;
-};
-
-//
-
-class CCheatType : public CUISetting
-{
-public:
-	CCheatType( u32 i,const char * name, bool * cheat_enabled, const char * description )
-		:	CUISetting( name, description )
-		,	mIndex( i )
-		,	mCheatEnabled( cheat_enabled )
-	{
-	}
-	// Make read only the cheat list if enable cheat code option is disable
-	virtual bool			IsReadOnly() const
-	{
-		if(!*mCheatEnabled)
-		{
-			//Disable all active cheat codes
-			CheatCodes_Disable( mIndex );
-			return true;
-		}
-		return false;
-	}
-
-	virtual bool			IsSelectable()	const	{ return !IsReadOnly(); }
-
-	virtual	void			OnSelected()
-	{
-
-		if(!codegrouplist[mIndex].active)
-		{
-			codegrouplist[mIndex].active = true;
-		}
-		else
-		{
-			CheatCodes_Disable( mIndex);
-		}
-
-	}
-	virtual const char *	GetSettingName() const
-	{
-		return codegrouplist[mIndex].active ? "Enabled" : "Disabled";
-	}
-
-private:
-	u32						mIndex;
-	bool *					mCheatEnabled;
-};
-
-
-class CCheatNotFound : public CUISetting
-	{
-	public:
-		CCheatNotFound(  const char * name )
-			:	CUISetting( name, "" )
-		{
-		}
-		// Always show as read only when no cheats are found
-		virtual bool			IsReadOnly()	const	{ return true; }
-		virtual bool			IsSelectable()	const	{ return false; }
-		virtual	void			OnSelected()			{ }
-
-		//virtual	void			OnSelected(){}
-
-		virtual const char *	GetSettingName() const	{ return "Disabled";	}
-	};
-
-
-CCheatOptionsScreen::~CCheatOptionsScreen() {}
-
 std::unique_ptr<CCheatOptionsScreen>	CCheatOptionsScreen::Create( CUIContext * p_context, const RomID & rom_id )
 {
-	return std::make_unique<ICheatOptionsScreen>( p_context, rom_id );
+	return std::make_unique<CCheatOptionsScreen>( p_context, rom_id );
 }
 
 
-ICheatOptionsScreen::ICheatOptionsScreen( CUIContext * p_context, const RomID & rom_id )
+CCheatOptionsScreen::CCheatOptionsScreen( CUIContext * p_context, const RomID & rom_id )
 :	CUIScreen( p_context )
 ,	mRomID( rom_id )
 ,	mRomName( "?" )
@@ -186,22 +84,22 @@ ICheatOptionsScreen::ICheatOptionsScreen( CUIContext * p_context, const RomID & 
 	}
 
 
-	mElements.Add(std::make_unique<CUICommandImpl>(std::bind(&ICheatOptionsScreen::OnConfirm, this ), "Save & Return", "Confirm changes to settings and return." ) );
-	mElements.Add(std::make_unique<CUICommandImpl>(std::bind(&ICheatOptionsScreen::OnCancel, this ), "Cancel", "Cancel changes to settings and return." ) );
+	mElements.Add(std::make_unique<CUICommandImpl>(std::bind(&CCheatOptionsScreen::OnConfirm, this ), "Save & Return", "Confirm changes to settings and return." ) );
+	mElements.Add(std::make_unique<CUICommandImpl>(std::bind(&CCheatOptionsScreen::OnCancel, this ), "Cancel", "Cancel changes to settings and return." ) );
 
 }
 
 
 //
 
-ICheatOptionsScreen::~ICheatOptionsScreen()
+CCheatOptionsScreen::~CCheatOptionsScreen()
 {
 }
 
 
 //
 
-void	ICheatOptionsScreen::Update( float elapsed_time [[maybe_unused]], const glm::vec2 & stick [[maybe_unused]], u32 old_buttons, u32 new_buttons )
+void	CCheatOptionsScreen::Update( float elapsed_time [[maybe_unused]], const glm::vec2 & stick [[maybe_unused]], u32 old_buttons, u32 new_buttons )
 {
 	if(old_buttons != new_buttons)
 	{
@@ -234,7 +132,7 @@ void	ICheatOptionsScreen::Update( float elapsed_time [[maybe_unused]], const glm
 }
 
 
-void	ICheatOptionsScreen::Render()
+void	CCheatOptionsScreen::Render()
 {
 	mpContext->ClearBackground();
 
@@ -276,13 +174,13 @@ void	ICheatOptionsScreen::Render()
 
 //
 
-void	ICheatOptionsScreen::Run()
+void	CCheatOptionsScreen::Run()
 {
 	CUIScreen::Run();
 }
 
 
-void	ICheatOptionsScreen::OnConfirm()
+void	CCheatOptionsScreen::OnConfirm()
 {
 	ctx.preferences->SetRomPreferences( mRomID, mRomPreferences );
 
@@ -293,7 +191,7 @@ void	ICheatOptionsScreen::OnConfirm()
 	mIsFinished = true;
 }
 
-void	ICheatOptionsScreen::OnCancel()
+void	CCheatOptionsScreen::OnCancel()
 {
 	mIsFinished = true;
 }

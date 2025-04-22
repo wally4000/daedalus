@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "UIScreen.h"
 #include <iostream>
 #include "Graphics/ColourValue.h"
-#include "Graphics/NativeTexture.h"
+
 #include "Utility/MathUtil.h"
 #include "DrawTextUtilities.h"
 
@@ -35,47 +35,27 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <cstring>
 
-class IAboutComponent : public CAboutComponent
-{
-	public:
-
-		IAboutComponent( CUIContext * p_context );
-		~IAboutComponent();
-
-		// CUIComponent
-		virtual void				Update( f32 elapsed_time, const glm::vec2 & stick, u32 old_buttons, u32 new_buttons );
-		virtual void				Render();
-
-	private:
-		std::shared_ptr<CNativeTexture>		mpTexture;
-};
 
 
-CAboutComponent::CAboutComponent( CUIContext * p_context )
-:	CUIComponent( p_context )
- {}
 
-
-CAboutComponent::~CAboutComponent() {}
 
 
 std::unique_ptr<CAboutComponent>	CAboutComponent::Create( CUIContext * p_context )
 {
-	return std::make_unique<IAboutComponent>( p_context );
+	return std::make_unique<CAboutComponent>( p_context );
 }
 
-IAboutComponent::IAboutComponent( CUIContext * p_context )
-:	CAboutComponent( p_context )
+CAboutComponent::~CAboutComponent() {}
+CAboutComponent::CAboutComponent( CUIContext * p_context )
+:	CUIComponent( p_context )
 ,	mpTexture( CNativeTexture::CreateFromPng( LOGO_FILENAME, TexFmt_8888 ) )
 {}
 
 
-IAboutComponent::~IAboutComponent() {}
-
-void	IAboutComponent::Update( float elapsed_time [[maybe_unused]], const glm::vec2 & stick [[maybe_unused]], u32 old_buttons [[maybe_unused]], u32 new_buttons [[maybe_unused]] ) {}
+void	CAboutComponent::Update( float elapsed_time [[maybe_unused]], const glm::vec2 & stick [[maybe_unused]], u32 old_buttons [[maybe_unused]], u32 new_buttons [[maybe_unused]] ) {}
 
 
-void	IAboutComponent::Render()
+void	CAboutComponent::Render()
 {	
 	s16 text_top = SCREEN_HEIGHT / 4;
 

@@ -22,19 +22,42 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define UI_SELECTEDROMCOMPONENT_H_
 
 #include "UIComponent.h"
+#include "UIContext.h"
+#include "UIScreen.h"
+#include "UISetting.h"
+#include "UICommand.h"
+#include "UISpacer.h"
+
 #include <functional>
 
 
-
-class CSelectedRomComponent : public CUIComponent
+class CSelectedRomComponent :  public CUIComponent
 {
 	public:
-		CSelectedRomComponent( CUIContext * p_context );
-		virtual ~CSelectedRomComponent();
 
+		CSelectedRomComponent( CUIContext * p_context, std::function<void()> on_start_emulation );
+		~CSelectedRomComponent();
+
+		// CUIComponent
+		virtual void				Update( float elapsed_time, const glm::vec2 & stick, u32 old_buttons, u32 new_buttons );
+		virtual void				Render();
+
+		virtual void				SetRomID( const RomID & rom_id )			{ mRomID = rom_id; }
 		static std::unique_ptr<CSelectedRomComponent>	Create( CUIContext * p_context, std::function<void()> on_start_emulation );
 
-		virtual void					SetRomID( const RomID & rom_id ) = 0;
+	private:
+		void						EditPreferences();
+		void						AdvancedOptions();
+		void						CheatOptions();
+		void						StartEmulation();
+
+	private:
+		std::function<void()> OnStartEmulation;
+
+		CUIElementBag				mElements;
+
+		RomID						mRomID;
 };
+
 
 #endif // UI_SELECTEDROMCOMPONENT_H_

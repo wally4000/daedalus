@@ -33,8 +33,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Graphics/GraphicsContext.h"
 #include "Utility/MathUtil.h"
 #include "DrawTextUtilities.h"
-#include "UIContext.h"
-#include "UIScreen.h"
+
 #include "AboutComponent.h"
 #include "GlobalSettingsComponent.h"
 #include "PauseOptionsComponent.h"
@@ -45,88 +44,33 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern void battery_info();
 
-namespace {
-	enum EMenuOption
-	{
-		MO_GLOBAL_SETTINGS = 0,
-		MO_PAUSE_OPTIONS,
-		MO_ABOUT,
-		NUM_MENU_OPTIONS,
-	};
-
-	const EMenuOption	MO_FIRST_OPTION [[maybe_unused]]= MO_GLOBAL_SETTINGS;
-	const EMenuOption	MO_LAST_OPTION  [[maybe_unused]] = MO_ABOUT;
-
-	const char * const	gMenuOptionNames[ NUM_MENU_OPTIONS ] =
+	const char * const	gMenuOptionNames[ NUM_PAUSE_OPTIONS ] =
 	{
 		"Global Settings",
 		"Paused",
 		"About",
 	};
-}
 
-class IPauseScreen : public CPauseScreen, public CUIScreen
-{
-	public:
-
-		IPauseScreen( CUIContext * p_context );
-		~IPauseScreen();
-
-		// CPauseScreen
-		virtual void				Run();
-
-		// CUIScreen
-		virtual void				Update( float elapsed_time, const glm::vec2 & stick, u32 old_buttons, u32 new_buttons );
-		virtual void				Render();
-		virtual bool				IsFinished() const									{ return mIsFinished; }
-
-
-	private:
-		static	EMenuOption			GetNextOption( EMenuOption option )					{ return EMenuOption( (option + 1) % NUM_MENU_OPTIONS ); }
-		static	EMenuOption			GetPreviousOption( EMenuOption option )				{ return EMenuOption( (option + NUM_MENU_OPTIONS -1) % NUM_MENU_OPTIONS ); }
-
-				EMenuOption			GetPreviousOption() const							{ return GetPreviousOption( mCurrentOption ); }
-				EMenuOption			GetCurrentOption() const							{ return mCurrentOption; }
-				EMenuOption			GetNextOption() const								{ return GetNextOption( mCurrentOption ); }
-
-				EMenuOption			GetPreviousValidOption() const;
-				EMenuOption			GetNextValidOption() const;
-
-				bool				IsOptionValid( EMenuOption option ) const;
-
-				void				OnResume();
-				void				OnReset();
-
-	private:
-		bool						mIsFinished;
-
-		EMenuOption					mCurrentOption;
-
-		std::unique_ptr<CUIComponent>				mOptionComponents[ NUM_MENU_OPTIONS ];
-};
-
-
-CPauseScreen::~CPauseScreen() {}
 
 std::unique_ptr<CPauseScreen>	CPauseScreen::Create( CUIContext * p_context )
 {
-	return std::make_unique<IPauseScreen>( p_context );
+	return std::make_unique<CPauseScreen>( p_context );
 }
 
 
-IPauseScreen::IPauseScreen( CUIContext * p_context )
+CPauseScreen::CPauseScreen( CUIContext * p_context )
 :	CUIScreen( p_context )
 ,	mIsFinished( false )
-,	mCurrentOption( MO_PAUSE_OPTIONS )
+,	mCurrentOption( PO_PAUSE_OPTIONS )
 {
 	for( auto i = 0; i < NUM_MENU_OPTIONS; ++i )
 	{
 		mOptionComponents[ i ] = NULL;
 	}
 
-	mOptionComponents[ MO_GLOBAL_SETTINGS ]	= CGlobalSettingsComponent::Create( mpContext );
-	mOptionComponents[ MO_PAUSE_OPTIONS ]	= CPauseOptionsComponent::Create( mpContext, std::bind(&IPauseScreen::OnResume, this), std::bind(&IPauseScreen::OnReset, this ) );
-	mOptionComponents[ MO_ABOUT ]			= CAboutComponent::Create( mpContext );
+	mOptionComponents[ PO_GLOBAL_SETTINGS ]	= CGlobalSettingsComponent::Create( mpContext );
+	mOptionComponents[ PO_PAUSE_OPTIONS ]	= CPauseOptionsComponent::Create( mpContext, std::bind(&CPauseScreen::OnResume, this), std::bind(&CPauseScreen::OnReset, this ) );
+	mOptionComponents[ PO_ABOUT ]			= CAboutComponent::Create( mpContext );
 
 #ifdef DAEDALUS_ENABLE_ASSERTS
 	for( u32 i = 0; i < NUM_MENU_OPTIONS; ++i )
@@ -136,14 +80,14 @@ IPauseScreen::IPauseScreen( CUIContext * p_context )
 	#endif
 }
 
-IPauseScreen::~IPauseScreen()
+CPauseScreen::~CPauseScreen()
 {}
 
 
-EMenuOption		IPauseScreen::GetPreviousValidOption() const
+EPauseOptions		CPauseScreen::GetPreviousValidOption() const
 {
 	bool			looped = false;
-	EMenuOption	 current_option = mCurrentOption;
+	EPauseOptions	 current_option = mCurrentOption;
 
 	do
 	{
@@ -156,10 +100,10 @@ EMenuOption		IPauseScreen::GetPreviousValidOption() const
 }
 
 
-EMenuOption		IPauseScreen::GetNextValidOption() const
+EPauseOptions		CPauseScreen::GetNextValidOption() const
 {
 	bool			looped = false;
-	EMenuOption	current_option = mCurrentOption;
+	EPauseOptions	current_option = mCurrentOption;
 
 	do
 	{
@@ -172,13 +116,13 @@ EMenuOption		IPauseScreen::GetNextValidOption() const
 }
 
 
-bool	IPauseScreen::IsOptionValid( EMenuOption option [[maybe_unused]] ) const
+bool	CPauseScreen::IsOptionValid( EPauseOptions option [[maybe_unused]] ) const
 {
 	return true;
 }
 
 
-void	IPauseScreen::Update( float elapsed_time, const glm::vec2 & stick, u32 old_buttons, u32 new_buttons )
+void	CPauseScreen::Update( float elapsed_time, const glm::vec2 & stick, u32 old_buttons, u32 new_buttons )
 {
 	static bool button_released = false;
 
@@ -211,7 +155,7 @@ void	IPauseScreen::Update( float elapsed_time, const glm::vec2 & stick, u32 old_
 }
 
 
-void	IPauseScreen::Render()
+void	CPauseScreen::Render()
 {
 	mpContext->ClearBackground();
 
@@ -220,9 +164,9 @@ void	IPauseScreen::Render()
 	c32		valid_colour( mpContext->GetDefaultTextColour() );
 	c32		invalid_colour( 200, 200, 200 );
 
-	EMenuOption		previous = GetPreviousOption();
-	EMenuOption		current = GetCurrentOption();
-	EMenuOption		next = GetNextOption();
+	EPauseOptions		previous = GetPreviousOption();
+	EPauseOptions		current = GetCurrentOption();
+	EPauseOptions		next = GetNextOption();
 
 	// Meh should be big enough regarding if translated..
 	char					info[120];
@@ -263,7 +207,7 @@ void	IPauseScreen::Render()
 
 }
 
-void	IPauseScreen::Run()
+void	CPauseScreen::Run()
 {
 	mIsFinished = false;
 	CUIScreen::Run();
@@ -274,12 +218,12 @@ void	IPauseScreen::Run()
 	ctx.graphicsContext->ClearAllSurfaces();
 }
 
-void IPauseScreen::OnResume()
+void CPauseScreen::OnResume()
 {
 	mIsFinished = true;
 }
 
-void IPauseScreen::OnReset()
+void CPauseScreen::OnReset()
 {
 	CPU_Halt("Resetting");
 	mIsFinished = true;

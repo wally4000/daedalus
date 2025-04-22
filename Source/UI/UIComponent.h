@@ -51,10 +51,10 @@ class CUIComponentScreen : public CUIScreen
 {
 
 	public:
-	CUIComponentScreen( CUIContext * p_context, CUIComponent * component, const char * title );
+	CUIComponentScreen( CUIContext * p_context, std::unique_ptr<CUIComponent> component, const char * title );
 		virtual ~CUIComponentScreen();
 
-		static std::unique_ptr<CUIComponentScreen>	Create( CUIContext * p_context, CUIComponent * component, const char * title );
+		static std::unique_ptr<CUIComponentScreen>	Create( CUIContext * p_context, std::unique_ptr<CUIComponent> component, const char * title );
 
 		// CUIScreen
 		virtual void				Update( float elapsed_time, const glm::vec2 & stick, u32 old_buttons, u32 new_buttons );
@@ -62,7 +62,7 @@ class CUIComponentScreen : public CUIScreen
 		virtual bool				IsFinished() const;
 
 	private:
-		CUIComponent *				mComponent;
+		std::unique_ptr<CUIComponent>				mComponent;
 		std::string					mTitle;
 };
 

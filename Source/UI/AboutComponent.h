@@ -28,7 +28,7 @@ class CAboutComponent : public CUIComponent
 	public:
 		CAboutComponent( CUIContext * p_context );
 		virtual ~CAboutComponent();
-		static CAboutComponent *	Create( CUIContext * p_context );
+		static std::unique_ptr<CAboutComponent>	Create( CUIContext * p_context );
 };
 
 

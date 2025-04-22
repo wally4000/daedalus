@@ -29,7 +29,7 @@ class CGlobalSettingsComponent : public CUIComponent
 		CGlobalSettingsComponent( CUIContext * p_context );
 		virtual ~CGlobalSettingsComponent();
 
-		static CGlobalSettingsComponent *	Create( CUIContext * p_context );
+		static std::unique_ptr<CGlobalSettingsComponent>	Create( CUIContext * p_context );
 };
 
 #endif // UI_GLOBALSETTINGSCOMPONENT_H_

@@ -97,9 +97,9 @@ CPauseOptionsComponent::CPauseOptionsComponent( CUIContext * p_context )
 CPauseOptionsComponent::~CPauseOptionsComponent() {}
 
 
-CPauseOptionsComponent *	CPauseOptionsComponent::Create( CUIContext * p_context,  std::function<void()> on_resume, std::function<void()> on_reset )
+std::unique_ptr<CPauseOptionsComponent> CPauseOptionsComponent::Create( CUIContext * p_context,  std::function<void()> on_resume, std::function<void()> on_reset )
 {
-	return new IPauseOptionsComponent( p_context, on_resume, on_reset );
+	return std::make_unique<IPauseOptionsComponent>( p_context, on_resume, on_reset );
 }
 
 
@@ -238,7 +238,7 @@ auto onSaveStateSlotSelected = [this](const std::filesystem::path slot) { this->
 
 auto component = CSavestateSelectorComponent::Create(mpContext, CSavestateSelectorComponent::AT_SAVING, onSaveStateSlotSelected, ctx.romInfo->settings.GameName.c_str());
 
-	auto screen( CUIComponentScreen::Create( mpContext, component, SAVING_TITLE_TEXT ) );
+	auto screen( CUIComponentScreen::Create( mpContext, std::move(component), SAVING_TITLE_TEXT ) );
 	screen->Run();
 	(mOnResume)();
 }
@@ -252,7 +252,7 @@ auto onLoadStateSlotSelected = [this](const std::filesystem::path slot) {
 
 auto component = CSavestateSelectorComponent::Create(mpContext, CSavestateSelectorComponent::AT_LOADING, onLoadStateSlotSelected, ctx.romInfo->settings.GameName.c_str());
 
-	auto screen =  CUIComponentScreen::Create( mpContext, component, LOADING_TITLE_TEXT );
+	auto screen =  CUIComponentScreen::Create( mpContext, std::move(component), LOADING_TITLE_TEXT );
 	screen->Run();
 	(mOnResume)();
 }

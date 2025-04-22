@@ -59,9 +59,9 @@ CAboutComponent::CAboutComponent( CUIContext * p_context )
 CAboutComponent::~CAboutComponent() {}
 
 
-CAboutComponent *	CAboutComponent::Create( CUIContext * p_context )
+std::unique_ptr<CAboutComponent>	CAboutComponent::Create( CUIContext * p_context )
 {
-	return new IAboutComponent( p_context );
+	return std::make_unique<IAboutComponent>( p_context );
 }
 
 IAboutComponent::IAboutComponent( CUIContext * p_context )

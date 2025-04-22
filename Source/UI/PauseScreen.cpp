@@ -102,7 +102,7 @@ class IPauseScreen : public CPauseScreen, public CUIScreen
 
 		EMenuOption					mCurrentOption;
 
-		CUIComponent *				mOptionComponents[ NUM_MENU_OPTIONS ];
+		std::unique_ptr<CUIComponent>				mOptionComponents[ NUM_MENU_OPTIONS ];
 };
 
 
@@ -137,12 +137,7 @@ IPauseScreen::IPauseScreen( CUIContext * p_context )
 }
 
 IPauseScreen::~IPauseScreen()
-{
-	for( auto i = 0; i < NUM_MENU_OPTIONS; ++i )
-	{
-		delete mOptionComponents[ i ];
-	}
-}
+{}
 
 
 EMenuOption		IPauseScreen::GetPreviousValidOption() const

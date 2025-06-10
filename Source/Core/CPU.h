@@ -74,8 +74,8 @@ extern std::vector< DBG_BreakPoint > g_BreakPoints;
 //*****************************************************************************
 //
 //*****************************************************************************
-bool	CPU_RomOpen();
-void	CPU_RomClose();
+bool	CPU_RomOpen(SystemContext &ctx);
+void	CPU_RomClose(SystemContext &ctx);
 void	CPU_Step();
 void	CPU_Skip();
 bool	CPU_Run();
@@ -93,7 +93,6 @@ void	CPU_SetCompare(u32 value);
 void	CPU_AddBreakPoint( u32 address );						// Add a break point at address dwAddress
 void	CPU_EnableBreakPoint( u32 address, bool enable );		// Enable/Disable the breakpoint as the specified address
 #endif
-bool	CPU_IsRunning();
 void	CPU_AddEvent( s32 count, ECPUEventType event_type );
 void	CPU_SkipToNextEvent();
 bool	CPU_CheckStuffToDo();
@@ -107,7 +106,7 @@ void CPU_UnregisterVblCallback(VblCallbackFn fn, void * arg);
 #ifdef DAEDALUS_PSP
 #define CPU_KeepRunning() (1)
 #else
-#define CPU_KeepRunning() (CPU_IsRunning())
+#define CPU_KeepRunning() (ctx.cpuRunning)
 #endif
 
 inline void CPU_SetPC( u32 pc )		{ ctx.cpuState.CurrentPC = pc; }

@@ -407,14 +407,6 @@ static bool Legacy_FramerateLimiter_Reset(SystemContext& ctx) {
 	return FramerateLimiter_Reset(); // not a class
 }
 
-static bool Legacy_CPU_RomOpen(SystemContext& ctx) {
-	return CPU_RomOpen(); // not a class
-} 
-
-static void Legacy_CPU_RomClose(SystemContext& ctx) {
-	// Does nothing, supposedly dumps the fragment cache.
-}
-
 static bool Controller_Reset(SystemContext& ctx) {
 	if (!ctx.pifController)
 	{
@@ -455,9 +447,6 @@ static void Destroy_OldRomFile(SystemContext&)            { Legacy_RomFile_Close
 static bool Init_OldMemoryReset(SystemContext&)           { return Legacy_Memory_Reset(ctx); }
 static void Destroy_OldMemoryReset(SystemContext&)        { Legacy_Memory_Cleanup(ctx); }
 
-// CPU
-static bool Init_OldCPU(SystemContext&)                   { return Legacy_CPU_RomOpen(ctx); }
-static void Destroy_OldCPU(SystemContext&)                { Legacy_CPU_RomClose(ctx); }
 
 // ROM Reboot
 static bool Init_OldROM(SystemContext&)                   { return Legacy_CPU_RomReboot(ctx); }
@@ -474,7 +463,7 @@ static const std::vector<RomEntityEntry> gRomInitTable =
 	{"Audio",               Init_Audio,                 Dispose_Audio},
 	{"Graphics",            Init_GraphicsPlugin,        Destroy_GraphicsPlugin},
 	{"FramerateLimiter",    Init_OldFramerateLimiter,   nullptr},
-	{"CPU",                 Init_OldCPU,                Destroy_OldCPU},
+	{"CPU",                 CPU_RomOpen,                CPU_RomClose},
 	{"ROM",                 Init_OldROM,                Destroy_OldROM},
 	{"Controller",          Controller_Reset,   		Controller_RomClose},
 	{"Save",                Init_OldSave,               Destroy_OldSave}
@@ -503,8 +492,6 @@ bool System_Open(const std::filesystem::path &filename)
 	
 	// // Close any previously loaded ROM
 	// System_Close();
-
-
 
 	// #ifdef DAEDALUS_PSP
 
@@ -546,7 +533,6 @@ void System_Close()
 	}
 
 }
-
 
 void System_Finalize(SystemContext& ctx)
 {

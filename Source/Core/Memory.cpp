@@ -186,9 +186,7 @@ bool Memory_Reset()
 	return true;
 }
 
-void Memory_Cleanup()
-{
-}
+void Memory_Cleanup(){}
 
 static void Memory_Tlb_Hack()
 {

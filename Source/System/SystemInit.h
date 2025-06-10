@@ -43,7 +43,7 @@ class CController;
 class CTextureCache;
 class BaseRenderer;
 struct SCPUState;
-class CMemoryHeap;
+class CMemoryHeap; 
 
 struct SystemContext {
     SystemContext(); 
@@ -63,7 +63,7 @@ struct SystemContext {
     SCPUState cpuState;
     volatile u32 eventQueueLocked;
     std::filesystem::path saveStateFilename;
-
+    bool cpuRunning = false;
     #ifdef DAEDALUS_PSP
     std::unique_ptr<CVideoMemoryManager> videoMemoryManager;
     #endif

@@ -166,7 +166,7 @@ void Inter_SelectCore()
 void CPU_Skip()
 {
 	#ifdef DAEDALUS_DEBUG_CONSOLE
-	if (CPU_IsRunning())
+	if (ctx.cpuRunning)
 	{
 		DBGConsole_Msg(0, "Already Running");
 		return;
@@ -181,7 +181,7 @@ void CPU_Skip()
 void CPU_Step()
 {
 		#ifdef DAEDALUS_DEBUG_CONSOLE
-	if (CPU_IsRunning())
+	if (ctx.cpuRunning)
 	{
 		DBGConsole_Msg(0, "Already Running");
 		return;

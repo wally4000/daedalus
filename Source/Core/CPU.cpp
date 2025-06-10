@@ -76,7 +76,6 @@ u64					gTotalInstructionsEmulated = 0;
 std::vector< DBG_BreakPoint > g_BreakPoints;
 #endif
 
-static bool			gCPURunning   = false;			// CPU is actively running
 u8 *				gLastAddress     = nullptr;
 
 
@@ -330,14 +329,14 @@ void SCPUState::Dump()
 }
 #endif
 
-bool CPU_RomOpen()
+bool CPU_RomOpen(SystemContext &ctx)
 {
 	#ifdef DAEDALUS_DEBUG_CONSOLE
 	DBGConsole_Msg(0, "Resetting CPU");
 #endif
 
 	gLastAddress = nullptr;
-	gCPURunning = false;
+	ctx.cpuRunning = false;
 	gCPUStopOnSimpleState = false;
 	RESET_EVENT_QUEUE_LOCK();
 
@@ -394,7 +393,7 @@ bool CPU_RomOpen()
 	return true;
 }
 
-void CPU_RomClose()
+void CPU_RomClose(SystemContext &ctx)
 {
 #ifdef DAEDALUS_ENABLE_DYNAREC
 	#ifdef DAEDALUS_DEBUG_CONSOLE_DYNAREC
@@ -433,7 +432,7 @@ void CPU_SelectCore()
 bool CPU_RequestSaveState( const std::filesystem::path &filename )
 {
 	// Call SaveState_SaveToFile directly if the CPU is not running.
-	DAEDALUS_ASSERT(gCPURunning, "Expecting the CPU to be running at this point");
+	DAEDALUS_ASSERT(ctx.cpuRunning, "Expecting the CPU to be running at this point");
 	LOCK_EVENT_QUEUE();
 
 	// Abort if already in the process of loading/saving
@@ -452,7 +451,7 @@ bool CPU_RequestSaveState( const std::filesystem::path &filename )
 bool CPU_RequestLoadState( const std::filesystem::path &filename )
 {
 	// Call SaveState_SaveToFile directly if the CPU is not running.
-	DAEDALUS_ASSERT(gCPURunning, "Expecting the CPU to be running at this point");
+	DAEDALUS_ASSERT(ctx.cpuRunning, "Expecting the CPU to be running at this point");
 	LOCK_EVENT_QUEUE();
 
 	// Abort if already in the process of loading/saving
@@ -470,7 +469,7 @@ bool CPU_RequestLoadState( const std::filesystem::path &filename )
 
 static void HandleSaveStateOperationOnVerticalBlank()
 {
-	DAEDALUS_ASSERT(gCPURunning, "Expecting the CPU to be running at this point");
+	DAEDALUS_ASSERT(ctx.cpuRunning, "Expecting the CPU to be running at this point");
 	if( gSaveStateOperation == SSO_NONE )
 		return;
 		LOCK_EVENT_QUEUE();
@@ -543,12 +542,12 @@ bool CPU_Run()
 
 	while (1)
 	{
-		gCPURunning = true;
+		ctx.cpuRunning = true;
 		gCPUStopOnSimpleState = false;
 		DAEDALUS_ASSERT(gSaveStateOperation == SSO_NONE, "Shouldn't have a save state operation queued.");
 		RESET_EVENT_QUEUE_LOCK();
 
-		while (gCPURunning)
+		while (ctx.cpuRunning)
 		{
 			g_pCPUCore();
 		}
@@ -556,7 +555,7 @@ bool CPU_Run()
 		if (!HandleSaveStateOperationOnCPUStopRunning())
 			break;
 	}
-	DAEDALUS_ASSERT(!gCPURunning, "gCPURunning should be false by now.");
+	DAEDALUS_ASSERT(!ctx.cpuRunning, "CPU should not be running and should be false..");
 	return true;
 }
 
@@ -880,18 +879,11 @@ bool CPU_CheckStuffToDo()
 		else if( ctx.cpuState.GetStuffToDo() & CPU_STOP_RUNNING )
 		{
 			ctx.cpuState.ClearJob( CPU_STOP_RUNNING );
-			gCPURunning = false;
+			ctx.cpuRunning = false;
 			return true;
 		}
 		// Clear stuff_to_do?
 
 	return false;
-}
-
-// FIX ME: This gets called alot
-// Return true if the CPU is running
-bool CPU_IsRunning()	
-{	
-	return gCPURunning;	
 }
 

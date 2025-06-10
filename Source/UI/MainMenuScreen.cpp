@@ -249,7 +249,7 @@ void	CMainMenuScreen::OnSavestateSelected( const char * savestate_filename )
 {
 	// If the CPU is running we need to queue a request to load the state
 	// (and possibly switch roms). Otherwise we just load the rom directly
-	if( CPU_IsRunning() )
+	if( ctx.cpuRunning )
 	{
 		if( CPU_RequestLoadState( savestate_filename ) )
 		{
